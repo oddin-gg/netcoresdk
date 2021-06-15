@@ -1,10 +1,10 @@
-﻿using NetGlade.Oddin.SDK.API;
-using NetGlade.Oddin.SDK.Managers;
-using NetGlade.Oddin.SDK.Managers.Internal;
+﻿using Oddin.Oddin.SDK.API;
+using Oddin.Oddin.SDK.Managers;
+using Oddin.Oddin.SDK.Managers.Internal;
 using Unity;
 using Unity.Injection;
 
-namespace NetGlade.Oddin.SDK
+namespace Oddin.Oddin.SDK
 {
     public class Feed
     {

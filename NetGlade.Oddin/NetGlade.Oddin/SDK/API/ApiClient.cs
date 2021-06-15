@@ -1,8 +1,8 @@
-﻿using NetGlade.Oddin.SDK.API.Entities;
-using NetGlade.Oddin.SDK.API.Entities.Internal;
+﻿using Oddin.Oddin.SDK.API.Entities;
+using Oddin.Oddin.SDK.API.Entities.Internal;
 using System.Collections.Generic;
 
-namespace NetGlade.Oddin.SDK.API
+namespace Oddin.Oddin.SDK.API
 {
     internal class ApiClient : IApiClient
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NetGlade.Oddin.SDK.API.Entities.Internal
+namespace Oddin.Oddin.SDK.API.Entities.Internal
 {
     internal class Producer : IProducer
     {

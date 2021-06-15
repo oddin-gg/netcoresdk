@@ -1,8 +1,8 @@
 ﻿
-using NetGlade.Oddin.SDK;
+using Oddin.Oddin.SDK;
 using System;
 
-namespace NetGlade.Oddin.SampleIntegration
+namespace Oddin.Oddin.SampleIntegration
 {
     class Program
     {

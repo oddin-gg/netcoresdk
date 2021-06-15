@@ -1,9 +1,9 @@
-﻿using NetGlade.Oddin.SDK.API;
-using NetGlade.Oddin.SDK.API.Entities;
+﻿using Oddin.Oddin.SDK.API;
+using Oddin.Oddin.SDK.API.Entities;
 using System;
 using System.Collections.Generic;
 
-namespace NetGlade.Oddin.SDK.Managers.Internal
+namespace Oddin.Oddin.SDK.Managers.Internal
 {
     internal class ProducerManager : IProducerManager
     {

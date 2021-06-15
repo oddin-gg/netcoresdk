@@ -1,4 +1,4 @@
-﻿namespace NetGlade.Oddin.SDK.API.Entities
+﻿namespace Oddin.Oddin.SDK.API.Entities
 {
     /// <summary>
     /// Defines a contract for recovery info which contains data about last recovery attempt

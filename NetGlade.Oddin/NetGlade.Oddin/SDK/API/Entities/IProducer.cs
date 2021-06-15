@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NetGlade.Oddin.SDK.API.Entities
+namespace Oddin.Oddin.SDK.API.Entities
 {
     public interface IProducer
     {

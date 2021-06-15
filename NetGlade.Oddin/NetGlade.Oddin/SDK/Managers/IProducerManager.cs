@@ -1,8 +1,8 @@
-﻿using NetGlade.Oddin.SDK.API.Entities;
+﻿using Oddin.Oddin.SDK.API.Entities;
 using System;
 using System.Collections.Generic;
 
-namespace NetGlade.Oddin.SDK.Managers
+namespace Oddin.Oddin.SDK.Managers
 {
     /// <summary>
     /// Defines a contract implemented by classes used to manage feed producers
