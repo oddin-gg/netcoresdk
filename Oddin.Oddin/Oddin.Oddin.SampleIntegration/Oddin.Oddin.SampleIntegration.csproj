@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NetGlade.Oddin\Oddin.Oddin.csproj" />
+    <ProjectReference Include="..\Oddin.Oddin\Oddin.Oddin.csproj" />
   </ItemGroup>
 
 </Project>
