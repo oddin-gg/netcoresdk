@@ -25,7 +25,11 @@ namespace Oddin.Oddin.SDK
         private void RegisterObjectsToUnityContainer()
         {
             _unityContainer.RegisterInstance(typeof(ILoggerFactory), _loggerFactory);
-            _unityContainer.RegisterType<IApiClient, ApiClient>();
+            _unityContainer.RegisterType<IApiClient, ApiClient>(
+                new InjectionConstructor(
+                    _unityContainer.Resolve<ILoggerFactory>()
+                    )
+                );
             _unityContainer.RegisterType<IProducerManager, ProducerManager>(
                 new InjectionConstructor(
                     _unityContainer.Resolve<IApiClient>(),
