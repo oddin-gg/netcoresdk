@@ -1,11 +1,12 @@
-﻿using Oddin.Oddin.SDK.API;
+﻿using Microsoft.Extensions.Logging;
+using Oddin.Oddin.SDK.API;
 using Oddin.Oddin.SDK.API.Entities;
 using System;
 using System.Collections.Generic;
 
 namespace Oddin.Oddin.SDK.Managers
 {
-    internal class ProducerManager : IProducerManager
+    internal class ProducerManager : LoggingBase, IProducerManager
     {
         private IReadOnlyCollection<IProducer> _producers;
 
@@ -48,7 +49,7 @@ namespace Oddin.Oddin.SDK.Managers
         }
 
 
-        public ProducerManager(ApiClient apiClient)
+        public ProducerManager(ApiClient apiClient, ILoggerFactory loggerFactory) : base(loggerFactory)
         {
             _producers = apiClient.GetProducers();
         }
