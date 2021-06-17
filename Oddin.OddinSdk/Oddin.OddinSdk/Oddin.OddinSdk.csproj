@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <AssemblyName>Oddin.Oddin</AssemblyName>
-    <RootNamespace>Oddin.Oddin</RootNamespace>
+    <AssemblyName>Oddin.OddinSdk</AssemblyName>
+    <RootNamespace>Oddin.OddinSdk</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

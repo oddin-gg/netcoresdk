@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Oddin.OddinSdk.SampleIntegration</AssemblyName>
+    <RootNamespace>Oddin.OddinSdk.SampleIntegration</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Oddin.Oddin\Oddin.Oddin.csproj" />
+    <ProjectReference Include="..\Oddin.OddinSdk\Oddin.OddinSdk.csproj" />
   </ItemGroup>
 
 </Project>
