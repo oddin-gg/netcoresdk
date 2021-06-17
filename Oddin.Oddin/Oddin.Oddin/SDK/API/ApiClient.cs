@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
+using Oddin.Oddin.Common;
 using Oddin.Oddin.SDK.API.Entities;
 using Oddin.Oddin.SDK.Managers;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Oddin.Oddin.SDK.API
@@ -21,41 +23,78 @@ namespace Oddin.Oddin.SDK.API
         }
 
         public IRequestResult<List<IProducer>> GetProducers()
-            => SendRequest<List<IProducer>>("https://api-mq.integration.oddin.gg/v1/descriptions/producers", HttpMethod.Get);
+        {
+            SendRequest<ProducersDTO>("https://api-mq.integration.oddin.gg/v1/descriptions/producers", HttpMethod.Get);
+            
+            // TODO: convert DTO to entity
+            return RequestResult<List<IProducer>>.Success(new List<IProducer>());
+        }
 
+
+        // TODO: look for HttpClient.Send(), should be available for .net standard 2.1
         private RequestResult<TData> SendRequest<TData>(string route, HttpMethod method, object objectToBeSent = null)
             where TData : class
         {
-            // xml serialization
+            var task = Task.Run(() => SendRequestAsync<TData>(route, method, objectToBeSent));
+            task.Wait();
+            return task.Result;
+        }
+
+        private async Task<RequestResult<TData>> SendRequestAsync<TData>(string route, HttpMethod method, object objectToBeSent = null)
+            where TData : class
+        {
+            if (XmlHelper.TrySerialize(objectToBeSent, out var serializedObject) == false)
+                return RequestResult<TData>.Failure(failureMessage: "Request could not be serialized!");
+            
             HttpResponseMessage httpResponse;
-            // try
-            httpResponse = SendRequestGetResponse(route, method, objectToBeSent);
-            // catch
+            try
+            {
+                httpResponse = await SendRequestGetResponse(route, method, serializedObject);
+            }
+            catch (ArgumentNullException)
+            {
+                return RequestResult<TData>.Failure(failureMessage: $"{nameof(ArgumentNullException)} was thrown by {nameof(HttpClient)}");
+            }
+            catch (InvalidOperationException)
+            {
+                return RequestResult<TData>.Failure(failureMessage: $"{nameof(InvalidOperationException)} was thrown by {nameof(HttpClient)}");
+            }
+            catch (HttpRequestException)
+            {
+                return RequestResult<TData>.Failure(failureMessage: $"{nameof(HttpRequestException)} was thrown by {nameof(HttpClient)}");
+            }
 
             if (httpResponse.IsSuccessStatusCode == false)
                 return RequestResult<TData>.Failure(failureMessage: $"Received failure http status code: {httpResponse?.StatusCode} {httpResponse?.ReasonPhrase}");
 
-            var requestResultString = httpResponse.Content.ReadAsStringAsync();
-            // xml deserialization
+            var requestResultString = await httpResponse.Content.ReadAsStringAsync();
 
-            // create requestResult based on deserialization success
-            //RequestResult<TData>.Success(...);
-            //RequestResult<TData>.Failure(...);
-            return null;
+            if (XmlHelper.TryDeserialize<TData>(requestResultString, out var responseDto) == false)
+                return RequestResult<TData>.Failure(failureMessage: "Unable to deserialize response!");
+
+            if (responseDto is null)
+                return RequestResult<TData>.Failure(failureMessage: "Response was deserialized as null!");
+
+            return RequestResult<TData>.Success(responseDto);
         }
 
-        private HttpResponseMessage SendRequestGetResponse(string route, HttpMethod method, object objectToBeSent = null)
+
+        private async Task<HttpResponseMessage> SendRequestGetResponse(string route, HttpMethod method, string objectToBeSent = default)
         {
-            using (var request = new HttpRequestMessage
+            using (var content = new StringContent(objectToBeSent, Encoding.UTF8, "application/xml"))
             {
-                Method = method,
-                RequestUri = new Uri(route)
-            })
-            {
-                // TODO: look for HttpClient.Send(), should be available for .net standard 2.1
-                var task = Task.Run(() => _httpClient.SendAsync(request));
-                task.Wait();
-                return task.Result;
+                using (var request = new HttpRequestMessage
+                {
+                    Method = method,
+                    // TODO: create uri as a combination of base uri and route
+                    RequestUri = new Uri(route)
+                })
+                {
+                    if (method != HttpMethod.Get)
+                        request.Content = content;
+
+                    return await _httpClient.SendAsync(request);
+                }
             }
         }
     }

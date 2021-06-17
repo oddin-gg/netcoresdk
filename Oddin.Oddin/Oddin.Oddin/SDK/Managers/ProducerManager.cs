@@ -51,8 +51,8 @@ namespace Oddin.Oddin.SDK.Managers
 
         public ProducerManager(ApiClient apiClient, ILoggerFactory loggerFactory) : base(loggerFactory)
         {
-            // TODO: move to Producers getter
             // TODO: add cache
+            // TODO: move to Producers getter
             _producers = apiClient.GetProducers().Data;
         }
     }
