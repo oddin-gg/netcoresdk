@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Oddin.Oddin.SDK.API
@@ -15,13 +16,15 @@ namespace Oddin.Oddin.SDK.API
     {
         private readonly string _apiHost;
         private readonly bool _useSsl;
-        // TODO: use
         private readonly int _timeoutSeconds;
 
         private HttpClient _httpClient = new HttpClient();
 
         public ApiClient(IOddsFeedConfiguration config, ILoggerFactory loggerFactory) : base(loggerFactory)
         {
+            _apiHost = config.ApiHost;
+            _useSsl = config.UseApiSsl;
+            _timeoutSeconds = config.HttpClientTimeout;
             _httpClient.DefaultRequestHeaders.Add("x-access-token", config.AccessToken);
         }
 
@@ -38,14 +41,30 @@ namespace Oddin.Oddin.SDK.API
         private RequestResult<TData> SendRequest<TData>(string route, HttpMethod method, object objectToBeSent = null)
             where TData : class
         {
-            var task = Task.Run(() => SendRequestAsync<TData>(route, method, objectToBeSent));
+            // -------------- NEEDS TO BE FIXED -------------
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(_timeoutSeconds * 1000);
+            var token = cts.Token;
+            token.ThrowIfCancellationRequested();
+
+            var task = Task.Run(
+                () => SendRequestAsync<TData>(route, method, objectToBeSent),
+                token);
+
             task.Wait();
+
+            // -------------------------------------------------
+
             return task.Result;
         }
 
         private async Task<RequestResult<TData>> SendRequestAsync<TData>(string route, HttpMethod method, object objectToBeSent = null)
             where TData : class
         {
+            await Task.Delay((_timeoutSeconds + 3) * 1000);
+
+
+
             if (XmlHelper.TrySerialize(objectToBeSent, out var serializedObject) == false)
                 return RequestResult<TData>.Failure(failureMessage: "Request could not be serialized!");
             
