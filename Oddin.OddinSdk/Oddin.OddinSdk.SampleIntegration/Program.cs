@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oddin.Oddin.SDK;
+using Oddin.OddinSdk.SampleIntegration;
 using Serilog;
 using System;
 
@@ -16,7 +17,13 @@ namespace Oddin.Oddin.SampleIntegration
 
             var loggerFactory = new LoggerFactory().AddSerilog(serilogLogger);
 
-            var feed = new Feed(loggerFactory);
+            var config = new CustomOddsFeedConfiguration(
+                accessToken: "1a0c5a30-74ed-416d-b120-8c05f92e382f",
+                apiHost: "api-mq.integration.oddin.gg",
+                useApiSsl: true,
+                httpClientTimeout: 10);
+
+            var feed = new Feed(config, loggerFactory);
             foreach (var producer in feed.ProducerManager.Producers)
                 Console.WriteLine(producer.Name);
         }

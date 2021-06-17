@@ -2,6 +2,7 @@
 using Oddin.Oddin.Common;
 using Oddin.Oddin.SDK.API.Entities;
 using Oddin.Oddin.SDK.Managers;
+using Oddin.OddinSdk.SDK;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -12,19 +13,21 @@ namespace Oddin.Oddin.SDK.API
 {
     internal class ApiClient : LoggingBase, IApiClient
     {
-        // TODO: move to a configuration file
-        public const string API_KEY = "1a0c5a30-74ed-416d-b120-8c05f92e382f";
+        private readonly string _apiHost;
+        private readonly bool _useSsl;
+        // TODO: use
+        private readonly int _timeoutSeconds;
 
         private HttpClient _httpClient = new HttpClient();
 
-        public ApiClient(ILoggerFactory loggerFactory) : base(loggerFactory)
+        public ApiClient(IOddsFeedConfiguration config, ILoggerFactory loggerFactory) : base(loggerFactory)
         {
-            _httpClient.DefaultRequestHeaders.Add("x-access-token", API_KEY);
+            _httpClient.DefaultRequestHeaders.Add("x-access-token", config.AccessToken);
         }
 
         public IRequestResult<List<IProducer>> GetProducers()
         {
-            SendRequest<ProducersDTO>("https://api-mq.integration.oddin.gg/v1/descriptions/producers", HttpMethod.Get);
+            SendRequest<ProducersDTO>("v1/descriptions/producers", HttpMethod.Get);
             
             // TODO: convert DTO to entity
             return RequestResult<List<IProducer>>.Success(new List<IProducer>());
@@ -49,7 +52,7 @@ namespace Oddin.Oddin.SDK.API
             HttpResponseMessage httpResponse;
             try
             {
-                httpResponse = await SendRequestGetResponse(route, method, serializedObject);
+                httpResponse = await SendRequestGetResponseAsync(route, method, serializedObject);
             }
             catch (ArgumentNullException)
             {
@@ -79,15 +82,14 @@ namespace Oddin.Oddin.SDK.API
         }
 
 
-        private async Task<HttpResponseMessage> SendRequestGetResponse(string route, HttpMethod method, string objectToBeSent = default)
+        private async Task<HttpResponseMessage> SendRequestGetResponseAsync(string route, HttpMethod method, string objectToBeSent = default)
         {
             using (var content = new StringContent(objectToBeSent, Encoding.UTF8, "application/xml"))
             {
                 using (var request = new HttpRequestMessage
                 {
                     Method = method,
-                    // TODO: create uri as a combination of base uri and route
-                    RequestUri = new Uri(route)
+                    RequestUri = new Uri(CombineAddress(route))
                 })
                 {
                     if (method != HttpMethod.Get)
@@ -96,6 +98,15 @@ namespace Oddin.Oddin.SDK.API
                     return await _httpClient.SendAsync(request);
                 }
             }
+        }
+
+        private string CombineAddress(string route)
+        {
+            string https = string.Empty;
+            if (_useSsl)
+                https = "s";
+
+            return Flurl.Url.Combine($"http{https}://{_apiHost}/", route);
         }
     }
 

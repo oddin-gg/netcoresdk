@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Oddin.Oddin.SDK.API;
 using Oddin.Oddin.SDK.Managers;
+using Oddin.OddinSdk.SDK;
+using System;
 using Unity;
 using Unity.Injection;
 
@@ -11,6 +13,7 @@ namespace Oddin.Oddin.SDK
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly IUnityContainer _unityContainer;
+        private readonly IOddsFeedConfiguration _oddsFeedConfiguration;
 
         /// <summary>
         /// Gets a <see cref="IProducerManager" /> instance used to retrieve producer related data
@@ -27,6 +30,7 @@ namespace Oddin.Oddin.SDK
             _unityContainer.RegisterInstance(typeof(ILoggerFactory), _loggerFactory);
             _unityContainer.RegisterType<IApiClient, ApiClient>(
                 new InjectionConstructor(
+                    _oddsFeedConfiguration,
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );
@@ -38,8 +42,12 @@ namespace Oddin.Oddin.SDK
                 );
         }
 
-        public Feed(ILoggerFactory loggerFactory = null)
+        public Feed(IOddsFeedConfiguration config, ILoggerFactory loggerFactory = null)
         {
+            if (config is null)
+                throw new ArgumentNullException();
+            _oddsFeedConfiguration = config;
+
             _loggerFactory = loggerFactory ?? new NullLoggerFactory();
 
             _unityContainer = new UnityContainer();
