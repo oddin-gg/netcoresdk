@@ -53,7 +53,7 @@ namespace Oddin.Oddin.SDK.Managers
         {
             // TODO: add cache
             // TODO: move to Producers getter
-            _producers = apiClient.GetProducers().Data;
+            _producers = apiClient.GetProducers();
         }
     }
 

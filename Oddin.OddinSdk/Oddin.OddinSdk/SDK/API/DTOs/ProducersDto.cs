@@ -61,7 +61,7 @@ namespace Oddin.Oddin.DTOs.API.Entities
 
     public class ProducerDto
     {
-        private long idField;
+        private int idField;
 
         private string nameField;
 
@@ -77,7 +77,7 @@ namespace Oddin.Oddin.DTOs.API.Entities
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public long id
+        public int id
         {
             get
             {

@@ -29,12 +29,28 @@ namespace Oddin.Oddin.SDK.API
             _httpClient.DefaultRequestHeaders.Add("x-access-token", config.AccessToken);
         }
 
-        public IRequestResult<List<IProducer>> GetProducers()
+        public List<IProducer> GetProducers()
         {
-            var result = SendRequest<ProducersDto>("v1/descriptions/producers", HttpMethod.Get);
+            var response = SendRequest<ProducersDto>("v1/descriptions/producers", HttpMethod.Get);
             
-            // TODO: convert DTO to entity
-            return RequestResult<List<IProducer>>.Success(new List<IProducer>());
+            // TODO: generalize DTO to entity translation
+            var result = new List<IProducer>();
+            foreach (var producer in response.Data.producer)
+                result.Add(new Producer(
+                    producer.id,
+                    producer.name,
+                    producer.description,
+                    producer.active,
+                    producer.scope,
+                    producer.stateful_recovery_window_in_minutes));
+
+
+            if (response.Successful == false)
+            {
+                // TODO: propagate failure somehow ???
+            }
+
+            return result;
         }
 
 
@@ -128,6 +144,6 @@ namespace Oddin.Oddin.SDK.API
         /// Gets a list of <see cref="IProducer"/> from API
         /// </summary>
         /// <returns>The list of <see cref="IProducer"/></returns>
-        IRequestResult<List<IProducer>> GetProducers();
+        List<IProducer> GetProducers();
     }
 }

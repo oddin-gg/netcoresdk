@@ -4,16 +4,21 @@ namespace Oddin.Oddin.SDK.API.Entities
 {
     internal class Producer : IProducer
     {
+        private int _id;
         private string _name;
+        private string _description;
+        private bool _active;
+        // TODO: change to smth cleaner than string (are multiple |-separated values possible?) and find usage
+        private string _scope;
+        private int _statefulRecoveryWindowInMinutes;
 
-
-        public int Id => throw new NotImplementedException();
+        public int Id => _id;
 
         public string Name => _name;
 
-        public string Description => throw new NotImplementedException();
+        public string Description => _description;
 
-        public bool IsAvailable => throw new NotImplementedException();
+        public bool IsAvailable => _active;
 
         public bool IsDisabled => throw new NotImplementedException();
 
@@ -28,9 +33,21 @@ namespace Oddin.Oddin.SDK.API.Entities
         public IRecoveryInfo RecoveryInfo => throw new NotImplementedException();
 
 
-        public Producer(string name)
+        public Producer(
+            int id,
+            string name,
+            string description,
+            bool active,
+            string scope,
+            int statefulRecoveryWindowInMinutes
+            )
         {
+            _id = id;
             _name = name;
+            _description = description;
+            _active = active;
+            _scope = scope;
+            _statefulRecoveryWindowInMinutes = statefulRecoveryWindowInMinutes;
         }
     }
 
