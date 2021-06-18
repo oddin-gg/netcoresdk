@@ -17,7 +17,6 @@ namespace Oddin.Oddin.SDK.API
         private readonly string _apiHost;
         private readonly bool _useSsl;
         private readonly int _timeoutSeconds;
-
         private HttpClient _httpClient = new HttpClient();
 
         public ApiClient(IOddsFeedConfiguration config, ILoggerFactory loggerFactory) : base(loggerFactory)
@@ -25,12 +24,14 @@ namespace Oddin.Oddin.SDK.API
             _apiHost = config.ApiHost;
             _useSsl = config.UseApiSsl;
             _timeoutSeconds = config.HttpClientTimeout;
+
+            _httpClient.Timeout = TimeSpan.FromSeconds(_timeoutSeconds);
             _httpClient.DefaultRequestHeaders.Add("x-access-token", config.AccessToken);
         }
 
         public IRequestResult<List<IProducer>> GetProducers()
         {
-            SendRequest<ProducersDTO>("v1/descriptions/producers", HttpMethod.Get);
+            var result = SendRequest<ProducersDTO>("v1/descriptions/producers", HttpMethod.Get);
             
             // TODO: convert DTO to entity
             return RequestResult<List<IProducer>>.Success(new List<IProducer>());
@@ -41,30 +42,18 @@ namespace Oddin.Oddin.SDK.API
         private RequestResult<TData> SendRequest<TData>(string route, HttpMethod method, object objectToBeSent = null)
             where TData : class
         {
-            // -------------- NEEDS TO BE FIXED -------------
-            var cts = new CancellationTokenSource();
-            cts.CancelAfter(_timeoutSeconds * 1000);
-            var token = cts.Token;
-            token.ThrowIfCancellationRequested();
-
             var task = Task.Run(
-                () => SendRequestAsync<TData>(route, method, objectToBeSent),
-                token);
+                () => SendRequestAsync<TData>(route, method, objectToBeSent));
 
             task.Wait();
-
-            // -------------------------------------------------
-
+            if (task.Result.Successful == false)
+                _log.LogError($"Http request [{method} to {CombineAddress(route)}] failed. Reason: {task.Result.Message}");
             return task.Result;
         }
 
         private async Task<RequestResult<TData>> SendRequestAsync<TData>(string route, HttpMethod method, object objectToBeSent = null)
             where TData : class
         {
-            await Task.Delay((_timeoutSeconds + 3) * 1000);
-
-
-
             if (XmlHelper.TrySerialize(objectToBeSent, out var serializedObject) == false)
                 return RequestResult<TData>.Failure(failureMessage: "Request could not be serialized!");
             
@@ -85,6 +74,10 @@ namespace Oddin.Oddin.SDK.API
             {
                 return RequestResult<TData>.Failure(failureMessage: $"{nameof(HttpRequestException)} was thrown by {nameof(HttpClient)}");
             }
+            catch (TaskCanceledException)
+            {
+                return RequestResult<TData>.Failure(failureMessage: $"Http request timed out with timeout {_timeoutSeconds}s!");
+            }
 
             if (httpResponse.IsSuccessStatusCode == false)
                 return RequestResult<TData>.Failure(failureMessage: $"Received failure http status code: {httpResponse?.StatusCode} {httpResponse?.ReasonPhrase}");
@@ -92,7 +85,7 @@ namespace Oddin.Oddin.SDK.API
             var requestResultString = await httpResponse.Content.ReadAsStringAsync();
 
             if (XmlHelper.TryDeserialize<TData>(requestResultString, out var responseDto) == false)
-                return RequestResult<TData>.Failure(failureMessage: "Unable to deserialize response!");
+                return RequestResult<TData>.Failure(failureMessage: $"Unable to deserialize response! Response:\n{requestResultString}");
 
             if (responseDto is null)
                 return RequestResult<TData>.Failure(failureMessage: "Response was deserialized as null!");

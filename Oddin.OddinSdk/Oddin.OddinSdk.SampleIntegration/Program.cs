@@ -21,7 +21,7 @@ namespace Oddin.Oddin.SampleIntegration
                 accessToken: "1a0c5a30-74ed-416d-b120-8c05f92e382f",
                 apiHost: "api-mq.integration.oddin.gg",
                 useApiSsl: true,
-                httpClientTimeout: 5);
+                httpClientTimeout: 10);
 
             var feed = new Feed(config, loggerFactory);
             foreach (var producer in feed.ProducerManager.Producers)
