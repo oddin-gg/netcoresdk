@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oddin.Oddin.Common;
+using Oddin.Oddin.DTOs.API.Entities;
 using Oddin.Oddin.SDK.API.Entities;
 using Oddin.Oddin.SDK.Managers;
 using Oddin.OddinSdk.SDK;
@@ -7,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Oddin.Oddin.SDK.API
@@ -31,7 +31,7 @@ namespace Oddin.Oddin.SDK.API
 
         public IRequestResult<List<IProducer>> GetProducers()
         {
-            var result = SendRequest<ProducersDTO>("v1/descriptions/producers", HttpMethod.Get);
+            var result = SendRequest<ProducersDto>("v1/descriptions/producers", HttpMethod.Get);
             
             // TODO: convert DTO to entity
             return RequestResult<List<IProducer>>.Success(new List<IProducer>());
