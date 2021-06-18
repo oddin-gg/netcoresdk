@@ -6,7 +6,7 @@ namespace Oddin.Oddin.SDK.API.Entities
     [XmlRoot("producers")]
     public class ProducersDTO
     {
-        [XmlElement("response_code")]
+        [XmlAttribute("response_code")]
         public string ResponseCode { get; set; }
 
         [XmlElement("producer")]
@@ -20,25 +20,25 @@ namespace Oddin.Oddin.SDK.API.Entities
 
     public class ProducerDTO
     {
-        [XmlElement("id")]
+        [XmlAttribute("id")]
         public int Id { get; set; }
 
-        [XmlElement("name")]
+        [XmlAttribute("name")]
         public string Name { get; set; }
 
-        [XmlElement("description")]
+        [XmlAttribute("description")]
         public string Description { get; set; }
 
-        [XmlElement("api_url")]
+        [XmlAttribute("api_url")]
         public string ApiUrl { get; set; }
 
-        [XmlElement("active")]
+        [XmlAttribute("active")]
         public bool IsActive { get; set; }
 
-        [XmlElement("scope")]
+        [XmlAttribute("scope")]
         public string Scope { get; set; }
 
-        [XmlElement("stateful_recovery_window_in_minutes")]
+        [XmlAttribute("stateful_recovery_window_in_minutes")]
         public int RecoveryWindowMinutes { get; set; }
     }
 }
