@@ -24,5 +24,15 @@
         /// Gets a value specifying timeout set for HTTP responses
         /// </summary>
         int HttpClientTimeout { get; }
+
+        /// <summary>
+        /// Gets a value specifying the host name of the AQMP broker
+        /// </summary>
+        string Host { get; }
+
+        /// <summary>
+        /// Gets the port used for connecting to the AQMP broker
+        /// </summary>
+        int Port { get; }
     }
 }

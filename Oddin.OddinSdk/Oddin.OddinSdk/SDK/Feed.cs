@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Oddin.Oddin.SDK.API;
 using Oddin.Oddin.SDK.Managers;
 using Oddin.OddinSdk.SDK;
+using Oddin.OddinSdk.SDK.AMQP;
 using System;
 using Unity;
 using Unity.Injection;
@@ -34,6 +35,12 @@ namespace Oddin.Oddin.SDK
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );
+            _unityContainer.RegisterType<IAmqpClient, AmqpClient>(
+                new InjectionConstructor(
+                    _oddsFeedConfiguration,
+                    _unityContainer.Resolve<ILoggerFactory>()
+                    )
+                );
             _unityContainer.RegisterType<IProducerManager, ProducerManager>(
                 new InjectionConstructor(
                     _unityContainer.Resolve<IApiClient>(),
@@ -52,6 +59,16 @@ namespace Oddin.Oddin.SDK
 
             _unityContainer = new UnityContainer();
             RegisterObjectsToUnityContainer();
+
+
+            // TODO: remove when amqp tested
+            TestAmqp();
+        }
+
+        private void TestAmqp()
+        {
+            var rabbit = _unityContainer.Resolve<IAmqpClient>();
+            rabbit.Connect();
         }
     }
 }
