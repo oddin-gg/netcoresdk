@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oddin.Oddin.SDK;
 using Oddin.OddinSdk.SampleIntegration;
+using Oddin.OddinSdk.SDK.FeedConfiguration;
 using Serilog;
 using System;
 
@@ -23,11 +24,16 @@ namespace Oddin.Oddin.SampleIntegration
                 useApiSsl: true,
                 httpClientTimeout: 10,
                 host: "mq.integration.oddin.gg",
-                port: 5672);
+                port: 5672,
+                ExceptionHandlingStrategy.THROW);
 
             var feed = new Feed(config, loggerFactory);
-            foreach (var producer in feed.ProducerManager.Producers)
-                Console.WriteLine(producer.Name);
+            //foreach (var producer in feed.ProducerManager.Producers)
+            //    Console.WriteLine(producer.Name);
+
+            feed.Open();
+            Console.ReadLine();
+            feed.Close();
         }
     }
 }

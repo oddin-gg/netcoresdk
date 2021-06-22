@@ -1,4 +1,4 @@
-﻿using Oddin.OddinSdk.SDK;
+﻿using Oddin.OddinSdk.SDK.FeedConfiguration;
 
 namespace Oddin.OddinSdk.SampleIntegration
 {
@@ -12,6 +12,7 @@ namespace Oddin.OddinSdk.SampleIntegration
         public int HttpClientTimeout { get; }
         public string Host { get; }
         public int Port { get; }
+        public ExceptionHandlingStrategy ExceptionHandlingStrategy { get; }
 
         public CustomOddsFeedConfiguration(
             string accessToken,
@@ -19,7 +20,8 @@ namespace Oddin.OddinSdk.SampleIntegration
             bool useApiSsl,
             int httpClientTimeout,
             string host,
-            int port)
+            int port,
+            ExceptionHandlingStrategy strategy)
         {
             AccessToken = accessToken;
             ApiHost = apiHost;
@@ -27,6 +29,7 @@ namespace Oddin.OddinSdk.SampleIntegration
             HttpClientTimeout = httpClientTimeout;
             Host = host;
             Port = port;
+            ExceptionHandlingStrategy = strategy;
         }
     }
 }

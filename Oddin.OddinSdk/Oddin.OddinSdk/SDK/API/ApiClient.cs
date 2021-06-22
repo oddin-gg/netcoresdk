@@ -3,7 +3,7 @@ using Oddin.Oddin.Common;
 using Oddin.Oddin.DTOs.API.Entities;
 using Oddin.Oddin.SDK.API.Entities;
 using Oddin.Oddin.SDK.Managers;
-using Oddin.OddinSdk.SDK;
+using Oddin.OddinSdk.SDK.FeedConfiguration;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
