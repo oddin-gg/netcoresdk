@@ -20,6 +20,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
         private IConnection _connection;
         private IModel _channel;
+        private EventingBasicConsumer _consumer;
 
         public const string EXCHANGE_NAME = "oddinfeed";
         public const string ALL_MESSAGES_ROUTING_KEY = "#";
@@ -95,21 +96,21 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
             _channel.QueueBind(queueInfo.QueueName, EXCHANGE_NAME, ALL_MESSAGES_ROUTING_KEY);
 
-            var consumer = new EventingBasicConsumer(_channel);
-            consumer.Received += Receive;
-            _channel.BasicConsume(queueInfo.QueueName, autoAck: true, consumer);
+            _consumer = new EventingBasicConsumer(_channel);
+            _consumer.Received += OnReceived;
+            _channel.BasicConsume(queueInfo.QueueName, autoAck: true, _consumer);
         }
 
-        // TODO: replace with event invokation
-        private void Receive(object sender, BasicDeliverEventArgs eventArgs)
+        private void OnReceived(object sender, BasicDeliverEventArgs eventArgs)
         {
             var body = eventArgs.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
-            Console.WriteLine($"Rabbit received: {message}");
+            DummyMessageReceived(this, message);
         }
 
         public void Disconnect()
         {
+            _consumer.Received -= OnReceived;
             _channel.Close();
             try
             {
@@ -125,6 +126,9 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 _connection.Dispose();
             }
         }
+
+
+        public event EventHandler<string> DummyMessageReceived;
     }
 
     public interface IAmqpClient
@@ -138,5 +142,11 @@ namespace Oddin.OddinSdk.SDK.AMQP
         /// Disconnects the AMQP consumer from the AMQP broker
         /// </summary>
         void Disconnect();
+
+
+
+
+        // TODO: remove when not needed anymore
+        event EventHandler<string> DummyMessageReceived;
     }
 }

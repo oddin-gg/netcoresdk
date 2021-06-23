@@ -74,12 +74,14 @@ namespace Oddin.OddinSdk.SDK
 
         public void Open()
         {
+            _unityContainer.Resolve<IAmqpClient>().DummyMessageReceived += OnDummyFeedMessageReceived;
             _unityContainer.Resolve<IAmqpClient>().Connect();
         }
 
         public void Close()
         {
             _unityContainer.Resolve<IAmqpClient>().Disconnect();
+            _unityContainer.Resolve<IAmqpClient>().DummyMessageReceived -= OnDummyFeedMessageReceived;
         }
 
         public void Dispose()
@@ -93,6 +95,10 @@ namespace Oddin.OddinSdk.SDK
         public event EventHandler<ConnectionExceptionEventArgs> ConnectionException;
 
 
+        private void OnDummyFeedMessageReceived(object sender, string message)
+            => DummyFeedMessageReceived(sender, message);
+
+        public event EventHandler<string> DummyFeedMessageReceived;
     }
 
     public interface IOddsFeed : IDisposable
@@ -116,5 +122,10 @@ namespace Oddin.OddinSdk.SDK
         /// Occurs when an exception occurs in the connection loop
         /// </summary>
         event EventHandler<ConnectionExceptionEventArgs> ConnectionException;
+
+
+
+        // TODO: remove when not needed anymore
+        event EventHandler<string> DummyFeedMessageReceived;
     }
 }
