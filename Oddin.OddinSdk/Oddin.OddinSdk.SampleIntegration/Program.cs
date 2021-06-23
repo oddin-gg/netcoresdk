@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oddin.OddinSdk.SDK;
-using Oddin.OddinSdk.SampleIntegration;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
 using Serilog;
 using System;

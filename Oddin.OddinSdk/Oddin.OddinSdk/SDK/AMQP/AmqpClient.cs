@@ -101,6 +101,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
             _channel.BasicConsume(queueInfo.QueueName, autoAck: true, _consumer);
         }
 
+        // TODO: remove when not needed anymore
         private void OnReceived(object sender, BasicDeliverEventArgs eventArgs)
         {
             var body = eventArgs.Body.ToArray();

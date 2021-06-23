@@ -1,21 +1,19 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Oddin.OddinSdk.SDK.API;
+using Oddin.OddinSdk.SDK.API.Entities;
+using Oddin.OddinSdk.SDK.Dispatch;
 using Oddin.OddinSdk.SDK.Managers;
 using Oddin.OddinSdk.SDK.AMQP;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
 using System;
 using Unity;
 using Unity.Injection;
-using Oddin.OddinSdk.SDK.API.Entities;
 
 namespace Oddin.OddinSdk.SDK
 {
-    public class Feed : IOddsFeed
+    public class Feed : DispatcherBase, IOddsFeed
     {
-        private readonly ILoggerFactory _loggerFactory;
         private readonly IUnityContainer _unityContainer;
-        private readonly IOddsFeedConfiguration _oddsFeedConfiguration;
 
         /// <summary>
         /// Gets a <see cref="IProducerManager" /> instance used to retrieve producer related data
@@ -35,19 +33,19 @@ namespace Oddin.OddinSdk.SDK
         }
 
 
-        private void RegisterObjectsToUnityContainer()
+        private void RegisterObjectsToUnityContainer(IOddsFeedConfiguration config, ILoggerFactory loggerFactory)
         {
-            _unityContainer.RegisterInstance(typeof(ILoggerFactory), _loggerFactory);
+            _unityContainer.RegisterInstance(typeof(ILoggerFactory), loggerFactory);
             _unityContainer.RegisterSingleton<IApiClient, ApiClient>(
                 new InjectionConstructor(
-                    _oddsFeedConfiguration,
+                    config,
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );
             // INFO: AmqpClient registration has to be after ApiClient registration
             _unityContainer.RegisterSingleton<IAmqpClient, AmqpClient>(
                 new InjectionConstructor(
-                    _oddsFeedConfiguration,
+                    config,
                     BookmakerDetails.VirtualHost,
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
@@ -60,16 +58,13 @@ namespace Oddin.OddinSdk.SDK
                 );
         }
 
-        public Feed(IOddsFeedConfiguration config, ILoggerFactory loggerFactory = null)
+        public Feed(IOddsFeedConfiguration config, ILoggerFactory loggerFactory = null) : base(loggerFactory)
         {
             if (config is null)
                 throw new ArgumentNullException();
-            _oddsFeedConfiguration = config;
-
-            _loggerFactory = loggerFactory ?? new NullLoggerFactory();
 
             _unityContainer = new UnityContainer();
-            RegisterObjectsToUnityContainer();
+            RegisterObjectsToUnityContainer(config, loggerFactory);
         }
 
         public void Open()
@@ -96,7 +91,7 @@ namespace Oddin.OddinSdk.SDK
 
 
         private void OnDummyFeedMessageReceived(object sender, string message)
-            => DummyFeedMessageReceived(sender, message);
+            => Dispatch(DummyFeedMessageReceived, message, nameof(DummyFeedMessageReceived));
 
         public event EventHandler<string> DummyFeedMessageReceived;
     }
