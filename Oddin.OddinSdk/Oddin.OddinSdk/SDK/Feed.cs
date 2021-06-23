@@ -8,6 +8,8 @@ using Oddin.OddinSdk.SDK.FeedConfiguration;
 using System;
 using Unity;
 using Unity.Injection;
+using RabbitMQ.Client.Events;
+using RabbitMQ.Client;
 
 namespace Oddin.OddinSdk.SDK
 {
@@ -47,6 +49,8 @@ namespace Oddin.OddinSdk.SDK
                 new InjectionConstructor(
                     config,
                     BookmakerDetails.VirtualHost,
+                    (EventHandler<CallbackExceptionEventArgs>)OnAmqpCallbackException,
+                    (EventHandler<ShutdownEventArgs>)OnConnectionShutdown,
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );
@@ -84,14 +88,36 @@ namespace Oddin.OddinSdk.SDK
             throw new NotImplementedException();
         }
 
+        private void OnAmqpCallbackException(object sender, CallbackExceptionEventArgs eventArgs)
+        {
+            Dispatch(ConnectionException, new ConnectionExceptionEventArgs(eventArgs.Exception, eventArgs.Detail), nameof(ConnectionException));
+        }
+
+        private void OnConnectionShutdown(object sender, ShutdownEventArgs shutdownEventArgs)
+        {
+            _log.LogWarning($"The AMQP connection was shut down. Cause: {shutdownEventArgs.Cause}");
+            
+            // TODO: handle feed recovery
+
+            Dispatch(Disconnected, new EventArgs(), nameof(Disconnected));
+        }
+
         /// <summary>
         /// Occurs when an exception occurs in the connection loop
         /// </summary>
         public event EventHandler<ConnectionExceptionEventArgs> ConnectionException;
 
+        /// <summary>
+        /// Raised when the current instance of <see cref="IOddsFeed"/> loses connection to the feed
+        /// </summary>
+        public event EventHandler<EventArgs> Disconnected;
+
+
 
         private void OnDummyFeedMessageReceived(object sender, string message)
-            => Dispatch(DummyFeedMessageReceived, message, nameof(DummyFeedMessageReceived));
+        {
+            Dispatch(DummyFeedMessageReceived, message, nameof(DummyFeedMessageReceived));
+        }
 
         public event EventHandler<string> DummyFeedMessageReceived;
     }

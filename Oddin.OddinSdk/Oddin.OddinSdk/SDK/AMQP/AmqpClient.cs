@@ -18,6 +18,8 @@ namespace Oddin.OddinSdk.SDK.AMQP
         private readonly string _username;
         private readonly string _virtualHost;
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
+        private readonly EventHandler<CallbackExceptionEventArgs> _onCallbackException;
+        private readonly EventHandler<ShutdownEventArgs> _onConnectionShutdown;
         private IConnection _connection;
         private IModel _channel;
         private EventingBasicConsumer _consumer;
@@ -25,13 +27,20 @@ namespace Oddin.OddinSdk.SDK.AMQP
         public const string EXCHANGE_NAME = "oddinfeed";
         public const string ALL_MESSAGES_ROUTING_KEY = "#";
 
-        public AmqpClient(IOddsFeedConfiguration config, string virtualHost, ILoggerFactory loggerFactory) : base(loggerFactory)
+        public AmqpClient(IOddsFeedConfiguration config,
+            string virtualHost,
+            EventHandler<CallbackExceptionEventArgs> onCallbackException,
+            EventHandler<ShutdownEventArgs> onConnectionShutdown,
+            ILoggerFactory loggerFactory)
+            : base(loggerFactory)
         {
             _host = config.Host;
             _port = config.Port;
             _username = config.AccessToken;
             _virtualHost = virtualHost;
             _exceptionHandlingStrategy = config.ExceptionHandlingStrategy;
+            _onCallbackException = onCallbackException;
+            _onConnectionShutdown = onConnectionShutdown;
         }
 
         private ConnectionFactory CreateConnectionFactory()
@@ -79,9 +88,10 @@ namespace Oddin.OddinSdk.SDK.AMQP
         {
             var factory = CreateConnectionFactory();
 
-            // TODO: set OnCallbackException and OnConnectionShutdown (on factory)
-
             CreateConnectionFromConnectionFactory(factory);
+            _connection.CallbackException += _onCallbackException;
+            _connection.ConnectionShutdown += _onConnectionShutdown;
+
             _channel = _connection.CreateModel();
 
             var queueInfo = _channel.QueueDeclare(
@@ -113,6 +123,8 @@ namespace Oddin.OddinSdk.SDK.AMQP
         {
             _consumer.Received -= OnReceived;
             _channel.Close();
+            _connection.CallbackException -= _onCallbackException;
+            _connection.ConnectionShutdown -= _onConnectionShutdown;
             try
             {
                 _connection.Close();
