@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Oddin.Oddin.SDK.Managers;
+using Oddin.OddinSdk.SDK.Managers;
 using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
 using RabbitMQ.Client;
@@ -16,6 +16,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
         private readonly string _host;
         private readonly int _port;
         private readonly string _username;
+        private readonly string _virtualHost;
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
         private IConnection _connection;
         private IModel _channel;
@@ -23,11 +24,12 @@ namespace Oddin.OddinSdk.SDK.AMQP
         public const string EXCHANGE_NAME = "oddinfeed";
         public const string ALL_MESSAGES_ROUTING_KEY = "#";
 
-        public AmqpClient(IOddsFeedConfiguration config, ILoggerFactory loggerFactory) : base(loggerFactory)
+        public AmqpClient(IOddsFeedConfiguration config, string virtualHost, ILoggerFactory loggerFactory) : base(loggerFactory)
         {
             _host = config.Host;
             _port = config.Port;
             _username = config.AccessToken;
+            _virtualHost = virtualHost;
             _exceptionHandlingStrategy = config.ExceptionHandlingStrategy;
         }
 
@@ -39,9 +41,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 Port = _port,
                 UserName = _username,
                 Password = "", // should be left blank
-
-                // TODO: fill in through ~ WhoAmIProvider
-                VirtualHost = "/oddinfeed/1",
+                VirtualHost = _virtualHost,
 
                 AutomaticRecoveryEnabled = true
             };

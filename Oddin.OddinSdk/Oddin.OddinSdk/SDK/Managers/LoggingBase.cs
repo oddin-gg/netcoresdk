@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace Oddin.Oddin.SDK.Managers
+namespace Oddin.OddinSdk.SDK.Managers
 {
     internal abstract class LoggingBase
     {

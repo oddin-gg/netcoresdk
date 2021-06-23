@@ -3,7 +3,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Oddin.Oddin.Common
+namespace Oddin.OddinSdk.Common
 {
     internal static class XmlHelper
     {

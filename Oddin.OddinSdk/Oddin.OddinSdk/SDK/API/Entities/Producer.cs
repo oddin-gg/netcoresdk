@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Oddin.Oddin.SDK.API.Entities
+namespace Oddin.OddinSdk.SDK.API.Entities
 {
     internal class Producer : IProducer
     {

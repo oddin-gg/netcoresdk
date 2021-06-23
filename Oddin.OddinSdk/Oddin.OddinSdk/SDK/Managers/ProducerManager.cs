@@ -1,17 +1,17 @@
 ﻿using Microsoft.Extensions.Logging;
-using Oddin.Oddin.SDK.API;
-using Oddin.Oddin.SDK.API.Entities;
+using Oddin.OddinSdk.SDK.API;
+using Oddin.OddinSdk.SDK.API.Entities;
 using System;
 using System.Collections.Generic;
 
-namespace Oddin.Oddin.SDK.Managers
+namespace Oddin.OddinSdk.SDK.Managers
 {
     internal class ProducerManager : LoggingBase, IProducerManager
     {
-        private IReadOnlyCollection<IProducer> _producers;
+        private IApiClient _apiClient;
 
-
-        public IReadOnlyCollection<IProducer> Producers => _producers;
+        // TODO: add cache
+        public IReadOnlyCollection<IProducer> Producers => _apiClient.GetProducers();
 
         public void AddTimestampBeforeDisconnect(int id, DateTime timestamp)
         {
@@ -49,11 +49,9 @@ namespace Oddin.Oddin.SDK.Managers
         }
 
 
-        public ProducerManager(ApiClient apiClient, ILoggerFactory loggerFactory) : base(loggerFactory)
+        public ProducerManager(IApiClient apiClient, ILoggerFactory loggerFactory) : base(loggerFactory)
         {
-            // TODO: add cache
-            // TODO: move to Producers getter
-            _producers = apiClient.GetProducers();
+            _apiClient = apiClient;
         }
     }
 

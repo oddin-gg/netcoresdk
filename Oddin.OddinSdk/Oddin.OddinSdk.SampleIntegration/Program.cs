@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
-using Oddin.Oddin.SDK;
+using Oddin.OddinSdk.SDK;
 using Oddin.OddinSdk.SampleIntegration;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
 using Serilog;
 using System;
 
-namespace Oddin.Oddin.SampleIntegration
+namespace Oddin.OddinSdk.SampleIntegration
 {
     class Program
     {

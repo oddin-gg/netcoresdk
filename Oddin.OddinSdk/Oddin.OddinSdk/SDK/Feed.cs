@@ -1,15 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Oddin.Oddin.SDK.API;
-using Oddin.Oddin.SDK.Managers;
-using Oddin.OddinSdk.SDK;
+using Oddin.OddinSdk.SDK.API;
+using Oddin.OddinSdk.SDK.Managers;
 using Oddin.OddinSdk.SDK.AMQP;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
 using System;
 using Unity;
 using Unity.Injection;
+using Oddin.OddinSdk.SDK.API.Entities;
 
-namespace Oddin.Oddin.SDK
+namespace Oddin.OddinSdk.SDK
 {
     public class Feed : IOddsFeed
     {
@@ -25,6 +25,14 @@ namespace Oddin.Oddin.SDK
         {
             get => _unityContainer.Resolve<IProducerManager>();
         }
+        
+        /// <summary>
+        /// Gets a <see cref="IBookmakerDetails"/> instance used to get info about bookmaker and token used
+        /// </summary>
+        public IBookmakerDetails BookmakerDetails
+        {
+            get => _unityContainer.Resolve<IApiClient>().GetBookmakerDetails();
+        }
 
 
         private void RegisterObjectsToUnityContainer()
@@ -36,9 +44,11 @@ namespace Oddin.Oddin.SDK
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );
+            // INFO: AmqpClient registration has to be after ApiClient registration
             _unityContainer.RegisterSingleton<IAmqpClient, AmqpClient>(
                 new InjectionConstructor(
                     _oddsFeedConfiguration,
+                    BookmakerDetails.VirtualHost,
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );

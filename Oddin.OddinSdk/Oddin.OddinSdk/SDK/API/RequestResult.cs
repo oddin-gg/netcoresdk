@@ -1,4 +1,4 @@
-﻿namespace Oddin.Oddin.SDK.API
+﻿namespace Oddin.OddinSdk.SDK.API
 {
     internal class RequestResult<TData> : IRequestResult<TData>
         where TData : class

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
-using Oddin.Oddin.Common;
-using Oddin.Oddin.DTOs.API.Entities;
-using Oddin.Oddin.SDK.API.Entities;
-using Oddin.Oddin.SDK.Managers;
+using Oddin.OddinSdk.Common;
+using Oddin.OddinSdk.SDK.API.Entities;
+using Oddin.OddinSdk.SDK.API.Models;
+using Oddin.OddinSdk.SDK.Managers;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Oddin.Oddin.SDK.API
+namespace Oddin.OddinSdk.SDK.API
 {
     internal class ApiClient : LoggingBase, IApiClient
     {
@@ -31,7 +31,7 @@ namespace Oddin.Oddin.SDK.API
 
         public List<IProducer> GetProducers()
         {
-            var response = SendRequest<ProducersDto>("v1/descriptions/producers", HttpMethod.Get);
+            var response = SendRequest<ProducersModel>("v1/descriptions/producers", HttpMethod.Get);
             
             // TODO: generalize DTO to entity translation
             var result = new List<IProducer>();
@@ -51,6 +51,18 @@ namespace Oddin.Oddin.SDK.API
             }
 
             return result;
+        }
+
+        public IBookmakerDetails GetBookmakerDetails()
+        {
+            var response = SendRequest<BookmakerDetailsModel>("v1/users/whoami", HttpMethod.Get);
+            
+            if (response.Successful == false)
+            {
+                // TODO
+            }
+
+            return new BookmakerDetails(response.Data);
         }
 
 
@@ -145,5 +157,11 @@ namespace Oddin.Oddin.SDK.API
         /// </summary>
         /// <returns>The list of <see cref="IProducer"/></returns>
         List<IProducer> GetProducers();
+
+        /// <summary>
+        /// Gets <see cref="IBookmakerDetails"/> from API
+        /// </summary>
+        /// <returns></returns>
+        IBookmakerDetails GetBookmakerDetails();
     }
 }
