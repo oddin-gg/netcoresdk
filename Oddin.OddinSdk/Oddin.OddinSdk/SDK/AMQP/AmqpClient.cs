@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Oddin.OddinSdk.SDK.Managers;
 using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
 using RabbitMQ.Client;
