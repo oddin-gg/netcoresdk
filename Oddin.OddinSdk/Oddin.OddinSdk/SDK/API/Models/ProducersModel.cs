@@ -1,6 +1,6 @@
-﻿using Oddin.OddinSdk.SDK.API.DTOs;
+﻿using Oddin.OddinSdk.SDK.API.Models;
 
-namespace Oddin.Oddin.DTOs.API.Entities
+namespace Oddin.OddinSdk.DTOs.API.Entities
 {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
     [System.SerializableAttribute()]
@@ -8,9 +8,9 @@ namespace Oddin.Oddin.DTOs.API.Entities
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
     [System.Xml.Serialization.XmlRootAttribute("producers", IsNullable = false)]
-    public class ProducersDto
+    public class ProducersModel
     {
-        private ProducerDto[] producerField;
+        private ProducerModel[] producerField;
 
         private ResponseCode response_codeField;
 
@@ -18,7 +18,7 @@ namespace Oddin.Oddin.DTOs.API.Entities
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("producer")]
-        public ProducerDto[] producer
+        public ProducerModel[] producer
         {
             get
             {
@@ -59,7 +59,7 @@ namespace Oddin.Oddin.DTOs.API.Entities
         }
     }
 
-    public class ProducerDto
+    public class ProducerModel
     {
         private int idField;
 

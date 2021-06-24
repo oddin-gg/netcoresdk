@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
-using Oddin.Oddin.SDK;
+using Oddin.OddinSdk.SDK;
 using Oddin.OddinSdk.SampleIntegration;
 using Serilog;
 using System;
 
-namespace Oddin.Oddin.SampleIntegration
+namespace Oddin.OddinSdk.SampleIntegration
 {
     class Program
     {

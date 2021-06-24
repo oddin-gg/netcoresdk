@@ -1,4 +1,7 @@
-﻿namespace Oddin.Oddin.SDK.API
+﻿using Oddin.OddinSdk.SDK.API.Abstractions;
+using System.Net;
+
+namespace Oddin.OddinSdk.SDK.API
 {
     internal class RequestResult<TData> : IRequestResult<TData>
         where TData : class
@@ -9,39 +12,28 @@
 
         public string Message { get; set; }
 
-        public static RequestResult<TData> Success(TData data, string successMessage = "")
+        public HttpStatusCode ResponseCode { get; set; }
+
+        public string RawData { get; set; }
+
+        public static RequestResult<TData> Success(TData data, HttpStatusCode responseCode, string rawData, string successMessage = "")
             => new RequestResult<TData>()
             {
                 Data = data,
                 Successful = true,
-                Message = successMessage
+                Message = successMessage,
+                ResponseCode = responseCode,
+                RawData = rawData
             };
 
-        public static RequestResult<TData> Failure(string failureMessage = "", TData data = default)
+        public static RequestResult<TData> Failure(HttpStatusCode responseCode = default, string rawData = "", string failureMessage = "", TData data = default)
             => new RequestResult<TData>()
             {
                 Data = data,
                 Successful = false,
-                Message = failureMessage
+                Message = failureMessage,
+                ResponseCode = responseCode,
+                RawData = rawData
             };
-    }
-
-    public interface IRequestResult<TData>
-        where TData : class
-    {
-        /// <summary>
-        /// Deserialized content of response to the request
-        /// </summary>
-        TData Data { get; }
-
-        /// <summary>
-        /// <see cref="true"/> if the request was successful
-        /// </summary>
-        bool Successful { get; }
-
-        /// <summary>
-        /// Details of request success of failure
-        /// </summary>
-        string Message { get; }
     }
 }

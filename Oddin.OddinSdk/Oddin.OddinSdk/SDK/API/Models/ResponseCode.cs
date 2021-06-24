@@ -1,4 +1,4 @@
-﻿namespace Oddin.OddinSdk.SDK.API.DTOs
+﻿namespace Oddin.OddinSdk.SDK.API.Models
 {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
     [System.SerializableAttribute()]

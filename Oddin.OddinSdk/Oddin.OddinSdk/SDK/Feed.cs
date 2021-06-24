@@ -1,13 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Oddin.Oddin.SDK.API;
-using Oddin.Oddin.SDK.Managers;
+using Oddin.OddinSdk.SDK.API;
+using Oddin.OddinSdk.SDK.Managers;
 using Oddin.OddinSdk.SDK;
 using System;
 using Unity;
 using Unity.Injection;
+using Oddin.OddinSdk.SDK.Managers.Abstractions;
+using Oddin.OddinSdk.SDK.API.Abstractions;
 
-namespace Oddin.Oddin.SDK
+namespace Oddin.OddinSdk.SDK
 {
     public class Feed
     {
