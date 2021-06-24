@@ -32,7 +32,7 @@ namespace Oddin.Oddin.SDK.API
         public List<IProducer> GetProducers()
         {
             var response = SendRequest<ProducersDto>("v1/descriptions/producers", HttpMethod.Get);
-            
+
             // TODO: generalize DTO to entity translation
             var result = new List<IProducer>();
             foreach (var producer in response.Data.producer)
@@ -64,6 +64,7 @@ namespace Oddin.Oddin.SDK.API
             task.Wait();
             if (task.Result.Successful == false)
                 _log.LogError($"Http request [{method} to {CombineAddress(route)}] failed. Reason: {task.Result.Message}");
+
             return task.Result;
         }
 

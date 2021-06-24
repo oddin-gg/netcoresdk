@@ -27,13 +27,18 @@ namespace Oddin.Oddin.SDK
 
         private void RegisterObjectsToUnityContainer()
         {
+            // register existing logger factory
             _unityContainer.RegisterInstance(typeof(ILoggerFactory), _loggerFactory);
+
+            // register ApiClient as singleton
             _unityContainer.RegisterType<IApiClient, ApiClient>(
                 new InjectionConstructor(
                     _oddsFeedConfiguration,
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );
+            
+            // register ProducerManager as singleton
             _unityContainer.RegisterType<IProducerManager, ProducerManager>(
                 new InjectionConstructor(
                     _unityContainer.Resolve<IApiClient>(),
@@ -46,6 +51,7 @@ namespace Oddin.Oddin.SDK
         {
             if (config is null)
                 throw new ArgumentNullException();
+
             _oddsFeedConfiguration = config;
 
             _loggerFactory = loggerFactory ?? new NullLoggerFactory();
