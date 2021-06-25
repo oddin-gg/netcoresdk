@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oddin.OddinSdk.Common;
 using Oddin.OddinSdk.SDK.Exceptions;
-using Oddin.OddinSdk.SDK.Managers;
+using Oddin.OddinSdk.SDK.FeedConfiguration;
 using System;
 using System.Net.Http;
 using System.Text;

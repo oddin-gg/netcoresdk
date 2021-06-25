@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Oddin.OddinSdk.SDK;
 using Oddin.OddinSdk.SDK.API;
 using Oddin.OddinSdk.SDK.API.Abstractions;
-using Oddin.OddinSdk.SDK.API.Entities;
 using Oddin.OddinSdk.SDK.Dispatch;
 using Oddin.OddinSdk.SDK.Managers;
 using Oddin.OddinSdk.SDK.Managers.Abstractions;
@@ -14,6 +11,7 @@ using Unity;
 using Unity.Injection;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
+using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 
 namespace Oddin.OddinSdk.SDK
 {

@@ -1,12 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using Oddin.OddinSdk.Common;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using Oddin.OddinSdk.SDK.API.Models;
-using Oddin.OddinSdk.SDK.Managers;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 
@@ -41,14 +38,8 @@ namespace Oddin.OddinSdk.SDK.API
 
         public IBookmakerDetails GetBookmakerDetails()
         {
-            var response = SendRequest<BookmakerDetailsModel>("v1/users/whoami", HttpMethod.Get);
-            
-            if (response.Successful == false)
-            {
-                // TODO
-            }
-
-            return new BookmakerDetails(response.Data);
+            var response = _restClient.SendRequest<BookmakerDetailsModel>("v1/users/whoami", HttpMethod.Get);
+            return new BookmakerDetails(response);
         }
     }
 }
