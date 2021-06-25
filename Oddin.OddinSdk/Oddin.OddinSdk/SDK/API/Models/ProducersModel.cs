@@ -8,7 +8,7 @@
     [System.Xml.Serialization.XmlRootAttribute("producers", IsNullable = false)]
     public class ProducersModel
     {
-        private ProducerDto[] producerField;
+        private ProducerModel[] producerField;
 
         private ResponseCode response_codeField;
 
@@ -16,7 +16,7 @@
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("producer")]
-        public ProducerDto[] producer
+        public ProducerModel[] producer
         {
             get
             {
@@ -57,7 +57,7 @@
         }
     }
 
-    public class ProducerDto
+    public class ProducerModel
     {
         private int idField;
 

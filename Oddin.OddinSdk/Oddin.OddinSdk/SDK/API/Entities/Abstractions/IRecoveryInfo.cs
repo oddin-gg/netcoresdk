@@ -1,4 +1,4 @@
-﻿namespace Oddin.OddinSdk.SDK.API.Entities
+﻿namespace Oddin.OddinSdk.SDK.API.Entities.Abstractions
 {
     /// <summary>
     /// Defines a contract for recovery info which contains data about last recovery attempt

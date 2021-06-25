@@ -1,8 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Oddin.OddinSdk.SDK;
 using Oddin.OddinSdk.SDK.API;
+using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities;
 using Oddin.OddinSdk.SDK.Dispatch;
 using Oddin.OddinSdk.SDK.Managers;
+using Oddin.OddinSdk.SDK.Managers.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
 using System;
@@ -37,13 +41,18 @@ namespace Oddin.OddinSdk.SDK
 
         private void RegisterObjectsToUnityContainer(IOddsFeedConfiguration config, ILoggerFactory loggerFactory)
         {
+            // register existing logger factory
             _unityContainer.RegisterInstance(typeof(ILoggerFactory), loggerFactory);
+            
+            // register ApiClient as singleton
             _unityContainer.RegisterSingleton<IApiClient, ApiClient>(
                 new InjectionConstructor(
                     config,
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );
+
+            // register Amqp client as singleton    
             // INFO: AmqpClient registration has to be after ApiClient registration
             _unityContainer.RegisterSingleton<IAmqpClient, AmqpClient>(
                 new InjectionConstructor(
@@ -54,6 +63,8 @@ namespace Oddin.OddinSdk.SDK
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );
+            
+            // register ProducerManager as singleton
             _unityContainer.RegisterSingleton<IProducerManager, ProducerManager>(
                 new InjectionConstructor(
                     _unityContainer.Resolve<IApiClient>(),
