@@ -16,7 +16,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
         private readonly int _port;
         private readonly string _username;
         private readonly string _virtualHost;
-        private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
         private readonly EventHandler<CallbackExceptionEventArgs> _onCallbackException;
         private readonly EventHandler<ShutdownEventArgs> _onConnectionShutdown;
         private IConnection _connection;
@@ -25,6 +24,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
         public const string EXCHANGE_NAME = "oddinfeed";
         public const string ALL_MESSAGES_ROUTING_KEY = "#";
+        public const string ALIVE_MESSAGES_ROUTING_KEY = "-.-.-.alive.-.-.-.-";
 
         public AmqpClient(IOddsFeedConfiguration config,
             string virtualHost,
@@ -37,7 +37,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
             _port = config.Port;
             _username = config.AccessToken;
             _virtualHost = virtualHost;
-            _exceptionHandlingStrategy = config.ExceptionHandlingStrategy;
             _onCallbackException = onCallbackException;
             _onConnectionShutdown = onConnectionShutdown;
         }
@@ -57,10 +56,10 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
             factory.Ssl.Enabled = true;
             factory.Ssl.AcceptablePolicyErrors =
+                // INFO: following acceptable error makes it so it's not necessary to install the server certificate
                 System.Net.Security.SslPolicyErrors.RemoteCertificateNameMismatch
 
-                // TODO: remove???
-                // apparently not necessarily needed
+                // TODO: remove the following ones? - apparently not necessarily needed (UO uses them)
                 //| System.Net.Security.SslPolicyErrors.RemoteCertificateNotAvailable
                 //| System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors
                 ;
@@ -78,8 +77,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
             {
                 var message = "AMQP connection factory was unable to create a connection to broker!";
                 _log.LogWarning(message);
-                if (_exceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
-                    throw new CommunicationException(message);
+                throw new CommunicationException(message);
             }
         }
 

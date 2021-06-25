@@ -71,6 +71,12 @@ namespace Oddin.OddinSdk.SDK
                 );
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="Feed"/> class
+        /// </summary>
+        /// <param name="config">Feed configuration</param>
+        /// <param name="loggerFactory">Logger factory</param>
+        /// <exception cref="ArgumentNullException"/>
         public Feed(IOddsFeedConfiguration config, ILoggerFactory loggerFactory = null) : base(loggerFactory)
         {
             if (config is null)
@@ -80,6 +86,10 @@ namespace Oddin.OddinSdk.SDK
             RegisterObjectsToUnityContainer(config, loggerFactory);
         }
 
+        /// <summary>
+        /// Opens connection to the feed
+        /// </summary>
+        /// <exception cref="CommunicationException"/>
         public void Open()
         {
             _unityContainer.Resolve<IAmqpClient>().DummyMessageReceived += OnDummyFeedMessageReceived;
