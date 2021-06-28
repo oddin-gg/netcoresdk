@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oddin.OddinSdk.Common.Exceptions;
+using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -18,6 +19,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
         private readonly string _virtualHost;
         private readonly EventHandler<CallbackExceptionEventArgs> _onCallbackException;
         private readonly EventHandler<ShutdownEventArgs> _onConnectionShutdown;
+        private readonly FeedMessageDeserializer _deserializer;
         private IConnection _connection;
         private IModel _channel;
         private EventingBasicConsumer _consumer;
@@ -30,6 +32,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
             string virtualHost,
             EventHandler<CallbackExceptionEventArgs> onCallbackException,
             EventHandler<ShutdownEventArgs> onConnectionShutdown,
+            FeedMessageDeserializer deserializer,
             ILoggerFactory loggerFactory)
             : base(loggerFactory)
         {
@@ -39,6 +42,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
             _virtualHost = virtualHost;
             _onCallbackException = onCallbackException;
             _onConnectionShutdown = onConnectionShutdown;
+            _deserializer = deserializer;
         }
 
         private ConnectionFactory CreateConnectionFactory()
@@ -108,12 +112,13 @@ namespace Oddin.OddinSdk.SDK.AMQP
             _channel.BasicConsume(queueInfo.QueueName, autoAck: true, _consumer);
         }
 
-        // TODO: remove when not needed anymore
         private void OnReceived(object sender, BasicDeliverEventArgs eventArgs)
         {
             var body = eventArgs.Body.ToArray();
-            var message = Encoding.UTF8.GetString(body);
-            DummyMessageReceived(this, message);
+            var xml = Encoding.UTF8.GetString(body);
+            var message = _deserializer.DeserializeMessage(xml);
+            var result = new FeedMessageReceivedEventArgs(message, body);
+            FeedMessageReceived(this, result);
         }
 
         public void Disconnect()
@@ -137,26 +142,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
             }
         }
 
-
-        public event EventHandler<string> DummyMessageReceived;
-    }
-
-    public interface IAmqpClient
-    {
-        /// <summary>
-        /// Connects the AMQP consumer to the AMQP broker
-        /// </summary>
-        void Connect();
-
-        /// <summary>
-        /// Disconnects the AMQP consumer from the AMQP broker
-        /// </summary>
-        void Disconnect();
-
-
-
-
-        // TODO: remove when not needed anymore
-        event EventHandler<string> DummyMessageReceived;
+        public event EventHandler<FeedMessageReceivedEventArgs> FeedMessageReceived;
     }
 }

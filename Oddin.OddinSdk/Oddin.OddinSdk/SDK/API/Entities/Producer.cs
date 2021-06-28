@@ -22,6 +22,8 @@ namespace Oddin.OddinSdk.SDK.API.Entities
 
         public bool IsAvailable => _active;
 
+        // TODO: implement
+
         public bool IsDisabled => throw new NotImplementedException();
 
         public bool IsProducerDown => throw new NotImplementedException();

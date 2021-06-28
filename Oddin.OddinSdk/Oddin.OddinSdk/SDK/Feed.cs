@@ -12,6 +12,7 @@ using Unity.Injection;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
+using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 
 namespace Oddin.OddinSdk.SDK
 {
@@ -39,6 +40,8 @@ namespace Oddin.OddinSdk.SDK
 
         private void RegisterObjectsToUnityContainer(IOddsFeedConfiguration config, ILoggerFactory loggerFactory)
         {
+            // INFO: registration order matters!
+
             // register existing logger factory
             _unityContainer.RegisterInstance(typeof(ILoggerFactory), loggerFactory);
             
@@ -50,14 +53,21 @@ namespace Oddin.OddinSdk.SDK
                     )
                 );
 
-            // register Amqp client as singleton    
-            // INFO: AmqpClient registration has to be after ApiClient registration
+            // register FeedMessageDeserializer as singleton
+            _unityContainer.RegisterSingleton<IFeedMessageDeserializer, FeedMessageDeserializer>(
+                new InjectionConstructor(
+                    _unityContainer.Resolve<ILoggerFactory>()
+                    )
+                );
+
+            // register Amqp client as singleton
             _unityContainer.RegisterSingleton<IAmqpClient, AmqpClient>(
                 new InjectionConstructor(
                     config,
                     BookmakerDetails.VirtualHost,
                     (EventHandler<CallbackExceptionEventArgs>)OnAmqpCallbackException,
                     (EventHandler<ShutdownEventArgs>)OnConnectionShutdown,
+                    _unityContainer.Resolve<IFeedMessageDeserializer>(),
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );
@@ -92,14 +102,14 @@ namespace Oddin.OddinSdk.SDK
         /// <exception cref="CommunicationException"/>
         public void Open()
         {
-            _unityContainer.Resolve<IAmqpClient>().DummyMessageReceived += OnDummyFeedMessageReceived;
+            _unityContainer.Resolve<IAmqpClient>().FeedMessageReceived += OnDummyFeedMessageReceived;
             _unityContainer.Resolve<IAmqpClient>().Connect();
         }
 
         public void Close()
         {
             _unityContainer.Resolve<IAmqpClient>().Disconnect();
-            _unityContainer.Resolve<IAmqpClient>().DummyMessageReceived -= OnDummyFeedMessageReceived;
+            _unityContainer.Resolve<IAmqpClient>().FeedMessageReceived -= OnDummyFeedMessageReceived;
         }
 
         public void Dispose()
@@ -132,13 +142,11 @@ namespace Oddin.OddinSdk.SDK
         public event EventHandler<EventArgs> Disconnected;
 
 
-
-        private void OnDummyFeedMessageReceived(object sender, string message)
+        // TODO: remove when not needed
+        private void OnDummyFeedMessageReceived(object sender, FeedMessageReceivedEventArgs eventArgs)
         {
-            Dispatch(DummyFeedMessageReceived, message, nameof(DummyFeedMessageReceived));
+            Console.WriteLine(eventArgs.Message.GetType());
         }
-
-        public event EventHandler<string> DummyFeedMessageReceived;
     }
 
     public interface IOddsFeed : IDisposable
@@ -162,10 +170,5 @@ namespace Oddin.OddinSdk.SDK
         /// Occurs when an exception occurs in the connection loop
         /// </summary>
         event EventHandler<ConnectionExceptionEventArgs> ConnectionException;
-
-
-
-        // TODO: remove when not needed anymore
-        event EventHandler<string> DummyFeedMessageReceived;
     }
 }

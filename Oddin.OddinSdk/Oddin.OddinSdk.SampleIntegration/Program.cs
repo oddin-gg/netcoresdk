@@ -30,11 +30,9 @@ namespace Oddin.OddinSdk.SampleIntegration
             //foreach (var producer in feed.ProducerManager.Producers)
             //    Console.WriteLine(producer.Name);
 
-            feed.DummyFeedMessageReceived += OnDummyFeedMessageReceived;
             feed.Open();
             Console.ReadLine();
             feed.Close();
-            feed.DummyFeedMessageReceived -= OnDummyFeedMessageReceived;
         }
 
         private static void OnDummyFeedMessageReceived(object _, string message)
