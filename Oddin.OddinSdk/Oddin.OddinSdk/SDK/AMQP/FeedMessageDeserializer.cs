@@ -18,6 +18,9 @@ namespace Oddin.OddinSdk.SDK.AMQP
             if (XmlHelper.TryDeserialize(message, out AliveMessage aliveMessage))
                 return aliveMessage;
 
+            if (XmlHelper.TryDeserialize(message, out OddsChangeMessage oddsChangeMessage))
+                return oddsChangeMessage;
+
             var errorMessage = $"An unknown type of feed message was encountered and could not be deserialized! Message: {message}";
             _log.LogError(errorMessage);
             throw new ArgumentException(errorMessage);
