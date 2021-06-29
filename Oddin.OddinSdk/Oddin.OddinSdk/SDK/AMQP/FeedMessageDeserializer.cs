@@ -2,28 +2,34 @@
 using Oddin.OddinSdk.Common;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Messages;
-using System;
 
 namespace Oddin.OddinSdk.SDK.AMQP
 {
-    internal class FeedMessageDeserializer : LoggingBase, IFeedMessageDeserializer
+    internal class FeedMessageDeserializer : IFeedMessageDeserializer
     {
-        public FeedMessageDeserializer(ILoggerFactory loggerFactory) : base(loggerFactory)
+        public FeedMessageDeserializer()
         {
 
         }
 
-        public FeedMessage DeserializeMessage(string message)
+        public bool TryDeserializeMessage(string message, out FeedMessage feedMessage)
         {
             if (XmlHelper.TryDeserialize(message, out AliveMessage aliveMessage))
-                return aliveMessage;
+            {
+                feedMessage = aliveMessage;
+                return true;
+            }
 
             if (XmlHelper.TryDeserialize(message, out OddsChangeMessage oddsChangeMessage))
-                return oddsChangeMessage;
+            {
+                feedMessage = oddsChangeMessage;
+                return true;
+            }
 
-            var errorMessage = $"An unknown type of feed message was encountered and could not be deserialized! Message: {message}";
-            _log.LogError(errorMessage);
-            throw new ArgumentException(errorMessage);
+            // ...
+
+            feedMessage = null;
+            return false;
         }
     }
 }

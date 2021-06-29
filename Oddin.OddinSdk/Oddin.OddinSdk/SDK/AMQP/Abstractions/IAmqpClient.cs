@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Oddin.OddinSdk.SDK.AMQP.EventArguments;
+using Oddin.OddinSdk.SDK.AMQP.Messages;
+using System;
 
 namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
 {
@@ -15,8 +17,15 @@ namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
         void Disconnect();
 
         /// <summary>
-        /// Raised when the AMQP client receives a message through AMQP feed
+        /// Raised when the AMQP client receives a message that cannot be parsed through AMQP feed
         /// </summary>
-        event EventHandler<FeedMessageReceivedEventArgs> FeedMessageReceived;
+        event EventHandler<UnparsableMessageEventArgs> UnparsableMessageReceived;
+
+        /// <summary>
+        /// Raised when the AMQP client receives an Alive message through AMQP feed
+        /// </summary>
+        event EventHandler<MessageEventArgs<AliveMessage>> AliveMessageReceived;
+
+        event EventHandler<MessageEventArgs<OddsChangeMessage>> OddsChangeMessageReceived;
     }
 }

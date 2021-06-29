@@ -17,7 +17,7 @@
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public int Product
+        public int product
         {
             get
             {
@@ -31,7 +31,7 @@
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public long Timestamp
+        public long timestamp
         {
             get
             {
@@ -45,7 +45,7 @@
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public int Subscribed
+        public int subscribed
         {
             get
             {

@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
+using Oddin.OddinSdk.SDK.AMQP.EventArguments;
+using Oddin.OddinSdk.SDK.AMQP.Messages;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -116,9 +118,29 @@ namespace Oddin.OddinSdk.SDK.AMQP
         {
             var body = eventArgs.Body.ToArray();
             var xml = Encoding.UTF8.GetString(body);
-            var message = _deserializer.DeserializeMessage(xml);
-            var result = new FeedMessageReceivedEventArgs(message, body);
-            FeedMessageReceived(this, result);
+            var success = _deserializer.TryDeserializeMessage(xml, out var message);
+
+            if (success == false)
+            {
+                UnparsableMessageReceived(this, new UnparsableMessageEventArgs(body));
+            }
+
+            switch (message)
+            {
+                case AliveMessage aliveMessage:
+                    AliveMessageReceived(this, new MessageEventArgs<AliveMessage>(aliveMessage, body));
+                    break;
+                case OddsChangeMessage oddsChangeMessage:
+                    OddsChangeMessageReceived(this, new MessageEventArgs<OddsChangeMessage>(oddsChangeMessage, body));
+                    break;
+
+                    // ...
+
+                default:
+                    var errorMessage = $"FeedMessage of type '{message.GetType().Name}' is not supported.";
+                    _log.LogError(errorMessage);
+                    throw new InvalidOperationException(errorMessage);
+            }
         }
 
         public void Disconnect()
@@ -142,6 +164,10 @@ namespace Oddin.OddinSdk.SDK.AMQP
             }
         }
 
-        public event EventHandler<FeedMessageReceivedEventArgs> FeedMessageReceived;
+        public event EventHandler<UnparsableMessageEventArgs> UnparsableMessageReceived;
+
+        public event EventHandler<MessageEventArgs<AliveMessage>> AliveMessageReceived;
+
+        public event EventHandler<MessageEventArgs<OddsChangeMessage>> OddsChangeMessageReceived;
     }
 }

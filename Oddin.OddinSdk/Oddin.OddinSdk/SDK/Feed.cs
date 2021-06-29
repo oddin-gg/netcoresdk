@@ -55,10 +55,7 @@ namespace Oddin.OddinSdk.SDK
 
             // register FeedMessageDeserializer as singleton
             _unityContainer.RegisterSingleton<IFeedMessageDeserializer, FeedMessageDeserializer>(
-                new InjectionConstructor(
-                    _unityContainer.Resolve<ILoggerFactory>()
-                    )
-                );
+                new InjectionConstructor());
 
             // register Amqp client as singleton
             _unityContainer.RegisterSingleton<IAmqpClient, AmqpClient>(
@@ -102,14 +99,12 @@ namespace Oddin.OddinSdk.SDK
         /// <exception cref="CommunicationException"/>
         public void Open()
         {
-            _unityContainer.Resolve<IAmqpClient>().FeedMessageReceived += OnDummyFeedMessageReceived;
             _unityContainer.Resolve<IAmqpClient>().Connect();
         }
 
         public void Close()
         {
             _unityContainer.Resolve<IAmqpClient>().Disconnect();
-            _unityContainer.Resolve<IAmqpClient>().FeedMessageReceived -= OnDummyFeedMessageReceived;
         }
 
         public void Dispose()
@@ -140,13 +135,6 @@ namespace Oddin.OddinSdk.SDK
         /// Raised when the current instance of <see cref="IOddsFeed"/> loses connection to the feed
         /// </summary>
         public event EventHandler<EventArgs> Disconnected;
-
-
-        // TODO: remove when not needed
-        private void OnDummyFeedMessageReceived(object sender, FeedMessageReceivedEventArgs eventArgs)
-        {
-            Console.WriteLine(eventArgs.Message.GetType());
-        }
     }
 
     public interface IOddsFeed : IDisposable

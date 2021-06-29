@@ -9,6 +9,6 @@ namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
         /// </summary>
         /// <param name="message">XML <see cref="string"/> representing serialized message</param>
         /// <returns><see cref="FeedMessage"/> representing deserialized message</returns>
-        FeedMessage DeserializeMessage(string message);
+        bool TryDeserializeMessage(string message, out FeedMessage feedMessage);
     }
 }
