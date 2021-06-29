@@ -1,0 +1,29 @@
+﻿using Oddin.OddinSdk.SDK.Dispatch;
+using Oddin.OddinSdk.SDK.Managers.Abstractions;
+using System;
+
+namespace Oddin.OddinSdk.SDK.Abstractions
+{
+    public interface IOddsFeed : IDisposable
+    {
+        /// <summary>
+        /// Gets a <see cref="IProducerManager"/> instance used to retrieve producer related data
+        /// </summary>
+        IProducerManager ProducerManager { get; }
+
+        /// <summary>
+        /// Opens the current feed by opening all created sessions
+        /// </summary>
+        void Open();
+
+        /// <summary>
+        /// Closes the current feed by closing all created sessions and disposing of all resources associated with the current instance
+        /// </summary>
+        void Close();
+
+        /// <summary>
+        /// Occurs when an exception occurs in the connection loop
+        /// </summary>
+        event EventHandler<ConnectionExceptionEventArgs> ConnectionException;
+    }
+}
