@@ -1,4 +1,4 @@
-﻿namespace Oddin.OddinSdk.SDK
+﻿namespace Oddin.OddinSdk.SDK.FeedConfiguration
 {
     /// <summary>
     /// Defines a contract implemented by classes representing odds feed configuration / settings
@@ -24,5 +24,21 @@
         /// Gets a value specifying timeout set for HTTP responses
         /// </summary>
         int HttpClientTimeout { get; }
+
+        /// <summary>
+        /// Gets a value specifying the host name of the AQMP broker
+        /// </summary>
+        string Host { get; }
+
+        /// <summary>
+        /// Gets the port used for connecting to the AQMP broker
+        /// </summary>
+        int Port { get; }
+
+        /// <summary>
+        /// Gets the exception handling strategy
+        /// </summary>
+        /// <value>The exception handling strategy</value>
+        public ExceptionHandlingStrategy ExceptionHandlingStrategy { get; }
     }
 }

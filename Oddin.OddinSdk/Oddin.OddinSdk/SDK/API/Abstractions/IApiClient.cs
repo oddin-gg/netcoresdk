@@ -10,5 +10,11 @@ namespace Oddin.OddinSdk.SDK.API.Abstractions
         /// </summary>
         /// <returns>The list of <see cref="IProducer"/></returns>
         List<IProducer> GetProducers();
+
+        /// <summary>
+        /// Gets <see cref="IBookmakerDetails"/> from API
+        /// </summary>
+        /// <returns></returns>
+        IBookmakerDetails GetBookmakerDetails();
     }
 }
