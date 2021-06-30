@@ -122,7 +122,8 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
             if (success == false)
             {
-                UnparsableMessageReceived(this, new UnparsableMessageEventArgs(body));
+                var messageType = TopicParsingHelper.GetMessageType(eventArgs.RoutingKey);
+                UnparsableMessageReceived(this, new UnparsableMessageEventArgs(messageType, body));
             }
 
             switch (message)
