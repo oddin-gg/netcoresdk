@@ -37,11 +37,11 @@ namespace Oddin.OddinSdk.SDK.AMQP.EventArguments
         /// <param name="messageType">The <see cref="MessageType"/> member specifying the type of the unparsable message.</param>
         /// <param name="producer">The <see cref="string"/> representation of the producer associated with the unparsable message.</param>
         /// <param name="eventId">The <see cref="string"/> representation of the sport event id associated with the unparsable message.</param>
-        public UnparsableMessageEventArgs(MessageType messageType/*, string producer, string eventId*/, byte[] rawMessage)
+        public UnparsableMessageEventArgs(MessageType messageType, string producer, string eventId, byte[] rawMessage)
         {
             MessageType = messageType;
-            //Producer = producer;
-            //EventId = eventId;
+            Producer = producer;
+            EventId = eventId;
             _rawMessage = rawMessage;
         }
 

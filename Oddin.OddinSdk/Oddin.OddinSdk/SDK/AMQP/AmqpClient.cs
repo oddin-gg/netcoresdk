@@ -18,6 +18,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
         private readonly string _host;
         private readonly int _port;
         private readonly string _username;
+        private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
         private readonly string _virtualHost;
         private readonly EventHandler<CallbackExceptionEventArgs> _onCallbackException;
         private readonly EventHandler<ShutdownEventArgs> _onConnectionShutdown;
@@ -41,6 +42,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
             _host = config.Host;
             _port = config.Port;
             _username = config.AccessToken;
+            _exceptionHandlingStrategy = config.ExceptionHandlingStrategy;
             _virtualHost = virtualHost;
             _onCallbackException = onCallbackException;
             _onConnectionShutdown = onConnectionShutdown;
@@ -62,12 +64,10 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
             factory.Ssl.Enabled = true;
             factory.Ssl.AcceptablePolicyErrors =
-                // INFO: following acceptable error makes it so it's not necessary to install the server certificate
+                // INFO: following acceptable errors make it so it's not necessary to install the server certificate
                 System.Net.Security.SslPolicyErrors.RemoteCertificateNameMismatch
-
-                // TODO: remove the following ones? - apparently not necessarily needed (UO uses them)
-                //| System.Net.Security.SslPolicyErrors.RemoteCertificateNotAvailable
-                //| System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors
+                | System.Net.Security.SslPolicyErrors.RemoteCertificateNotAvailable
+                | System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors
                 ;
 
             return factory;
@@ -114,16 +114,34 @@ namespace Oddin.OddinSdk.SDK.AMQP
             _channel.BasicConsume(queueInfo.QueueName, autoAck: true, _consumer);
         }
 
+        private void HandleUnparsableMessage(byte[] messageBody, string messageRoutingKey)
+        {
+            MessageType messageType = MessageType.UNKNOWN;
+            string producer = string.Empty;
+            string eventId = string.Empty;
+            try
+            {
+                messageType = TopicParsingHelper.GetMessageType(messageRoutingKey);
+                producer = TopicParsingHelper.GetProducer(messageRoutingKey);
+                eventId = TopicParsingHelper.GetEventId(messageRoutingKey);
+            }
+            catch (ArgumentException)
+            {
+                if (_exceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
+                    throw;
+            }
+            UnparsableMessageReceived(this, new UnparsableMessageEventArgs(messageType, producer, eventId, messageBody));
+        }
+
         private void OnReceived(object sender, BasicDeliverEventArgs eventArgs)
         {
             var body = eventArgs.Body.ToArray();
             var xml = Encoding.UTF8.GetString(body);
             var success = _deserializer.TryDeserializeMessage(xml, out var message);
 
-            if (success == false)
+            if (success == true)
             {
-                var messageType = TopicParsingHelper.GetMessageType(eventArgs.RoutingKey);
-                UnparsableMessageReceived(this, new UnparsableMessageEventArgs(messageType, body));
+                HandleUnparsableMessage(body, eventArgs.RoutingKey);
             }
 
             switch (message)
