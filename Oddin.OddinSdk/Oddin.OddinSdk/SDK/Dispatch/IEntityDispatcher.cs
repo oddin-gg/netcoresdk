@@ -1,4 +1,5 @@
-﻿using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
+﻿using Oddin.OddinSdk.SDK.AMQP.EventArguments;
+using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using System;
 
 namespace Oddin.OddinSdk.SDK.Dispatch
@@ -9,12 +10,12 @@ namespace Oddin.OddinSdk.SDK.Dispatch
     /// <typeparam name="T">A <see cref="ICompetition"/> derived type specifying the type of sport associated with <see cref="IEntityDispatcher{T}"/></typeparam>
     public interface IEntityDispatcher<T> where T : ISportEvent
     {
-        // TODO: implement
+        /// <summary>
+        /// Raised when a odds change message is received from the feed
+        /// </summary>
+        event EventHandler<OddsChangeEventArgs<T>> OnOddsChange;
 
-        ///// <summary>
-        ///// Raised when a odds change message is received from the feed
-        ///// </summary>
-        //event EventHandler<OddsChangeEventArgs<T>> OnOddsChange;
+        // TODO: implement
 
         ///// <summary>
         ///// Raised when a bet stop message is received from the feed

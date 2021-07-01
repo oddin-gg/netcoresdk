@@ -147,10 +147,10 @@ namespace Oddin.OddinSdk.SDK.AMQP
             switch (message)
             {
                 case AliveMessage aliveMessage:
-                    AliveMessageReceived(this, new MessageEventArgs<AliveMessage>(aliveMessage, body));
+                    AliveMessageReceived(this, new SimpleMessageEventArgs<AliveMessage>(aliveMessage, body));
                     break;
                 case OddsChangeMessage oddsChangeMessage:
-                    OddsChangeMessageReceived(this, new MessageEventArgs<OddsChangeMessage>(oddsChangeMessage, body));
+                    OddsChangeMessageReceived(this, new SimpleMessageEventArgs<OddsChangeMessage>(oddsChangeMessage, body));
                     break;
 
                     // ...
@@ -185,8 +185,8 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
         public event EventHandler<UnparsableMessageEventArgs> UnparsableMessageReceived;
 
-        public event EventHandler<MessageEventArgs<AliveMessage>> AliveMessageReceived;
+        public event EventHandler<SimpleMessageEventArgs<AliveMessage>> AliveMessageReceived;
 
-        public event EventHandler<MessageEventArgs<OddsChangeMessage>> OddsChangeMessageReceived;
+        public event EventHandler<SimpleMessageEventArgs<OddsChangeMessage>> OddsChangeMessageReceived;
     }
 }

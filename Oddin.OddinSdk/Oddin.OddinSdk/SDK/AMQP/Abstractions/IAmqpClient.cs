@@ -24,11 +24,11 @@ namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
         /// <summary>
         /// Raised when the AMQP client receives an Alive message through AMQP feed
         /// </summary>
-        event EventHandler<MessageEventArgs<AliveMessage>> AliveMessageReceived;
+        event EventHandler<SimpleMessageEventArgs<AliveMessage>> AliveMessageReceived;
 
         /// <summary>
         /// Raised when the AMQP client receives an OddsChange message throught AMQP feed
         /// </summary>
-        event EventHandler<MessageEventArgs<OddsChangeMessage>> OddsChangeMessageReceived;
+        event EventHandler<SimpleMessageEventArgs<OddsChangeMessage>> OddsChangeMessageReceived;
     }
 }
