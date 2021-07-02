@@ -20,10 +20,5 @@ namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
         /// <param name="culture">A <see cref="CultureInfo"/> specifying the language in which to get the name</param>
         /// <returns>A <see cref="Task{String}"/> representing the async operation</returns>
         Task<string> GetNameAsync(CultureInfo culture);
-
-        /// <summary>
-        /// Gets the associated outcome definition instance
-        /// </summary>
-        IOutcomeDefinition OutcomeDefinition { get; }
     }
 }

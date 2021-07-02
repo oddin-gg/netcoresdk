@@ -21,11 +21,6 @@ namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
         IReadOnlyDictionary<string, string> Specifiers { get; }
 
         /// <summary>
-        /// Gets the <see cref="IReadOnlyDictionary{TKey,TValue}"/> containing additional market information
-        /// </summary>
-        IReadOnlyDictionary<string, string> AdditionalInfo { get; }
-
-        /// <summary>
         /// Asynchronously gets the name of the market in the specified language
         /// </summary>
         /// <param name="culture">A <see cref="CultureInfo"/> specifying the language in which to get the name</param>

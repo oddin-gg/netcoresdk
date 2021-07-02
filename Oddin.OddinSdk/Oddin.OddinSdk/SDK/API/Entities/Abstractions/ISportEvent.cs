@@ -39,17 +39,5 @@ namespace Oddin.OddinSdk.SDK.API.Entities.Abstractions
         /// </summary>
         /// <returns>A <see cref="Task{DateTime}"/> representing the retrieval operation</returns>
         Task<DateTime?> GetScheduledEndTimeAsync();
-
-        /// <summary>
-        /// Asynchronously gets a <see cref="bool?"/> specifying if the start time to be determined is set for the associated sport event.
-        /// </summary>
-        /// <returns>A <see cref="bool?"/> specifying if the start time to be determined is set for the associated sport event.</returns>
-        Task<bool?> GetStartTimeTbdAsync();
-
-        /// <summary>
-        /// Asynchronously gets a <see cref="URN"/> specifying the replacement sport event for the associated sport event.
-        /// </summary>
-        /// <returns>A <see cref="URN"/> specifying the replacement sport event for the associated sport event.</returns>
-        Task<URN> GetReplacedByAsync();
     }
 }
