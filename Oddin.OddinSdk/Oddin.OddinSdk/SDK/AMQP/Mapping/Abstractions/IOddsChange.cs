@@ -1,7 +1,7 @@
-﻿using Oddin.OddinSdk.SDK.AMQP.Enums;
+﻿using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 
-namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
+namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {
     /// <summary>
     /// Defines a contract implemented by odds-change messages

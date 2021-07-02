@@ -20,7 +20,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 return true;
             }
 
-            if (XmlHelper.TryDeserialize(message, out OddsChangeMessage oddsChangeMessage))
+            if (XmlHelper.TryDeserialize(message, out odds_change oddsChangeMessage))
             {
                 feedMessage = oddsChangeMessage;
                 return true;

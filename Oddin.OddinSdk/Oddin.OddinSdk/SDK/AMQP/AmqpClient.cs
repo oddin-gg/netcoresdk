@@ -36,6 +36,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
             EventHandler<CallbackExceptionEventArgs> onCallbackException,
             EventHandler<ShutdownEventArgs> onConnectionShutdown,
             FeedMessageDeserializer deserializer,
+
             ILoggerFactory loggerFactory)
             : base(loggerFactory)
         {
@@ -149,8 +150,8 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 case AliveMessage aliveMessage:
                     AliveMessageReceived(this, new SimpleMessageEventArgs<AliveMessage>(aliveMessage, body));
                     break;
-                case OddsChangeMessage oddsChangeMessage:
-                    OddsChangeMessageReceived(this, new SimpleMessageEventArgs<OddsChangeMessage>(oddsChangeMessage, body));
+                case odds_change oddsChangeMessage:
+                    OddsChangeMessageReceived(this, new SimpleMessageEventArgs<odds_change>(oddsChangeMessage, body));
                     break;
 
                     // ...
@@ -187,6 +188,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
         public event EventHandler<SimpleMessageEventArgs<AliveMessage>> AliveMessageReceived;
 
-        public event EventHandler<SimpleMessageEventArgs<OddsChangeMessage>> OddsChangeMessageReceived;
+        public event EventHandler<SimpleMessageEventArgs<odds_change>> OddsChangeMessageReceived;
     }
 }

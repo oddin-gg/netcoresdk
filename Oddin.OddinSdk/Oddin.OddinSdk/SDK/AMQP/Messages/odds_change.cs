@@ -6,7 +6,7 @@
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
     [System.Xml.Serialization.XmlRootAttribute(ElementName = "odds_change", IsNullable = false)]
-    public class OddsChangeMessage : FeedMessage
+    public class odds_change : FeedMessage
     {
         private sportEventStatus sport_event_statusField;
     
