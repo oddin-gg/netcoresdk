@@ -1,4 +1,5 @@
 ﻿using Oddin.OddinSdk.SDK.FeedConfiguration;
+using System.Globalization;
 
 namespace Oddin.OddinSdk.SampleIntegration
 {
@@ -13,6 +14,7 @@ namespace Oddin.OddinSdk.SampleIntegration
         public string Host { get; }
         public int Port { get; }
         public ExceptionHandlingStrategy ExceptionHandlingStrategy { get; }
+        public CultureInfo DefaultLocale { get; }
 
         public CustomOddsFeedConfiguration(
             string accessToken,
@@ -21,7 +23,8 @@ namespace Oddin.OddinSdk.SampleIntegration
             int httpClientTimeout,
             string host,
             int port,
-            ExceptionHandlingStrategy strategy)
+            ExceptionHandlingStrategy strategy,
+            CultureInfo defaultLocale)
         {
             AccessToken = accessToken;
             ApiHost = apiHost;
@@ -30,6 +33,7 @@ namespace Oddin.OddinSdk.SampleIntegration
             Host = host;
             Port = port;
             ExceptionHandlingStrategy = strategy;
+            DefaultLocale = defaultLocale;
         }
     }
 }

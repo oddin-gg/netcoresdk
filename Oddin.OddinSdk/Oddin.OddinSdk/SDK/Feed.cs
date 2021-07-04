@@ -13,6 +13,8 @@ using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
+using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
+using Oddin.OddinSdk.SDK.AMQP.Mapping;
 
 namespace Oddin.OddinSdk.SDK
 {
@@ -53,9 +55,25 @@ namespace Oddin.OddinSdk.SDK
                     )
                 );
 
-            // register FeedMessageDeserializer as singleton
-            _unityContainer.RegisterSingleton<IFeedMessageDeserializer, FeedMessageDeserializer>(
+            // register FeedMessageDeserializer
+            _unityContainer.RegisterType<IFeedMessageDeserializer, FeedMessageDeserializer>(
                 new InjectionConstructor());
+            
+            // register ProducerManager as singleton
+            _unityContainer.RegisterSingleton<IProducerManager, ProducerManager>(
+                new InjectionConstructor(
+                    _unityContainer.Resolve<IApiClient>(),
+                    _unityContainer.Resolve<ILoggerFactory>()
+                    )
+                );
+
+            // register FeedMessageMapper
+            _unityContainer.RegisterType<IFeedMessageMapper, FeedMessageMapper>(
+                new InjectionConstructor(
+                    _unityContainer.Resolve<IApiClient>(),
+                    _unityContainer.Resolve<IProducerManager>()
+                    )
+                );
 
             // register Amqp client as singleton
             _unityContainer.RegisterSingleton<IAmqpClient, AmqpClient>(
@@ -65,14 +83,6 @@ namespace Oddin.OddinSdk.SDK
                     (EventHandler<CallbackExceptionEventArgs>)OnAmqpCallbackException,
                     (EventHandler<ShutdownEventArgs>)OnConnectionShutdown,
                     _unityContainer.Resolve<IFeedMessageDeserializer>(),
-                    _unityContainer.Resolve<ILoggerFactory>()
-                    )
-                );
-            
-            // register ProducerManager as singleton
-            _unityContainer.RegisterSingleton<IProducerManager, ProducerManager>(
-                new InjectionConstructor(
-                    _unityContainer.Resolve<IApiClient>(),
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );

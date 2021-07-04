@@ -6,8 +6,12 @@
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
     [System.Xml.Serialization.XmlRootAttribute(ElementName = "odds_change", IsNullable = false)]
-    public class odds_change : FeedMessage
+    public class odds_change : FeedMessageModel
     {
+        public override long GeneratedAt => timestamp;
+
+        // ----------------------------------------------------------
+
         private sportEventStatus sport_event_statusField;
     
         private oddsGenerationProperties odds_generation_propertiesField;

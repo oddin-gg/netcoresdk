@@ -37,7 +37,7 @@ namespace Oddin.OddinSdk.SDK.API.Entities
         public IRecoveryInfo RecoveryInfo => throw new NotImplementedException();
 
 
-        public Producer(ProducerModel model)
+        public Producer(producer model)
         {
             _id = model.id;
             _name = model.name;

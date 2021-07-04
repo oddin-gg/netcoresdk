@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Oddin.OddinSdk.Common;
 using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.EventArguments;
@@ -134,21 +135,59 @@ namespace Oddin.OddinSdk.SDK.AMQP
             UnparsableMessageReceived(this, new UnparsableMessageEventArgs(messageType, producer, eventId, messageBody));
         }
 
+        private bool TryGetMessageSentTime(BasicDeliverEventArgs eventArgs, out long sentTime)
+        {
+            sentTime = 0;
+
+            var headers = eventArgs?.BasicProperties?.Headers;
+            if (headers is null)
+                return false;
+
+            var sentAtHeader = "timestamp_in_ms";
+            if (headers.ContainsKey(sentAtHeader) == false)
+                return false;
+
+            var value = headers[sentAtHeader].ToString();
+            if (long.TryParse(value, out var parseResult) == false)
+                return false;
+
+            sentTime = parseResult;
+            return true;
+        }
+
+        private void SetMessageTimes(FeedMessageModel message, BasicDeliverEventArgs eventArgs, long receivedAt)
+        {
+            message.ReceivedAt = receivedAt;
+
+            if (TryGetMessageSentTime(eventArgs, out var sentTime) == false)
+            {
+                _log.LogWarning($"{GetType()} was unable to get message SentAt time! Setting SentAt to GeneratedAt ({DateTimeOffset.FromUnixTimeMilliseconds(message.GeneratedAt)}");
+                message.SentAt = message.GeneratedAt;
+            }
+            else
+            {
+                message.SentAt = sentTime;
+            }
+        }
+
         private void OnReceived(object sender, BasicDeliverEventArgs eventArgs)
         {
+            var receivedAt = DateTime.UtcNow.ToEpochTimeMilliseconds();
             var body = eventArgs.Body.ToArray();
             var xml = Encoding.UTF8.GetString(body);
             var success = _deserializer.TryDeserializeMessage(xml, out var message);
 
-            if (success == true)
+            if (success == false)
             {
                 HandleUnparsableMessage(body, eventArgs.RoutingKey);
             }
 
+            SetMessageTimes(message, eventArgs, receivedAt);
+
             switch (message)
             {
-                case AliveMessage aliveMessage:
-                    AliveMessageReceived(this, new SimpleMessageEventArgs<AliveMessage>(aliveMessage, body));
+                case alive aliveMessage:
+                    AliveMessageReceived(this, new SimpleMessageEventArgs<alive>(aliveMessage, body));
                     break;
                 case odds_change oddsChangeMessage:
                     OddsChangeMessageReceived(this, new SimpleMessageEventArgs<odds_change>(oddsChangeMessage, body));
@@ -186,7 +225,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
         public event EventHandler<UnparsableMessageEventArgs> UnparsableMessageReceived;
 
-        public event EventHandler<SimpleMessageEventArgs<AliveMessage>> AliveMessageReceived;
+        public event EventHandler<SimpleMessageEventArgs<alive>> AliveMessageReceived;
 
         public event EventHandler<SimpleMessageEventArgs<odds_change>> OddsChangeMessageReceived;
     }

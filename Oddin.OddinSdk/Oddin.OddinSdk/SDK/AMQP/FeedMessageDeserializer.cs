@@ -12,9 +12,9 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
         }
 
-        public bool TryDeserializeMessage(string message, out FeedMessage feedMessage)
+        public bool TryDeserializeMessage(string message, out FeedMessageModel feedMessage)
         {
-            if (XmlHelper.TryDeserialize(message, out AliveMessage aliveMessage))
+            if (XmlHelper.TryDeserialize(message, out alive aliveMessage))
             {
                 feedMessage = aliveMessage;
                 return true;

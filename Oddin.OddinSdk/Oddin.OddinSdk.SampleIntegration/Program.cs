@@ -3,6 +3,7 @@ using Oddin.OddinSdk.SDK;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
 using Serilog;
 using System;
+using System.Globalization;
 
 namespace Oddin.OddinSdk.SampleIntegration
 {
@@ -24,7 +25,8 @@ namespace Oddin.OddinSdk.SampleIntegration
                 httpClientTimeout: 10,
                 host: "mq.integration.oddin.gg",
                 port: 5672,
-                ExceptionHandlingStrategy.THROW);
+                ExceptionHandlingStrategy.THROW,
+                new CultureInfo("en-US"));
 
             var feed = new Feed(config, loggerFactory);
             //foreach (var producer in feed.ProducerManager.Producers)

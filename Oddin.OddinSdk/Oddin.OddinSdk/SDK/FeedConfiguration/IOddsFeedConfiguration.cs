@@ -1,4 +1,6 @@
-﻿namespace Oddin.OddinSdk.SDK.FeedConfiguration
+﻿using System.Globalization;
+
+namespace Oddin.OddinSdk.SDK.FeedConfiguration
 {
     /// <summary>
     /// Defines a contract implemented by classes representing odds feed configuration / settings
@@ -40,5 +42,11 @@
         /// </summary>
         /// <value>The exception handling strategy</value>
         public ExceptionHandlingStrategy ExceptionHandlingStrategy { get; }
+
+        /// <summary>
+        /// Gets a <see cref="CultureInfo" /> specifying default locale to which translatable values will be translated
+        /// </summary>
+        /// <value>The default locale</value>
+        public CultureInfo DefaultLocale { get; }
     }
 }
