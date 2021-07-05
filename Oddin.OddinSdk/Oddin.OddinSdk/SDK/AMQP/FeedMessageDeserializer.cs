@@ -1,18 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
-using Oddin.OddinSdk.Common;
-using Oddin.OddinSdk.SDK.AMQP.Abstractions;
+﻿using Oddin.OddinSdk.Common;
 using Oddin.OddinSdk.SDK.AMQP.Messages;
 
 namespace Oddin.OddinSdk.SDK.AMQP
 {
-    internal class FeedMessageDeserializer : IFeedMessageDeserializer
+    internal static class FeedMessageDeserializer
     {
-        public FeedMessageDeserializer()
-        {
-
-        }
-
-        public bool TryDeserializeMessage(string message, out FeedMessageModel feedMessage)
+        public static bool TryDeserializeMessage(string message, out FeedMessageModel feedMessage)
         {
             if (XmlHelper.TryDeserialize(message, out alive aliveMessage))
             {

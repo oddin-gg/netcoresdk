@@ -54,10 +54,6 @@ namespace Oddin.OddinSdk.SDK
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );
-
-            // register FeedMessageDeserializer
-            _unityContainer.RegisterType<IFeedMessageDeserializer, FeedMessageDeserializer>(
-                new InjectionConstructor());
             
             // register ProducerManager as singleton
             _unityContainer.RegisterSingleton<IProducerManager, ProducerManager>(
@@ -82,7 +78,6 @@ namespace Oddin.OddinSdk.SDK
                     BookmakerDetails.VirtualHost,
                     (EventHandler<CallbackExceptionEventArgs>)OnAmqpCallbackException,
                     (EventHandler<ShutdownEventArgs>)OnConnectionShutdown,
-                    _unityContainer.Resolve<IFeedMessageDeserializer>(),
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );

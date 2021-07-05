@@ -23,7 +23,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
         private readonly string _virtualHost;
         private readonly EventHandler<CallbackExceptionEventArgs> _onCallbackException;
         private readonly EventHandler<ShutdownEventArgs> _onConnectionShutdown;
-        private readonly FeedMessageDeserializer _deserializer;
         private IConnection _connection;
         private IModel _channel;
         private EventingBasicConsumer _consumer;
@@ -36,8 +35,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
             string virtualHost,
             EventHandler<CallbackExceptionEventArgs> onCallbackException,
             EventHandler<ShutdownEventArgs> onConnectionShutdown,
-            FeedMessageDeserializer deserializer,
-
             ILoggerFactory loggerFactory)
             : base(loggerFactory)
         {
@@ -48,7 +45,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
             _virtualHost = virtualHost;
             _onCallbackException = onCallbackException;
             _onConnectionShutdown = onConnectionShutdown;
-            _deserializer = deserializer;
         }
 
         private ConnectionFactory CreateConnectionFactory()
@@ -175,9 +171,13 @@ namespace Oddin.OddinSdk.SDK.AMQP
             var receivedAt = DateTime.UtcNow.ToEpochTimeMilliseconds();
             var body = eventArgs.Body.ToArray();
             var xml = Encoding.UTF8.GetString(body);
-            var success = _deserializer.TryDeserializeMessage(xml, out var message);
+            var success = FeedMessageDeserializer.TryDeserializeMessage(xml, out var message);
 
-            if (success == false)
+            // TODO: remove test output
+            Console.WriteLine(xml);
+            return;
+
+            if (success == false || message is null)
             {
                 HandleUnparsableMessage(body, eventArgs.RoutingKey);
             }
