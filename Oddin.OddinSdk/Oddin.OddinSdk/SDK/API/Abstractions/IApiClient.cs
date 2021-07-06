@@ -27,5 +27,12 @@ namespace Oddin.OddinSdk.SDK.API.Abstractions
         /// <param name="culture">Culture info for translations</param>
         /// <returns></returns>
         Task<IMatchSummary> GetMatchSummaryAsync(URN sportEventId, CultureInfo culture = null);
+
+        /// <summary>
+        /// Gets a list of <see cref="IMarketDescription"/> from API
+        /// </summary>
+        /// <param name="culture">Culture info for translations</param>
+        /// <returns></returns>
+        Task<List<IMarketDescription>> GetMarketDescriptionsAsync(CultureInfo culture = null);
     }
 }

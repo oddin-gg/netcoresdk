@@ -7,7 +7,7 @@
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute()]
     [System.Xml.Serialization.XmlRootAttribute("match_summary", IsNullable = false)]
-    public partial class MatchSummaryModel
+    internal class MatchSummaryModel
     {
 
         private sportEvent sport_eventField;

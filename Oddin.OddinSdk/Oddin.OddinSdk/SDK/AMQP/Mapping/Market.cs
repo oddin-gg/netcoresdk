@@ -2,6 +2,7 @@
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Oddin.OddinSdk.SDK.AMQP.Mapping
@@ -21,9 +22,13 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
             _apiClient = apiClient;
         }
 
-        public Task<string> GetNameAsync(CultureInfo culture)
+        public async Task<string> GetNameAsync(CultureInfo culture)
         {
-            throw new System.NotImplementedException();
+            var marketDescriptions = await _apiClient.GetMarketDescriptionsAsync(culture);
+            return marketDescriptions
+                .Where(m => m.Id == Id)
+                .FirstOrDefault()
+                .Name;
         }
     }
 }

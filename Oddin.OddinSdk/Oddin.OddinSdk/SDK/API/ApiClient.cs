@@ -26,7 +26,10 @@ namespace Oddin.OddinSdk.SDK.API
         public List<IProducer> GetProducers()
         {
             var response = _restClient.SendRequest<ProducersModel>("v1/descriptions/producers", HttpMethod.Get);
+            
             var result = new List<IProducer>();
+            if (response.producer is null)
+                return result;
             foreach (var producer in response.producer)
                 result.Add(new Producer(producer));
             return result;
@@ -44,6 +47,20 @@ namespace Oddin.OddinSdk.SDK.API
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sport_events/{sportEventId.Urn}/summary";
             var matchSummaryModel = await _restClient.SendRequestAsync<MatchSummaryModel>(route, HttpMethod.Get);
             return new MatchSummary(matchSummaryModel);
+        }
+
+        public async Task<List<IMarketDescription>> GetMarketDescriptionsAsync(CultureInfo desiredCulture = null)
+        {
+            var culture = desiredCulture is null ? _defaultCulture : desiredCulture;
+            var route = $"v1/descriptions/{culture.TwoLetterISOLanguageName}/markets";
+            var marketDescriptionsModel = await _restClient.SendRequestAsync<MarketDescriptionsModel>(route, HttpMethod.Get);
+            
+            var result = new List<IMarketDescription>();
+            if (marketDescriptionsModel.market is null)
+                return result;
+            foreach (var marketDescription in marketDescriptionsModel.market)
+                result.Add(new MarketDescription(marketDescription));
+            return result;
         }
     }
 }
