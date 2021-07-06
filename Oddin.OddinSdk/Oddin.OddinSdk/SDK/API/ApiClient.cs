@@ -38,7 +38,7 @@ namespace Oddin.OddinSdk.SDK.API
         public IBookmakerDetails GetBookmakerDetails()
         {
             var response = _restClient.SendRequest<BookmakerDetailsModel>("v1/users/whoami", HttpMethod.Get);
-            return new BookmakerDetails(response);
+            return ApiModelMapper.MapBookmakerDetails(response);
         }
 
         public async Task<IMatchSummary> GetMatchSummaryAsync(URN sportEventId, CultureInfo desiredCulture = null)
@@ -59,7 +59,7 @@ namespace Oddin.OddinSdk.SDK.API
             if (marketDescriptionsModel.market is null)
                 return result;
             foreach (var marketDescription in marketDescriptionsModel.market)
-                result.Add(new MarketDescription(marketDescription));
+                result.Add(ApiModelMapper.MapMarketDescription(marketDescription));
             return result;
         }
     }

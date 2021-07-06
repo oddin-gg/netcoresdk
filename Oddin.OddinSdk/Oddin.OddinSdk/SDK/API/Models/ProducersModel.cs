@@ -6,7 +6,7 @@
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
     [System.Xml.Serialization.XmlRootAttribute("producers", IsNullable = false)]
-    internal class ProducersModel
+    public class ProducersModel
     {
         private producer[] producerField;
 

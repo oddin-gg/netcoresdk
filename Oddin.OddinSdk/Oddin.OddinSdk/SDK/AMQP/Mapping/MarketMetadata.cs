@@ -15,9 +15,12 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
 
         public MarketMetadata(marketMetadata marketMetadata)
         {
-            NextBetstop = marketMetadata.next_betstopSpecified
-                ? (long?)marketMetadata.next_betstop
-                : null;
+            if (marketMetadata is null)
+                NextBetstop = null;
+            else
+                NextBetstop = marketMetadata.next_betstopSpecified
+                    ? (long?)marketMetadata.next_betstop
+                    : null;
         }
     }
 }

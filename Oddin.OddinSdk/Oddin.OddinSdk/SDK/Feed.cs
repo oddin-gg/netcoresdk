@@ -15,6 +15,9 @@ using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Mapping;
+using Oddin.OddinSdk.SDK.AMQP.Messages;
+using Oddin.OddinSdk.SDK.AMQP.EventArguments;
+using System.Globalization;
 
 namespace Oddin.OddinSdk.SDK
 {
@@ -96,7 +99,57 @@ namespace Oddin.OddinSdk.SDK
 
             _unityContainer = new UnityContainer();
             RegisterObjectsToUnityContainer(config, loggerFactory);
+
+
+            // TODO: remove when tested -------------------------
+
+            _unityContainer.Resolve<IAmqpClient>().AliveMessageReceived += AliveReceived;
+            _unityContainer.Resolve<IAmqpClient>().OddsChangeMessageReceived += OddsChangeReceived;
+            _unityContainer.Resolve<IAmqpClient>().UnparsableMessageReceived += UnparsableMessageReceived;
+
+            // --------------------------------------------------
         }
+
+        // TODO: remove when tested -----------------------------
+
+        private void AliveReceived(object sender, SimpleMessageEventArgs<alive> eventArgs)
+        {
+            //Console.WriteLine("Alive");
+        }
+
+        private bool _x = false;
+        private async void OddsChangeReceived(object sender, SimpleMessageEventArgs<odds_change> eventArgs)
+        {
+            if (_x == false)
+                _x = true;
+            else
+                return;
+
+            var culture = new CultureInfo("en-US");
+
+            var args = new OddsChangeEventArgs<ISportEvent>(
+                _unityContainer.Resolve<IFeedMessageMapper>(),
+                eventArgs.FeedMessage,
+                new[] { culture },
+                eventArgs.RawMessage);
+
+            var oddsChange = args.GetOddsChange();
+            Console.WriteLine($"Event: {await oddsChange.Event.GetNameAsync(culture)}, {await oddsChange.Event.GetScheduledEndTimeAsync()}, {await oddsChange .Event.GetScheduledTimeAsync()}, {await oddsChange.Event.GetSportIdAsync()}");
+            Console.WriteLine("Markets");
+            foreach (var market in oddsChange.Markets)
+            {
+                Console.WriteLine($"{await market.GetNameAsync(culture)}");
+                foreach (var outcomeOdd in market.OutcomeOdds)
+                    Console.WriteLine($"{await outcomeOdd.GetNameAsync(culture)}, {outcomeOdd.GetOdds()}");
+            }
+        }
+
+        private void UnparsableMessageReceived(object sender, UnparsableMessageEventArgs eventArgs)
+        {
+            //Console.WriteLine($"Unparsable: {eventArgs.MessageType}, {eventArgs.Producer}, {eventArgs.EventId}");
+        }
+
+        // ------------------------------------------------------
 
         /// <summary>
         /// Opens connection to the feed

@@ -2,8 +2,8 @@
 {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
     [System.SerializableAttribute()]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
-    internal enum ResponseCode
+    [System.Xml.Serialization.XmlTypeAttribute()]
+    public enum ResponseCode
     {
 
         /// <remarks/>

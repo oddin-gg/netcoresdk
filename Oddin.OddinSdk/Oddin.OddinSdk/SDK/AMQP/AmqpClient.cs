@@ -173,13 +173,10 @@ namespace Oddin.OddinSdk.SDK.AMQP
             var xml = Encoding.UTF8.GetString(body);
             var success = FeedMessageDeserializer.TryDeserializeMessage(xml, out var message);
 
-            // TODO: remove test output
-            Console.WriteLine(xml);
-            return;
-
             if (success == false || message is null)
             {
                 HandleUnparsableMessage(body, eventArgs.RoutingKey);
+                return;
             }
 
             SetMessageTimes(message, eventArgs, receivedAt);
@@ -196,6 +193,10 @@ namespace Oddin.OddinSdk.SDK.AMQP
                     // ...
 
                 default:
+
+                    // TODO: remove when tested
+                    return;
+
                     var errorMessage = $"FeedMessage of type '{message.GetType().Name}' is not supported.";
                     _log.LogError(errorMessage);
                     throw new InvalidOperationException(errorMessage);

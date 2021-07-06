@@ -6,7 +6,7 @@
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute()]
     [System.Xml.Serialization.XmlRootAttribute("bookmaker_details", IsNullable = false)]
-    internal class BookmakerDetailsModel
+    public class BookmakerDetailsModel
     {
 
         private ResponseCode response_codeField;

@@ -9,10 +9,10 @@ namespace Oddin.OddinSdk.SDK.API.Entities
 
         public string Name { get; }
 
-        public OutcomeDescription(outcome_descriptionOutcome outcomeModel)
+        public OutcomeDescription(string id, string name)
         {
-            Id = outcomeModel.id;
-            Name = outcomeModel.name;
+            Id = id;
+            Name = name;
         }
     }
 }

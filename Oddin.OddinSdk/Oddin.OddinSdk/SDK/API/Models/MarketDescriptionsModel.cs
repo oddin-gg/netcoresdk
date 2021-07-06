@@ -6,7 +6,7 @@
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
     [System.Xml.Serialization.XmlRootAttribute(ElementName = "market_descriptions", IsNullable = false)]
-    internal class MarketDescriptionsModel
+    public class MarketDescriptionsModel
     {
 
         private market_description[] marketField;
@@ -63,7 +63,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute()]
     public partial class market_description
     {
 
@@ -153,7 +153,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
     public partial class outcome_descriptionOutcome
     {
 
@@ -211,7 +211,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true, Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
     public partial class specifier_descriptionSpecifier
     {
 

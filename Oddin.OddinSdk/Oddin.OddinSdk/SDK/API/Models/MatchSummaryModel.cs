@@ -7,7 +7,7 @@
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute()]
     [System.Xml.Serialization.XmlRootAttribute("match_summary", IsNullable = false)]
-    internal class MatchSummaryModel
+    public class MatchSummaryModel
     {
 
         private sportEvent sport_eventField;
@@ -78,7 +78,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute()]
     public partial class sportEvent
     {
 
@@ -296,7 +296,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute()]
     public partial class tournament
     {
 
@@ -432,7 +432,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute()]
     public partial class tournamentLength
     {
 
@@ -507,7 +507,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute()]
     public partial class periodScoreBase
     {
 
@@ -565,7 +565,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute()]
     public partial class periodScore : periodScoreBase
     {
 
@@ -624,7 +624,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute()]
     public partial class sportEventStatusBase
     {
 
@@ -778,7 +778,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute()]
     public partial class sportEventStatus : sportEventStatusBase
     {
 
@@ -998,7 +998,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute()]
     public partial class team
     {
 
@@ -1120,7 +1120,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute()]
     public partial class teamCompetitor : team
     {
 
@@ -1146,7 +1146,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute()]
     public partial class teamExtended : team
     {
 
@@ -1187,7 +1187,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute()]
     public partial class sport
     {
 
@@ -1245,7 +1245,7 @@
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "http://schemas.oddin.gg/v1")]
+    [System.Xml.Serialization.XmlTypeAttribute()]
     public partial class tournamentExtended : tournament
     {
 

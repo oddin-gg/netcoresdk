@@ -1,5 +1,4 @@
 ﻿using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
-using Oddin.OddinSdk.SDK.API.Models;
 using System.Collections.Generic;
 
 namespace Oddin.OddinSdk.SDK.API.Entities
@@ -12,16 +11,10 @@ namespace Oddin.OddinSdk.SDK.API.Entities
 
         public IReadOnlyCollection<IOutcomeDescription> Outcomes { get; }
 
-        public MarketDescription(market_description marketDescriptionsModel)
+        public MarketDescription(int id, string name, IReadOnlyCollection<IOutcomeDescription> outcomes)
         {
-            Id = marketDescriptionsModel.id;
-            Name = marketDescriptionsModel.name;
-
-            var outcomes = new List<OutcomeDescription>();
-            foreach (var outcomeDescriptionModel in marketDescriptionsModel.outcomes)
-            {
-                outcomes.Add(new OutcomeDescription(outcomeDescriptionModel));
-            }
+            Id = id;
+            Name = name;
             Outcomes = outcomes;
         }
     }

@@ -14,8 +14,10 @@ namespace Oddin.OddinSdk.SDK.API.Entities
 
         public MatchSummary(MatchSummaryModel matchSummaryModel)
         {
-            _name = matchSummaryModel.sport_event?.name;
-            _scheduledTime = matchSummaryModel.sport_event?.scheduled;
+            var sportEvent = matchSummaryModel.sport_event;
+
+            _name = sportEvent.name;
+            _scheduledTime = sportEvent?.scheduled;
             _scheduledEndTime = matchSummaryModel.sport_event?.scheduled_end;
             _sportId = new URN(matchSummaryModel.sport_event?.tournament?.sport?.id);
         }
