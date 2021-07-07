@@ -107,12 +107,16 @@ namespace Oddin.OddinSdk.SDK
         /// <exception cref="CommunicationException"/>
         public void Open()
         {
-            _unityContainer.Resolve<IAmqpClient>().Connect();
+            // open all sessions
+
+            //_unityContainer.Resolve<IAmqpClient>().Connect();
         }
 
         public void Close()
         {
-            _unityContainer.Resolve<IAmqpClient>().Disconnect();
+            // close all sessions
+
+            //_unityContainer.Resolve<IAmqpClient>().Disconnect();
         }
 
         public void Dispose()

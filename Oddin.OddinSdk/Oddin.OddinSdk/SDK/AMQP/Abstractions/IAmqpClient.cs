@@ -1,5 +1,6 @@
 ﻿using Oddin.OddinSdk.SDK.AMQP.EventArguments;
 using Oddin.OddinSdk.SDK.AMQP.Messages;
+using Oddin.OddinSdk.SDK.Sessions;
 using System;
 
 namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
@@ -9,7 +10,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
         /// <summary>
         /// Connects the AMQP consumer to the AMQP broker
         /// </summary>
-        void Connect();
+        void Connect(MessageInterest messageInterest);
 
         /// <summary>
         /// Disconnects the AMQP consumer from the AMQP broker

@@ -12,7 +12,7 @@ namespace Oddin.OddinSdk.SDK.API
         public static IBookmakerDetails MapBookmakerDetails(BookmakerDetailsModel model)
         {
             if (model is null)
-                throw new ArgumentNullException($"{typeof(BookmakerDetailsModel).Name} argument cannot be null in {nameof(MapBookmakerDetails)}!");
+                throw new ArgumentNullException($"{typeof(BookmakerDetailsModel).Name} argument cannot be null!");
 
             return new BookmakerDetails(
                 model.expire_at,
@@ -23,7 +23,7 @@ namespace Oddin.OddinSdk.SDK.API
         private static IOutcomeDescription MapOutcomeDescription(outcome_descriptionOutcome model)
         {
             if (model is null)
-                throw new ArgumentNullException($"{typeof(outcome_descriptionOutcome).Name} argument cannot be null in {nameof(MapOutcomeDescription)}!");
+                throw new ArgumentNullException($"{typeof(outcome_descriptionOutcome).Name} argument cannot be null!");
 
             return new OutcomeDescription(
                 model.id,
@@ -33,7 +33,7 @@ namespace Oddin.OddinSdk.SDK.API
         private static IMarketDescription MapMarketDescription(market_description model)
         {
             if (model is null)
-                throw new ArgumentNullException($"{typeof(market_description).Name} argument cannot be null in {nameof(MapMarketDescription)}!");
+                throw new ArgumentNullException($"{typeof(market_description).Name} argument cannot be null!");
 
             var outcomes = new List<IOutcomeDescription>();
             if (model.outcomes is null == false)
@@ -49,10 +49,10 @@ namespace Oddin.OddinSdk.SDK.API
         public static List<IMarketDescription> MapMarketDescriptionsList(MarketDescriptionsModel model)
         {
             if (model is null)
-                throw new ArgumentNullException($"{typeof(MarketDescriptionsModel).Name} argument cannot be null in {nameof(MapMarketDescriptionsList)}!");
+                throw new ArgumentNullException($"{typeof(MarketDescriptionsModel).Name} argument cannot be null!");
 
             if (model?.market is null)
-                throw new ArgumentException($"{typeof(MarketDescriptionsModel).Name}.{nameof(model.market)} cannot be null in {nameof(MapMarketDescriptionsList)}!");
+                throw new ArgumentException($"{typeof(MarketDescriptionsModel).Name}.{nameof(model.market)} cannot be null!");
 
             var result = new List<IMarketDescription>();
             foreach (var marketDescription in model.market)
@@ -63,13 +63,13 @@ namespace Oddin.OddinSdk.SDK.API
         public static IMatchSummary MapMatchSummary(MatchSummaryModel model)
         {
             if (model is null)
-                throw new ArgumentNullException($"{typeof(MatchSummaryModel).Name} argument cannot be null in {nameof(MapMatchSummary)}!");
+                throw new ArgumentNullException($"{typeof(MatchSummaryModel).Name} argument cannot be null!");
 
             if (model?.sport_event is null)
-                throw new ArgumentException($"{typeof(MatchSummaryModel).Name}.{nameof(model.sport_event)} cannot be null in {nameof(MapMatchSummary)}!");
+                throw new ArgumentException($"{typeof(MatchSummaryModel).Name}.{nameof(model.sport_event)} cannot be null!");
 
             if (model?.sport_event?.tournament?.sport?.id is null)
-                throw new ArgumentException($"{typeof(MatchSummaryModel).Name}.{typeof(sportEvent)}.{typeof(tournament)}.{typeof(sport)}.{nameof(model.sport_event.tournament.sport.id)} or one of the classes it's contained in is null in {nameof(MapMatchSummary)}!");
+                throw new ArgumentException($"{typeof(MatchSummaryModel).Name}.{typeof(sportEvent)}.{typeof(tournament)}.{typeof(sport)}.{nameof(model.sport_event.tournament.sport.id)} or one of the classes it's contained in is null!");
 
             var sportEvent = model.sport_event;
             return new MatchSummary(
@@ -82,7 +82,7 @@ namespace Oddin.OddinSdk.SDK.API
         private static IProducer GetProducer(producer model)
         {
             if (model is null)
-                throw new ArgumentNullException($"{typeof(producer).Name} argument cannot be null in {nameof(GetProducer)}!");
+                throw new ArgumentNullException($"{typeof(producer).Name} argument cannot be null!");
 
             return new Producer(
                 model.id,
@@ -96,10 +96,10 @@ namespace Oddin.OddinSdk.SDK.API
         public static List<IProducer> MapProducersList(ProducersModel model)
         {
             if (model is null)
-                throw new ArgumentNullException($"{typeof(ProducersModel).Name} argument cannot be null in {nameof(MapProducersList)}!");
+                throw new ArgumentNullException($"{typeof(ProducersModel).Name} argument cannot be null!");
 
             if (model?.producer is null)
-                throw new ArgumentException($"{typeof(ProducersModel).Name}.{nameof(model.producer)} cannot be null in {nameof(MapProducersList)}!");
+                throw new ArgumentException($"{typeof(ProducersModel).Name}.{nameof(model.producer)} cannot be null!");
 
             var result = new List<IProducer>();
             foreach (var producer in model.producer)

@@ -5,6 +5,7 @@ using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.EventArguments;
 using Oddin.OddinSdk.SDK.AMQP.Messages;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Sessions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
@@ -28,8 +29,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
         private EventingBasicConsumer _consumer;
 
         public const string EXCHANGE_NAME = "oddinfeed";
-        public const string ALL_MESSAGES_ROUTING_KEY = "#";
-        public const string ALIVE_MESSAGES_ROUTING_KEY = "-.-.-.alive.-.-.-.-";
 
         public AmqpClient(IOddsFeedConfiguration config,
             string virtualHost,
@@ -85,7 +84,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
             }
         }
 
-        public void Connect()
+        public void Connect(MessageInterest messageInterest)
         {
             var factory = CreateConnectionFactory();
 
@@ -105,7 +104,8 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 type: ExchangeType.Topic,
                 durable: true);
 
-            _channel.QueueBind(queueInfo.QueueName, EXCHANGE_NAME, ALL_MESSAGES_ROUTING_KEY);
+            foreach (var routingKey in messageInterest.RoutingKeys)
+                _channel.QueueBind(queueInfo.QueueName, EXCHANGE_NAME, routingKey);
 
             _consumer = new EventingBasicConsumer(_channel);
             _consumer.Received += OnReceived;
@@ -172,6 +172,10 @@ namespace Oddin.OddinSdk.SDK.AMQP
             var body = eventArgs.Body.ToArray();
             var xml = Encoding.UTF8.GetString(body);
             var success = FeedMessageDeserializer.TryDeserializeMessage(xml, out var message);
+
+            // TODO: remove when tested
+            //Console.WriteLine(xml);
+            //return;
 
             if (success == false || message is null)
             {

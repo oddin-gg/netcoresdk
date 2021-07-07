@@ -1,5 +1,4 @@
 ﻿using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
-using Oddin.OddinSdk.SDK.API.Models;
 
 namespace Oddin.OddinSdk.SDK.API.Entities
 {
