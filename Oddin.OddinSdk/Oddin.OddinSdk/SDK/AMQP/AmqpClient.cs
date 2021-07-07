@@ -157,7 +157,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
             if (TryGetMessageSentTime(eventArgs, out var sentTime) == false)
             {
-                _log.LogWarning($"{GetType()} was unable to get message SentAt time! Setting SentAt to GeneratedAt ({DateTimeOffset.FromUnixTimeMilliseconds(message.GeneratedAt)}");
+                _log.LogInformation($"{GetType()} was unable to get message SentAt time. Setting SentAt to GeneratedAt ({DateTimeOffset.FromUnixTimeMilliseconds(message.GeneratedAt)}");
                 message.SentAt = message.GeneratedAt;
             }
             else
@@ -193,10 +193,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
                     // ...
 
                 default:
-
-                    // TODO: remove when tested
-                    return;
-
                     var errorMessage = $"FeedMessage of type '{message.GetType().Name}' is not supported.";
                     _log.LogError(errorMessage);
                     throw new InvalidOperationException(errorMessage);

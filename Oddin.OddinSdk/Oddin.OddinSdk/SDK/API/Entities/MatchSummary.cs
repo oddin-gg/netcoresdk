@@ -12,14 +12,12 @@ namespace Oddin.OddinSdk.SDK.API.Entities
         private readonly DateTime? _scheduledEndTime;
         private readonly URN _sportId;
 
-        public MatchSummary(MatchSummaryModel matchSummaryModel)
+        public MatchSummary(string name, DateTime? scheduledTime, DateTime? scheduledEndTime, URN sportId)
         {
-            var sportEvent = matchSummaryModel.sport_event;
-
-            _name = sportEvent.name;
-            _scheduledTime = sportEvent?.scheduled;
-            _scheduledEndTime = matchSummaryModel.sport_event?.scheduled_end;
-            _sportId = new URN(matchSummaryModel.sport_event?.tournament?.sport?.id);
+            _name = name;
+            _scheduledTime = scheduledTime;
+            _scheduledEndTime = scheduledEndTime;
+            _sportId = sportId;
         }
 
         public string Name => _name;

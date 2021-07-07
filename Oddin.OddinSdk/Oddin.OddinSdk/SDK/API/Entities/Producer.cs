@@ -36,17 +36,6 @@ namespace Oddin.OddinSdk.SDK.API.Entities
 
         public IRecoveryInfo RecoveryInfo => throw new NotImplementedException();
 
-
-        public Producer(producer model)
-        {
-            _id = model.id;
-            _name = model.name;
-            _description = model.description;
-            _active = model.active;
-            _scope = model.scope;
-            _statefulRecoveryWindowInMinutes = model.stateful_recovery_window_in_minutes;
-        }
-
         public Producer(
             int id,
             string name,
