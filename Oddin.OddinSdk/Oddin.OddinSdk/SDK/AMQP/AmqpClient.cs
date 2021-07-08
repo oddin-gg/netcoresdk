@@ -4,6 +4,7 @@ using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.EventArguments;
 using Oddin.OddinSdk.SDK.AMQP.Messages;
+using Oddin.OddinSdk.SDK.Dispatch;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
 using Oddin.OddinSdk.SDK.Sessions;
 using RabbitMQ.Client;
@@ -15,7 +16,7 @@ using System.Text;
 
 namespace Oddin.OddinSdk.SDK.AMQP
 {
-    internal class AmqpClient : LoggingBase, IAmqpClient
+    internal class AmqpClient : DispatcherBase, IAmqpClient
     {
         private readonly string _host;
         private readonly int _port;
@@ -128,7 +129,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 if (_exceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
                     throw;
             }
-            UnparsableMessageReceived(this, new UnparsableMessageEventArgs(messageType, producer, eventId, messageBody));
+            Dispatch(UnparsableMessageReceived, new UnparsableMessageEventArgs(messageType, producer, eventId, messageBody), nameof(UnparsableMessageReceived));
         }
 
         private bool TryGetMessageSentTime(BasicDeliverEventArgs eventArgs, out long sentTime)
@@ -188,10 +189,10 @@ namespace Oddin.OddinSdk.SDK.AMQP
             switch (message)
             {
                 case alive aliveMessage:
-                    AliveMessageReceived(this, new SimpleMessageEventArgs<alive>(aliveMessage, body));
+                    Dispatch(AliveMessageReceived, new SimpleMessageEventArgs<alive>(aliveMessage, body), nameof(AliveMessageReceived));
                     break;
                 case odds_change oddsChangeMessage:
-                    OddsChangeMessageReceived(this, new SimpleMessageEventArgs<odds_change>(oddsChangeMessage, body));
+                    Dispatch(OddsChangeMessageReceived, new SimpleMessageEventArgs<odds_change>(oddsChangeMessage, body), nameof(OddsChangeMessageReceived));
                     break;
 
                     // ...

@@ -15,15 +15,22 @@ using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Mapping;
-using Oddin.OddinSdk.SDK.AMQP.Messages;
-using Oddin.OddinSdk.SDK.AMQP.EventArguments;
-using System.Globalization;
+using Oddin.OddinSdk.SDK.Abstractions;
+using Oddin.OddinSdk.SDK.Sessions.Abstractions;
+using Oddin.OddinSdk.SDK.Sessions;
+using System.Collections.Generic;
 
 namespace Oddin.OddinSdk.SDK
 {
     public class Feed : DispatcherBase, IOddsFeed
     {
         private readonly IUnityContainer _unityContainer;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly IOddsFeedConfiguration _config;
+        private bool _isOpened;
+        private readonly object _isOpenedLock = new object();
+        private readonly IList<IOpenable> Sessions = new List<IOpenable>();
+        private bool _isDisposed;
 
         /// <summary>
         /// Gets a <see cref="IProducerManager" /> instance used to retrieve producer related data
@@ -43,17 +50,17 @@ namespace Oddin.OddinSdk.SDK
         }
 
 
-        private void RegisterObjectsToUnityContainer(IOddsFeedConfiguration config, ILoggerFactory loggerFactory)
+        private void RegisterObjectsToUnityContainer()
         {
             // INFO: registration order matters!
 
             // register existing logger factory
-            _unityContainer.RegisterInstance(typeof(ILoggerFactory), loggerFactory);
+            _unityContainer.RegisterInstance(typeof(ILoggerFactory), _loggerFactory);
             
             // register ApiClient as singleton
             _unityContainer.RegisterSingleton<IApiClient, ApiClient>(
                 new InjectionConstructor(
-                    config,
+                    _config,
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );
@@ -77,7 +84,7 @@ namespace Oddin.OddinSdk.SDK
             // register Amqp client as singleton
             _unityContainer.RegisterSingleton<IAmqpClient, AmqpClient>(
                 new InjectionConstructor(
-                    config,
+                    _config,
                     BookmakerDetails.VirtualHost,
                     (EventHandler<CallbackExceptionEventArgs>)OnAmqpCallbackException,
                     (EventHandler<ShutdownEventArgs>)OnConnectionShutdown,
@@ -97,8 +104,46 @@ namespace Oddin.OddinSdk.SDK
             if (config is null)
                 throw new ArgumentNullException();
 
+            _config = config;
+            _loggerFactory = loggerFactory;
+
             _unityContainer = new UnityContainer();
-            RegisterObjectsToUnityContainer(config, loggerFactory);
+            RegisterObjectsToUnityContainer();
+        }
+
+        /// <summary>
+        /// Checks if this instance of <see cref="Feed"/> is marked as opened in a thread-safe way
+        /// </summary>
+        /// <returns><see langword="true"/> if this instance of <see cref="Feed"/> is opened, <see langword="false"/> otherwise</returns>
+        private bool IsOpened()
+        {
+            lock(_isOpenedLock)
+            {
+                return _isOpened;
+            }
+        }
+
+        /// <summary>
+        /// Checks if this instance of <see cref="Feed"/> is NOT marked as opened and marks it as such in a thread-safe way
+        /// </summary>
+        /// <returns><see langword="false"/> if this instance of <see cref="Feed"/> was already marked as opened</returns>
+        private bool TrySetAsOpened()
+        {
+            lock(_isOpenedLock)
+            {
+                if (_isOpened)
+                    return false;
+                _isOpened = true;
+                return true;
+            }
+        }
+
+        private void SetAsClosed()
+        {
+            lock(_isOpenedLock)
+            {
+                _isOpened = false;
+            }
         }
 
         /// <summary>
@@ -107,21 +152,47 @@ namespace Oddin.OddinSdk.SDK
         /// <exception cref="CommunicationException"/>
         public void Open()
         {
-            // open all sessions
+            if (TrySetAsOpened() == false)
+                throw new InvalidOperationException($"{nameof(Open)} cannot be called when the feed is already opened!");
 
-            //_unityContainer.Resolve<IAmqpClient>().Connect();
+            foreach (var session in Sessions)
+                session.Open();
         }
 
         public void Close()
         {
-            // close all sessions
+            foreach (var session in Sessions)
+                session.Close();
 
-            //_unityContainer.Resolve<IAmqpClient>().Disconnect();
+            SetAsClosed();
         }
 
-        public void Dispose()
+        private void InternalDispose(bool disposing)
         {
-            throw new NotImplementedException();
+            if (_isDisposed)
+                return;
+            
+            Close();
+
+            if (disposing)
+            {
+                try
+                {
+                    _unityContainer.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _log.LogWarning($"An exception has occurred while disposing the {typeof(Feed).Name} instance. Exception: ", ex);
+                }
+            }
+
+            _isDisposed = true;
+        }
+
+        void IDisposable.Dispose()
+        {
+            InternalDispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private void OnAmqpCallbackException(object sender, CallbackExceptionEventArgs eventArgs)
@@ -147,28 +218,30 @@ namespace Oddin.OddinSdk.SDK
         /// Raised when the current instance of <see cref="IOddsFeed"/> loses connection to the feed
         /// </summary>
         public event EventHandler<EventArgs> Disconnected;
-    }
 
-    public interface IOddsFeed : IDisposable
-    {
-        /// <summary>
-        /// Gets a <see cref="IProducerManager"/> instance used to retrieve producer related data
-        /// </summary>
-        IProducerManager ProducerManager { get; }
+        internal IOddsFeedSession CreateSession(MessageInterest messageInterest)
+        {
+            if (messageInterest is null)
+                throw new ArgumentNullException($"{nameof(messageInterest)}");
 
-        /// <summary>
-        /// Opens the current feed by opening all created sessions
-        /// </summary>
-        void Open();
+            if (IsOpened())
+                throw new InvalidOperationException($"Cannot create a session in an already opened feed!");
 
-        /// <summary>
-        /// Closes the current feed by closing all created sessions and disposing of all resources associated with the current instance
-        /// </summary>
-        void Close();
+            var session = new OddsFeedSession(
+                _loggerFactory,
+                _unityContainer.Resolve<IAmqpClient>(),
+                _unityContainer.Resolve<IFeedMessageMapper>(),
+                messageInterest,
+                // TODO: should whole list of locales be taken from config?
+                new[] { _config.DefaultLocale });
 
-        /// <summary>
-        /// Occurs when an exception occurs in the connection loop
-        /// </summary>
-        event EventHandler<ConnectionExceptionEventArgs> ConnectionException;
+            Sessions.Add(session);
+            return session;
+        }
+
+        public IOddsFeedSessionBuilder CreateBuilder()
+        {
+            return new OddsFeedSessionBuilder(this);
+        }
     }
 }

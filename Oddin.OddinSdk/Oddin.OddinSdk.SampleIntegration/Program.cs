@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oddin.OddinSdk.SDK;
+using Oddin.OddinSdk.SDK.AMQP.EventArguments;
+using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Sessions;
 using Serilog;
 using System;
 using System.Globalization;
@@ -12,6 +15,7 @@ namespace Oddin.OddinSdk.SampleIntegration
         static void Main(string[] args)
         {
             var serilogLogger = new LoggerConfiguration()
+                .MinimumLevel.Warning()
                 .WriteTo
                 .Console()
                 .CreateLogger();
@@ -29,17 +33,23 @@ namespace Oddin.OddinSdk.SampleIntegration
                 new CultureInfo("en-US"));
 
             var feed = new Feed(config, loggerFactory);
-            //foreach (var producer in feed.ProducerManager.Producers)
-            //    Console.WriteLine(producer.Name);
+
+            var session = feed.CreateBuilder()
+                .SetMessageInterest(MessageInterest.AllMessages)
+                .Build();
+
+            session.OnOddsChange += OnOddsChangeReceived;
 
             feed.Open();
             Console.ReadLine();
             feed.Close();
+
+            session.OnOddsChange -= OnOddsChangeReceived;
         }
 
-        private static void OnDummyFeedMessageReceived(object _, string message)
+        private static async void OnOddsChangeReceived(object sender, OddsChangeEventArgs<ISportEvent> eventArgs)
         {
-            Console.WriteLine(message);
+            Console.WriteLine($"Odds changed in {await eventArgs.GetOddsChange().Event.GetNameAsync(new CultureInfo("en-US"))}");
         }
     }
 }

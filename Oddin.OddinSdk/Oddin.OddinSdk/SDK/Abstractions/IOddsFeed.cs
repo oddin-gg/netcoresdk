@@ -1,5 +1,6 @@
 ﻿using Oddin.OddinSdk.SDK.Dispatch;
 using Oddin.OddinSdk.SDK.Managers.Abstractions;
+using Oddin.OddinSdk.SDK.Sessions.Abstractions;
 using System;
 
 namespace Oddin.OddinSdk.SDK.Abstractions
@@ -10,6 +11,12 @@ namespace Oddin.OddinSdk.SDK.Abstractions
         /// Gets a <see cref="IProducerManager"/> instance used to retrieve producer related data
         /// </summary>
         IProducerManager ProducerManager { get; }
+
+        /// <summary>
+        /// Constructs and returns a new instance of <see cref="IOddsFeedSessionBuilder"/>
+        /// </summary>
+        /// <returns>Constructed instance of the <see cref="IOddsFeedSessionBuilder"/></returns>
+        IOddsFeedSessionBuilder CreateBuilder();
 
         /// <summary>
         /// Opens the current feed by opening all created sessions

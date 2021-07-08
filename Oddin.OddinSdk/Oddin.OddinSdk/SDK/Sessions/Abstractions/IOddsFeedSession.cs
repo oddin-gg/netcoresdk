@@ -16,15 +16,5 @@ namespace Oddin.OddinSdk.SDK.Sessions.Abstractions
         /// Raised when a message which cannot be parsed is received
         /// </summary>
         event EventHandler<UnparsableMessageEventArgs> OnUnparsableMessageReceived;
-
-        /// <summary>
-        /// Opens the session by opening its underlying connections
-        /// </summary>
-        void Open();
-
-        /// <summary>
-        /// Closes the session by closing its underlying connections
-        /// </summary>
-        void Close();
     }
 }

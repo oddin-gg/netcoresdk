@@ -42,31 +42,31 @@ namespace Oddin.OddinSdk.SDK.Sessions
         /// Constructs a <see cref="MessageInterest"/> indicating an interest in all messages
         /// </summary>
         /// <returns>A <see cref="MessageInterest"/> indicating an interest in all messages</returns>
-        public static readonly MessageInterest AllMessages = new MessageInterest("all", "*.*.*.*.*.*.*");
+        public static readonly MessageInterest AllMessages = new MessageInterest("all", "*.*.*.*.*.*.*.*");
 
         /// <summary>
         /// Constructs a <see cref="MessageInterest"/> indicating an interest in live messages
         /// </summary>
         /// <returns>A <see cref="MessageInterest"/> indicating an interest in live messages</returns>
-        public static readonly MessageInterest LiveMessagesOnly = new MessageInterest("live", "*.*.live.*.*.*.*");
+        public static readonly MessageInterest LiveMessagesOnly = new MessageInterest("live", "*.*.live.*.*.*.*.*");
 
         /// <summary>
         /// Constructs a <see cref="MessageInterest"/> indicating an interest in pre-match messages
         /// </summary>
         /// <returns>A <see cref="MessageInterest"/> indicating an interest in pre-match messages</returns>
-        public static readonly MessageInterest PrematchMessagesOnly = new MessageInterest("prematch", "*.pre.*.*.*.*.*");
+        public static readonly MessageInterest PrematchMessagesOnly = new MessageInterest("prematch", "*.pre.*.*.*.*.*.*");
 
         /// <summary>
         /// Constructs a <see cref="MessageInterest"/> indicating an interest in hi priority messages
         /// </summary>
         /// <returns>A <see cref="MessageInterest"/> indicating an interest in high priority messages</returns>
-        public static readonly MessageInterest HighPriorityMessages = new MessageInterest("high_priority", "hi.*.*.*.*.*.*");
+        public static readonly MessageInterest HighPriorityMessages = new MessageInterest("high_priority", "hi.*.*.*.*.*.*.*");
 
         /// <summary>
         /// Constructs a <see cref="MessageInterest"/> indicating an interest in low priority messages
         /// </summary>
         /// <returns>A <see cref="MessageInterest"/> indicating an interest in low priority messages</returns>
-        public static readonly MessageInterest LowPriorityMessages = new MessageInterest("low_priority", "lo.*.*.*.*.*.*");
+        public static readonly MessageInterest LowPriorityMessages = new MessageInterest("low_priority", "lo.*.*.*.*.*.*.*");
 
         /// <summary>
         /// Constructs a <see cref="MessageInterest"/> indicating an interest in system alive messages
