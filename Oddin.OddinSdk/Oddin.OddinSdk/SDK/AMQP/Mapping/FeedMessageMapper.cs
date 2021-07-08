@@ -20,6 +20,8 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
         private readonly IApiClient _apiClient;
         private readonly IProducerManager _producerManager;
 
+        public const MarketStatus DEFAULT_MARKET_STATUS = MarketStatus.SUSPENDED;
+
         public FeedMessageMapper(IApiClient apiClient, IProducerManager producerManager)
         {
             _apiClient = apiClient;
@@ -92,11 +94,15 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
 
         private IMarketWithOdds GetMarketWithOdds(oddsChangeMarket oddsChangeMarket)
         {
+            var marketStatus = oddsChangeMarket.statusSpecified
+                    ? EnumParsingHelper.GetEnumFromInt<MarketStatus>(oddsChangeMarket.status)
+                    : DEFAULT_MARKET_STATUS;
+
             return new MarketWithOdds(
                 oddsChangeMarket.id,
                 GetSpecifiers(oddsChangeMarket.specifiers),
                 _apiClient,
-                EnumParsingHelper.GetEnumFromInt<MarketStatus>(oddsChangeMarket.status),
+                marketStatus,
                 oddsChangeMarket.favouriteSpecified && oddsChangeMarket.favourite == 1,
                 oddsChangeMarket.outcome?.Select(outcome => GetOutcomeOdds(outcome)),
                 new MarketMetadata(oddsChangeMarket.market_metadata));
@@ -105,6 +111,9 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
         public IOddsChange<T> MapOddsChange<T>(odds_change message, IEnumerable<CultureInfo> cultures, byte[] rawMessage)
             where T : ISportEvent
         {
+            if (message is null)
+                throw new ArgumentNullException($"{nameof(message)}");
+
             var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
             ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient);
 
@@ -116,6 +125,25 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                 rawMessage,
                 message.odds?.market?.Select(market => GetMarketWithOdds(market))
                 );
+        }
+
+        public IBetStop<T> MapBetStop<T>(bet_stop message, IEnumerable<CultureInfo> cultures, byte[] rawMessage)
+            where T : ISportEvent
+        {
+            if (message is null)
+                throw new ArgumentNullException($"{nameof(message)}");
+
+            var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
+            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient);
+            var marketStatus = message.market_statusSpecified
+                    ? EnumParsingHelper.GetEnumFromInt<MarketStatus>(message.market_status)
+                    : DEFAULT_MARKET_STATUS;
+
+            //return new BetStop<T>(
+            //    marketStatus,
+            //    )
+
+            throw new NotImplementedException();
         }
     }
 }

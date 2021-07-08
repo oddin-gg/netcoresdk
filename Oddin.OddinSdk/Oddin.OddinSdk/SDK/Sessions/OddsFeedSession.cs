@@ -41,6 +41,7 @@ namespace Oddin.OddinSdk.SDK.Sessions
 
         public event EventHandler<UnparsableMessageEventArgs> OnUnparsableMessageReceived;
         public event EventHandler<OddsChangeEventArgs<ISportEvent>> OnOddsChange;
+        public event EventHandler<BetStopEventArgs<ISportEvent>> OnBetStop;
 
         private void HandleUnparsableMessageReceived(object sender, UnparsableMessageEventArgs eventArgs)
         {

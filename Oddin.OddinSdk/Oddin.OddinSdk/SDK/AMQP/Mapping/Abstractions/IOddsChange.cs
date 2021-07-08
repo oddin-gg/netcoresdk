@@ -6,7 +6,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
     /// <summary>
     /// Defines a contract implemented by odds-change messages
     /// </summary>
-    /// <typeparam name="T">A <see cref="ICompetition"/> derived type specifying the type of the associated sport event</typeparam>
+    /// <typeparam name="T"></typeparam>
     public interface IOddsChange<out T> : IMarketMessage<IMarketWithOdds, T> where T : ISportEvent
     {
         // INFO: Oddin API most likely doesn't fill this info
