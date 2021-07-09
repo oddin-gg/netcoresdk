@@ -1,6 +1,8 @@
-﻿using Oddin.OddinSdk.SDK.AMQP.Abstractions;
+﻿using Microsoft.Extensions.Logging;
+using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Enums;
 using Oddin.OddinSdk.SDK.API.Abstractions;
+using Oddin.OddinSdk.SDK.FeedConfiguration;
 using System.Collections.Generic;
 
 namespace Oddin.OddinSdk.SDK.AMQP.Mapping
@@ -19,11 +21,13 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
             int marketId,
             IDictionary<string, string> specifiers,
             IApiClient apiClient,
+            ExceptionHandlingStrategy exceptionHandlingStrategy,
+            ILoggerFactory loggerFactory,
             MarketStatus marketStatus,
             bool isFavorite,
             IEnumerable<IOutcomeOdds> outcomeOdds,
             IMarketMetadata marketMetadata)
-            : base(marketId, specifiers, apiClient)
+            : base(marketId, specifiers, apiClient, exceptionHandlingStrategy, loggerFactory)
         {
             Status = marketStatus;
             IsFavorite = isFavorite;

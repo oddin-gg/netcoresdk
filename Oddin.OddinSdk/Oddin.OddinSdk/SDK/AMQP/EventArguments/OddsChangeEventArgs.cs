@@ -2,9 +2,6 @@
 using Oddin.OddinSdk.SDK.AMQP.Messages;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 
 namespace Oddin.OddinSdk.SDK.AMQP.EventArguments
 {
@@ -12,11 +9,10 @@ namespace Oddin.OddinSdk.SDK.AMQP.EventArguments
     {
         private readonly IFeedMessageMapper _messageMapper;
         private readonly odds_change _feedMessage;
-        private readonly IReadOnlyCollection<CultureInfo> _defaultCultures;
         private readonly byte[] _rawMessage;
         private readonly IOddsChange<T> _oddsChange;
 
-        internal OddsChangeEventArgs(IFeedMessageMapper messageMapper, odds_change feedMessage, IEnumerable<CultureInfo> cultures, byte[] rawMessage)
+        internal OddsChangeEventArgs(IFeedMessageMapper messageMapper, odds_change feedMessage, byte[] rawMessage)
         {
             if (messageMapper is null)
                 throw new ArgumentNullException($"{nameof(messageMapper)}");
@@ -24,15 +20,8 @@ namespace Oddin.OddinSdk.SDK.AMQP.EventArguments
             if (feedMessage is null)
                 throw new ArgumentNullException($"{nameof(feedMessage)}");
 
-            if (cultures is null)
-                throw new ArgumentNullException($"{nameof(cultures)}");
-
-            if (cultures.Count() <= 0)
-                throw new ArgumentException($"{nameof(cultures)} argument cannot be empty!");
-
             _messageMapper = messageMapper;
             _feedMessage = feedMessage;
-            _defaultCultures = cultures as IReadOnlyCollection<CultureInfo>;
             _rawMessage = rawMessage;
 
             _oddsChange = GetOddsChange();
@@ -44,14 +33,12 @@ namespace Oddin.OddinSdk.SDK.AMQP.EventArguments
         /// <param name="culture">A <see cref="CultureInfo"/> specifying the language of which to translate the message or a null reference to translate the message
         /// to languages specified in the configuration</param>
         /// <returns>Returns the <see cref="IOddsChange{T}"/> implementation representing the received odds change message translated to the specified languages</returns>
-        public IOddsChange<T> GetOddsChange(CultureInfo culture = null)
+        public IOddsChange<T> GetOddsChange()
         {
-            if ((_oddsChange is null) == false
-                && culture is null)
+            if ((_oddsChange is null) == false)
                 return _oddsChange;
 
-            var defaultCultures = culture is null ? _defaultCultures : new[] { culture };
-            return _messageMapper.MapOddsChange<T>(_feedMessage, defaultCultures, _rawMessage);
+            return _messageMapper.MapOddsChange<T>(_feedMessage, _rawMessage);
         }
     }
 }

@@ -19,6 +19,12 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 return true;
             }
 
+            if (XmlHelper.TryDeserialize(message, out bet_stop betStopMessage))
+            {
+                feedMessage = betStopMessage;
+                return true;
+            }
+
             // ...
 
             feedMessage = null;

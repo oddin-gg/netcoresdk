@@ -3,6 +3,12 @@
     internal interface IOpenable
     {
         /// <summary>
+        /// Gets a value indicating whether the instance is opened
+        /// </summary>
+        /// <returns></returns>
+        bool IsOpened();
+
+        /// <summary>
         /// Opens the instance
         /// </summary>
         void Open();

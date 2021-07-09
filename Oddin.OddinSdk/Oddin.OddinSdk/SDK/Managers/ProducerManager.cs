@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using Oddin.OddinSdk.Common;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
+using Oddin.OddinSdk.SDK.FeedConfiguration;
 using Oddin.OddinSdk.SDK.Managers.Abstractions;
 using System;
 using System.Collections.Generic;
@@ -15,6 +17,7 @@ namespace Oddin.OddinSdk.SDK.Managers
         public const int STATEFUL_RECOVERY_WINDOW_MINUTES = 60;
 
         private readonly IApiClient _apiClient;
+        private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
         private IReadOnlyCollection<IProducer> _producers;
 
         public IReadOnlyCollection<IProducer> Producers => _producers;
@@ -31,7 +34,7 @@ namespace Oddin.OddinSdk.SDK.Managers
 
         private bool TryGet(int id, out IProducer result)
         {
-            result = _producers.FirstOrDefault(p => p.Id == id);
+            result = _producers?.FirstOrDefault(p => p.Id == id);
             if (result == default)
             {
                 result = CreateUnknownProducer();
@@ -42,7 +45,7 @@ namespace Oddin.OddinSdk.SDK.Managers
 
         private bool TryGet(string name, out IProducer result)
         {
-            result = _producers.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.InvariantCultureIgnoreCase));
+            result = _producers?.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.InvariantCultureIgnoreCase));
             if (result == default)
             {
                 result = CreateUnknownProducer();
@@ -75,10 +78,23 @@ namespace Oddin.OddinSdk.SDK.Managers
         }
 
 
-        public ProducerManager(IApiClient apiClient, ILoggerFactory loggerFactory) : base(loggerFactory)
+        public ProducerManager(IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy, ILoggerFactory loggerFactory)
+            : base(loggerFactory)
         {
+            if (apiClient is null)
+                throw new ArgumentNullException($"{nameof(apiClient)}");
+
             _apiClient = apiClient;
-            _producers = _apiClient.GetProducers();
+            _exceptionHandlingStrategy = exceptionHandlingStrategy;
+
+            try
+            {
+                _producers = _apiClient.GetProducers();
+            }
+            catch (Exception e)
+            {
+                e.HandleAccordingToStrategy(GetType().Name, _log, _exceptionHandlingStrategy);
+            }
         }
 
 

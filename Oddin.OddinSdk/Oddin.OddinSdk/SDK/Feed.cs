@@ -19,6 +19,9 @@ using Oddin.OddinSdk.SDK.Abstractions;
 using Oddin.OddinSdk.SDK.Sessions.Abstractions;
 using Oddin.OddinSdk.SDK.Sessions;
 using System.Collections.Generic;
+using Oddin.OddinSdk.Common.Exceptions;
+using System.Linq;
+using Oddin.OddinSdk.Common;
 
 namespace Oddin.OddinSdk.SDK
 {
@@ -46,7 +49,18 @@ namespace Oddin.OddinSdk.SDK
         /// </summary>
         public IBookmakerDetails BookmakerDetails
         {
-            get => _unityContainer.Resolve<IApiClient>().GetBookmakerDetails();
+            get
+            {
+                try
+                {
+                    return _unityContainer.Resolve<IApiClient>().GetBookmakerDetails();
+                }
+                catch (Exception e)
+                {
+                    e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
+                }
+                return null;
+            }
         }
 
 
@@ -69,6 +83,7 @@ namespace Oddin.OddinSdk.SDK
             _unityContainer.RegisterSingleton<IProducerManager, ProducerManager>(
                 new InjectionConstructor(
                     _unityContainer.Resolve<IApiClient>(),
+                    _config.ExceptionHandlingStrategy,
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );
@@ -77,7 +92,9 @@ namespace Oddin.OddinSdk.SDK
             _unityContainer.RegisterType<IFeedMessageMapper, FeedMessageMapper>(
                 new InjectionConstructor(
                     _unityContainer.Resolve<IApiClient>(),
-                    _unityContainer.Resolve<IProducerManager>()
+                    _unityContainer.Resolve<IProducerManager>(),
+                    _config.ExceptionHandlingStrategy,
+                    _unityContainer.Resolve<ILoggerFactory>()
                     )
                 );
 
@@ -102,7 +119,7 @@ namespace Oddin.OddinSdk.SDK
         public Feed(IOddsFeedConfiguration config, ILoggerFactory loggerFactory = null) : base(loggerFactory)
         {
             if (config is null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException($"{nameof(config)}");
 
             _config = config;
             _loggerFactory = loggerFactory;
@@ -152,15 +169,30 @@ namespace Oddin.OddinSdk.SDK
         /// <exception cref="CommunicationException"/>
         public void Open()
         {
+            _log.LogInformation($"Opening {typeof(Feed).Name}...");
+
             if (TrySetAsOpened() == false)
                 throw new InvalidOperationException($"{nameof(Open)} cannot be called when the feed is already opened!");
 
-            foreach (var session in Sessions)
-                session.Open();
+            try
+            {
+                foreach (var session in Sessions)
+                    session.Open();
+            }
+            catch (Exception)
+            {
+                foreach (var openSession in Sessions.Where(s => s.IsOpened()))
+                    openSession.Close();
+
+                SetAsClosed();
+                throw;
+            }
         }
 
         public void Close()
         {
+            _log.LogInformation($"Closing {typeof(Feed)}...");
+
             foreach (var session in Sessions)
                 session.Close();
 
@@ -232,8 +264,7 @@ namespace Oddin.OddinSdk.SDK
                 _unityContainer.Resolve<IAmqpClient>(),
                 _unityContainer.Resolve<IFeedMessageMapper>(),
                 messageInterest,
-                // TODO: should whole list of locales be taken from config?
-                new[] { _config.DefaultLocale });
+                _config.ExceptionHandlingStrategy);
 
             Sessions.Add(session);
             return session;

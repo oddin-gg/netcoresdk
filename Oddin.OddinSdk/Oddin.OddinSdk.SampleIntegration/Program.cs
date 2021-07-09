@@ -12,6 +12,8 @@ namespace Oddin.OddinSdk.SampleIntegration
 {
     class Program
     {
+        private static CultureInfo EnglishCulture => new CultureInfo("en-US");
+
         static void Main(string[] args)
         {
             var serilogLogger = new LoggerConfiguration()
@@ -29,8 +31,8 @@ namespace Oddin.OddinSdk.SampleIntegration
                 httpClientTimeout: 10,
                 host: "mq.integration.oddin.gg",
                 port: 5672,
-                ExceptionHandlingStrategy.THROW,
-                new CultureInfo("en-US"));
+                ExceptionHandlingStrategy.CATCH,
+                EnglishCulture);
 
             var feed = new Feed(config, loggerFactory);
 
@@ -39,17 +41,24 @@ namespace Oddin.OddinSdk.SampleIntegration
                 .Build();
 
             session.OnOddsChange += OnOddsChangeReceived;
+            session.OnBetStop += OnBetStopReceived;
 
             feed.Open();
             Console.ReadLine();
             feed.Close();
 
             session.OnOddsChange -= OnOddsChangeReceived;
+            session.OnBetStop -= OnBetStopReceived;
         }
 
         private static async void OnOddsChangeReceived(object sender, OddsChangeEventArgs<ISportEvent> eventArgs)
         {
-            Console.WriteLine($"Odds changed in {await eventArgs.GetOddsChange().Event.GetNameAsync(new CultureInfo("en-US"))}");
+            Console.WriteLine($"Odds changed in {await eventArgs.GetOddsChange().Event.GetNameAsync(EnglishCulture)}");
+        }
+
+        private static async void OnBetStopReceived(object sender, BetStopEventArgs<ISportEvent> eventArgs)
+        {
+            Console.WriteLine($"Bet stop in {await eventArgs.GetBetStop().Event.GetNameAsync(EnglishCulture)}");
         }
     }
 }

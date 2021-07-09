@@ -87,30 +87,45 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
         public void Connect(MessageInterest messageInterest)
         {
-            var factory = CreateConnectionFactory();
+            _log.LogInformation($"Connecting {typeof(AmqpClient).Name} with message interest {messageInterest.Name}...");
 
-            CreateConnectionFromConnectionFactory(factory);
-            _connection.CallbackException += _onCallbackException;
-            _connection.ConnectionShutdown += _onConnectionShutdown;
+            try
+            {
+                var factory = CreateConnectionFactory();
 
-            _channel = _connection.CreateModel();
+                CreateConnectionFromConnectionFactory(factory);
+                _connection.CallbackException += _onCallbackException;
+                _connection.ConnectionShutdown += _onConnectionShutdown;
 
-            var queueInfo = _channel.QueueDeclare(
-                queue: "", // should be left blank
-                durable: false,
-                exclusive: true);
+                _channel = _connection.CreateModel();
+
+                var queueInfo = _channel.QueueDeclare(
+                    queue: "", // should be left blank
+                    durable: false,
+                    exclusive: true);
                 
-            _channel.ExchangeDeclare(
-                exchange: EXCHANGE_NAME,
-                type: ExchangeType.Topic,
-                durable: true);
+                _channel.ExchangeDeclare(
+                    exchange: EXCHANGE_NAME,
+                    type: ExchangeType.Topic,
+                    durable: true);
 
-            foreach (var routingKey in messageInterest.RoutingKeys)
-                _channel.QueueBind(queueInfo.QueueName, EXCHANGE_NAME, routingKey);
+                foreach (var routingKey in messageInterest.RoutingKeys)
+                    _channel.QueueBind(queueInfo.QueueName, EXCHANGE_NAME, routingKey);
 
-            _consumer = new EventingBasicConsumer(_channel);
-            _consumer.Received += OnReceived;
-            _channel.BasicConsume(queueInfo.QueueName, autoAck: true, _consumer);
+                _consumer = new EventingBasicConsumer(_channel);
+                _consumer.Received += OnReceived;
+                _channel.BasicConsume(queueInfo.QueueName, autoAck: true, _consumer);
+            }
+            catch (CommunicationException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                var message = "An exception was thrown when connecting to AMQP feed!";
+                _log.LogError(message);
+                throw new CommunicationException(message);
+            }
         }
 
         private void HandleUnparsableMessage(byte[] messageBody, string messageRoutingKey)
@@ -158,7 +173,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
             if (TryGetMessageSentTime(eventArgs, out var sentTime) == false)
             {
-                _log.LogInformation($"{GetType()} was unable to get message SentAt time. Setting SentAt to GeneratedAt ({DateTimeOffset.FromUnixTimeMilliseconds(message.GeneratedAt)}");
+                //_log.LogInformation($"{GetType()} was unable to get message SentAt time. Setting SentAt to GeneratedAt ({DateTimeOffset.FromUnixTimeMilliseconds(message.GeneratedAt)}");
                 message.SentAt = message.GeneratedAt;
             }
             else
@@ -194,6 +209,9 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 case odds_change oddsChangeMessage:
                     Dispatch(OddsChangeMessageReceived, new SimpleMessageEventArgs<odds_change>(oddsChangeMessage, body), nameof(OddsChangeMessageReceived));
                     break;
+                case bet_stop betStopMessage:
+                    Dispatch(BetStopMessageReceived, new SimpleMessageEventArgs<bet_stop>(betStopMessage, body), nameof(BetStopMessageReceived));
+                    break;
 
                     // ...
 
@@ -206,6 +224,8 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
         public void Disconnect()
         {
+            _log.LogInformation($"Connecting {typeof(AmqpClient).Name}...");
+
             _consumer.Received -= OnReceived;
             _channel.Close();
             _connection.CallbackException -= _onCallbackException;
@@ -230,5 +250,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
         public event EventHandler<SimpleMessageEventArgs<alive>> AliveMessageReceived;
 
         public event EventHandler<SimpleMessageEventArgs<odds_change>> OddsChangeMessageReceived;
+
+        public event EventHandler<SimpleMessageEventArgs<bet_stop>> BetStopMessageReceived;
     }
 }
