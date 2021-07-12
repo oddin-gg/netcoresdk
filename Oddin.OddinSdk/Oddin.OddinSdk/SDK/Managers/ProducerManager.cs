@@ -1,18 +1,27 @@
 ﻿using Microsoft.Extensions.Logging;
+using Oddin.OddinSdk.Common;
+using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.API.Abstractions;
+using Oddin.OddinSdk.SDK.API.Entities;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
+using Oddin.OddinSdk.SDK.FeedConfiguration;
 using Oddin.OddinSdk.SDK.Managers.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Oddin.OddinSdk.SDK.Managers
 {
     internal class ProducerManager : LoggingBase, IProducerManager
     {
-        private IApiClient _apiClient;
+        public const int UNKNOWN_PRODUCER_ID = 99;
+        public const int STATEFUL_RECOVERY_WINDOW_MINUTES = 60;
 
-        // TODO: add cache
-        public IReadOnlyCollection<IProducer> Producers => _apiClient.GetProducers();
+        private readonly IApiClient _apiClient;
+        private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
+        private IReadOnlyCollection<IProducer> _producers;
+
+        public IReadOnlyCollection<IProducer> Producers => _producers;
 
         public void AddTimestampBeforeDisconnect(int id, DateTime timestamp)
         {
@@ -24,24 +33,44 @@ namespace Oddin.OddinSdk.SDK.Managers
             throw new NotImplementedException();
         }
 
-        public bool Exists(int id)
+        private bool TryGet(int id, out IProducer result)
         {
-            throw new NotImplementedException();
+            result = _producers?.FirstOrDefault(p => p.Id == id);
+            if (result == default)
+            {
+                result = CreateUnknownProducer();
+                return false;
+            }
+            return true;
         }
 
-        public bool Exists(string name)
+        private bool TryGet(string name, out IProducer result)
         {
-            throw new NotImplementedException();
+            result = _producers?.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.InvariantCultureIgnoreCase));
+            if (result == default)
+            {
+                result = CreateUnknownProducer();
+                return false;
+            }
+            return true;
         }
+
+        public bool Exists(int id)
+            => TryGet(id, out var _);
+
+        public bool Exists(string name)
+            => TryGet(name, out var _);
 
         public IProducer Get(int id)
         {
-            throw new NotImplementedException();
+            TryGet(id, out var result);
+            return result;
         }
 
         public IProducer Get(string name)
         {
-            throw new NotImplementedException();
+            TryGet(name, out var result);
+            return result;
         }
 
         public void RemoveTimestampBeforeDisconnect(int id)
@@ -50,9 +79,29 @@ namespace Oddin.OddinSdk.SDK.Managers
         }
 
 
-        public ProducerManager(IApiClient apiClient, ILoggerFactory loggerFactory) : base(loggerFactory)
+        public ProducerManager(IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy, ILoggerFactory loggerFactory)
+            : base(loggerFactory)
         {
+            if (apiClient is null)
+                throw new ArgumentNullException($"{nameof(apiClient)}");
+
             _apiClient = apiClient;
+            _exceptionHandlingStrategy = exceptionHandlingStrategy;
+
+            try
+            {
+                _producers = _apiClient.GetProducers();
+            }
+            catch (Exception e)
+            when (e is CommunicationException
+                || e is MappingException)
+            {
+                e.HandleAccordingToStrategy(GetType().Name, _log, _exceptionHandlingStrategy);
+            }
         }
+
+
+        private Producer CreateUnknownProducer()
+            => new Producer(UNKNOWN_PRODUCER_ID, "Unknown", "Unknown producer", false, "live|prematch", STATEFUL_RECOVERY_WINDOW_MINUTES);
     }
 }

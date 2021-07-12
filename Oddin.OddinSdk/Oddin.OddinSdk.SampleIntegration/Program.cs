@@ -2,16 +2,24 @@
 using Oddin.OddinSdk.SDK;
 using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using Oddin.OddinSdk.SDK.Configuration;
+using Oddin.OddinSdk.SDK.AMQP.EventArguments;
+using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
+using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Sessions;
 using Serilog;
 using System;
+using System.Globalization;
 
 namespace Oddin.OddinSdk.SampleIntegration
 {
     class Program
     {
+        private static CultureInfo EnglishCulture => new CultureInfo("en-US");
+
         static void Main(string[] args)
         {
             var serilogLogger = new LoggerConfiguration()
+                .MinimumLevel.Warning()
                 .WriteTo
                 .Console()
                 .CreateLogger();
@@ -25,17 +33,30 @@ namespace Oddin.OddinSdk.SampleIntegration
                 .Build();
 
             var feed = new Feed(config, loggerFactory);
-            //foreach (var producer in feed.ProducerManager.Producers)
-            //    Console.WriteLine(producer.Name);
+
+            var session = feed.CreateBuilder()
+                .SetMessageInterest(MessageInterest.AllMessages)
+                .Build();
+
+            session.OnOddsChange += OnOddsChangeReceived;
+            session.OnBetStop += OnBetStopReceived;
 
             feed.Open();
             Console.ReadLine();
             feed.Close();
+
+            session.OnOddsChange -= OnOddsChangeReceived;
+            session.OnBetStop -= OnBetStopReceived;
         }
 
-        private static void OnDummyFeedMessageReceived(object _, string message)
+        private static async void OnOddsChangeReceived(object sender, OddsChangeEventArgs<ISportEvent> eventArgs)
         {
-            Console.WriteLine(message);
+            Console.WriteLine($"Odds changed in {await eventArgs.GetOddsChange().Event.GetNameAsync(EnglishCulture)}");
+        }
+
+        private static async void OnBetStopReceived(object sender, BetStopEventArgs<ISportEvent> eventArgs)
+        {
+            Console.WriteLine($"Bet stop in {await eventArgs.GetBetStop().Event.GetNameAsync(EnglishCulture)}");
         }
     }
 }
