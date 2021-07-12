@@ -5,7 +5,7 @@ using Oddin.OddinSdk.SDK.Dispatch;
 using Oddin.OddinSdk.SDK.Managers;
 using Oddin.OddinSdk.SDK.Managers.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Configuration;
 using System;
 using Unity;
 using Unity.Injection;
@@ -13,6 +13,12 @@ using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Configuration;
+using Oddin.OddinSdk.SDK.Configuration;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 
 namespace Oddin.OddinSdk.SDK
 {
@@ -38,7 +44,7 @@ namespace Oddin.OddinSdk.SDK
         }
 
 
-        private void RegisterObjectsToUnityContainer(IOddsFeedConfiguration config, ILoggerFactory loggerFactory)
+        private void RegisterObjectsToUnityContainer(IFeedConfiguration config, ILoggerFactory loggerFactory)
         {
             // INFO: registration order matters!
 
@@ -84,7 +90,7 @@ namespace Oddin.OddinSdk.SDK
         /// <param name="config">Feed configuration</param>
         /// <param name="loggerFactory">Logger factory</param>
         /// <exception cref="ArgumentNullException"/>
-        public Feed(IOddsFeedConfiguration config, ILoggerFactory loggerFactory = null) : base(loggerFactory)
+        public Feed(IFeedConfiguration config, ILoggerFactory loggerFactory = null) : base(loggerFactory)
         {
             if (config is null)
                 throw new ArgumentNullException();
@@ -92,6 +98,32 @@ namespace Oddin.OddinSdk.SDK
             _unityContainer = new UnityContainer();
             RegisterObjectsToUnityContainer(config, loggerFactory);
         }
+
+        /// <summary>
+        /// Constructs a <see cref="IFeedConfiguration"/> instance from provided information
+        /// </summary>
+        /// <returns>A <see cref="IFeedConfiguration"/> instance created from provided information</returns>
+        /// <summary>
+        /// Constructs a <see cref="IFeedConfiguration"/> instance from provided information
+        /// </summary>
+        /// <returns>A <see cref="IFeedConfiguration"/> instance created from provided information</returns>
+        public static ITokenSetter GetConfigurationBuilder()
+        {
+            return new TokenSetter(new AppConfigurationSectionProvider());
+        }
+        
+        /// <summary>
+        /// Get all available languages that can be used within the SDK and are supported by the messages
+        /// </summary>
+        /// <returns>IEnumerable&lt;CultureInfo&gt;</returns>
+        public static IEnumerable<CultureInfo> AvailableLanguages()
+        {
+            var codes = new[] { "en" };
+            return codes
+                .Select(c => CultureInfo.GetCultureInfo(c))
+                .OrderBy(c => c.Name);
+        }
+
 
         /// <summary>
         /// Opens connection to the feed

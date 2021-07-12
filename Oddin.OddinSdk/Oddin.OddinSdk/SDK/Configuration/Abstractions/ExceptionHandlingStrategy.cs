@@ -1,4 +1,4 @@
-﻿namespace Oddin.OddinSdk.SDK.FeedConfiguration
+﻿namespace Oddin.OddinSdk.SDK.Configuration.Abstractions
 {
     public enum ExceptionHandlingStrategy
     {

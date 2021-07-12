@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oddin.OddinSdk.SDK;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
+using Oddin.OddinSdk.SDK.Configuration;
 using Serilog;
 using System;
 
@@ -17,14 +18,11 @@ namespace Oddin.OddinSdk.SampleIntegration
 
             var loggerFactory = new LoggerFactory().AddSerilog(serilogLogger);
 
-            var config = new CustomOddsFeedConfiguration(
-                accessToken: "1a0c5a30-74ed-416d-b120-8c05f92e382f",
-                apiHost: "api-mq.integration.oddin.gg",
-                useApiSsl: true,
-                httpClientTimeout: 10,
-                host: "mq.integration.oddin.gg",
-                port: 5672,
-                ExceptionHandlingStrategy.THROW);
+            var config = Feed
+                .GetConfigurationBuilder()
+                .SetAccessToken("1a0c5a30-74ed-416d-b120-8c05f92e382f")
+                .SelectIntegration()
+                .Build();
 
             var feed = new Feed(config, loggerFactory);
             //foreach (var producer in feed.ProducerManager.Producers)
