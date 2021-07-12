@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oddin.OddinSdk.Common;
+using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
@@ -92,6 +93,8 @@ namespace Oddin.OddinSdk.SDK.Managers
                 _producers = _apiClient.GetProducers();
             }
             catch (Exception e)
+            when (e is CommunicationException
+                || e is MappingException)
             {
                 e.HandleAccordingToStrategy(GetType().Name, _log, _exceptionHandlingStrategy);
             }

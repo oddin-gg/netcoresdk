@@ -56,6 +56,8 @@ namespace Oddin.OddinSdk.SDK
                     return _unityContainer.Resolve<IApiClient>().GetBookmakerDetails();
                 }
                 catch (Exception e)
+                when (e is CommunicationException
+                    || e is MappingException)
                 {
                     e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
                 }

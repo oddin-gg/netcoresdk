@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oddin.OddinSdk.Common;
+using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.FeedConfiguration;
@@ -46,6 +47,8 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                     .Name;
             }
             catch (Exception e)
+            when (e is CommunicationException
+                || e is MappingException)
             {
                 e.HandleAccordingToStrategy(GetType().Name, _log, _exceptionHandlingStrategy);
             }
