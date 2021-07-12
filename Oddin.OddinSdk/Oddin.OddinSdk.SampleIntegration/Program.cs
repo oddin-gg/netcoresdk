@@ -5,7 +5,6 @@ using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using Oddin.OddinSdk.SDK.Sessions;
 using Serilog;
 using System;
-using System.Globalization;
 using System.Linq;
 
 namespace Oddin.OddinSdk.SampleIntegration
@@ -26,6 +25,7 @@ namespace Oddin.OddinSdk.SampleIntegration
                 .GetConfigurationBuilder()
                 .SetAccessToken("1a0c5a30-74ed-416d-b120-8c05f92e382f")
                 .SelectIntegration()
+                .LoadFromConfigFile()
                 .Build();
 
             var feed = new Feed(config, loggerFactory);
