@@ -3,7 +3,7 @@ using Oddin.OddinSdk.Common;
 using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.API.Abstractions;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

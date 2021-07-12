@@ -16,17 +16,13 @@ using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Configuration;
-using Oddin.OddinSdk.SDK.Configuration;
 using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Mapping;
 using Oddin.OddinSdk.SDK.Abstractions;
 using Oddin.OddinSdk.SDK.Sessions.Abstractions;
 using Oddin.OddinSdk.SDK.Sessions;
-using System.Collections.Generic;
 using Oddin.OddinSdk.Common.Exceptions;
-using System.Linq;
 using Oddin.OddinSdk.Common;
 
 namespace Oddin.OddinSdk.SDK
@@ -35,7 +31,7 @@ namespace Oddin.OddinSdk.SDK
     {
         private readonly IUnityContainer _unityContainer;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly IOddsFeedConfiguration _config;
+        private readonly IFeedConfiguration _config;
         private bool _isOpened;
         private readonly object _isOpenedLock = new object();
         private readonly IList<IOpenable> Sessions = new List<IOpenable>();
@@ -72,7 +68,7 @@ namespace Oddin.OddinSdk.SDK
         }
 
 
-        private void RegisterObjectsToUnityContainer(IFeedConfiguration config, ILoggerFactory loggerFactory)
+        private void RegisterObjectsToUnityContainer()
         {
             // INFO: registration order matters!
 
@@ -158,6 +154,7 @@ namespace Oddin.OddinSdk.SDK
             {
                 if (_isOpened)
                     return false;
+
                 _isOpened = true;
                 return true;
             }

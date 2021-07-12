@@ -2,7 +2,7 @@
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Enums;
 using Oddin.OddinSdk.SDK.API.Abstractions;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using System.Collections.Generic;
 
 namespace Oddin.OddinSdk.SDK.AMQP.Mapping

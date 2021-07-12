@@ -4,7 +4,7 @@ using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using Oddin.OddinSdk.SDK.Managers.Abstractions;
 using System;
 using System.Collections.Generic;

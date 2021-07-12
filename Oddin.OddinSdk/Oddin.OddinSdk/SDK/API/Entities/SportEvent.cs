@@ -4,7 +4,7 @@ using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.AMQP;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;

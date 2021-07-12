@@ -5,8 +5,8 @@ using Oddin.OddinSdk.SDK.AMQP.EventArguments;
 using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Messages;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using Oddin.OddinSdk.SDK.Dispatch;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
 using Oddin.OddinSdk.SDK.Sessions.Abstractions;
 using System;
 
