@@ -129,6 +129,26 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                 new MarketMetadata(oddsChangeMarket.market_metadata));
         }
 
+        private int? GetBettingStatus(odds_changeOdds odds)
+        {
+            if (odds is null)
+                return null;
+
+            return odds.betting_statusSpecified
+                ? (int?)odds.betting_status
+                : null;
+        }
+
+        private int? GetBetStopReason(odds_changeOdds odds)
+        {
+            if (odds is null)
+                return null;
+
+            return odds.betstop_reasonSpecified
+                ? (int?)odds.betstop_reason
+                : null;
+        }
+
         public IOddsChange<T> MapOddsChange<T>(odds_change message, byte[] rawMessage)
             where T : ISportEvent
         {
@@ -144,7 +164,9 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                 (T)sportEvent,
                 message.request_idSpecified ? (long?)message.request_id : null,
                 rawMessage,
-                message.odds?.market?.Select(market => GetMarketWithOdds(market)));
+                message.odds?.market?.Select(market => GetMarketWithOdds(market)),
+                GetBetStopReason(message.odds),
+                GetBettingStatus(message.odds));
         }
 
         public IBetStop<T> MapBetStop<T>(bet_stop message, byte[] rawMessage)

@@ -9,17 +9,15 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
     /// <typeparam name="T"></typeparam>
     public interface IOddsChange<out T> : IMarketMessage<IMarketWithOdds, T> where T : ISportEvent
     {
-        // INFO: Oddin API most likely doesn't fill this info
+        /// <summary>
+        /// Gets the <see cref="int?"/> specifying the reason for betting being stopped
+        /// </summary>
+        /// <value>The bet stop reason.</value>
+        int? BetStopReason { get; }
 
-        ///// <summary>
-        ///// Gets the <see cref="INamedValue"/> specifying the reason for betting being stopped, or a null reference if the reason is not known
-        ///// </summary>
-        ///// <value>The bet stop reason.</value>
-        //INamedValue BetStopReason { get; }
-
-        ///// <summary>
-        ///// Gets a <see cref="INamedValue"/> indicating the odds change was triggered by a possible event
-        ///// </summary>
-        //INamedValue BettingStatus { get; }
+        /// <summary>
+        /// Gets a <see cref="int?"/> indicating the betting status
+        /// </summary>
+        int? BettingStatus { get; }
     }
 }
