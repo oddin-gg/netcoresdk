@@ -28,10 +28,10 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
         public FeedMessageMapper(IApiClient apiClient, IProducerManager producerManager, ExceptionHandlingStrategy exceptionHandlingStrategy, ILoggerFactory loggerFactory)
         {
             if (apiClient is null)
-                throw new ArgumentNullException($"{nameof(apiClient)}");
+                throw new ArgumentNullException(nameof(apiClient));
 
             if (producerManager is null)
-                throw new ArgumentNullException($"{nameof(producerManager)}");
+                throw new ArgumentNullException(nameof(producerManager));
 
             _apiClient = apiClient;
             _producerManager = producerManager;
@@ -75,7 +75,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
         private IAdditionalProbabilities GetAdditionalProbabilities(oddsChangeMarketOutcome outcome)
         {
             if (outcome is null)
-                throw new ArgumentNullException($"{nameof(outcome)}");
+                throw new ArgumentNullException(nameof(outcome));
 
             if (outcome.win_probabilitiesSpecified == false
                 && outcome.lose_probabilitiesSpecified == false
@@ -97,7 +97,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
         private IOutcomeOdds GetOutcomeOdds(oddsChangeMarketOutcome outcome)
         {
             if (outcome is null)
-                throw new ArgumentNullException($"{nameof(outcome)}");
+                throw new ArgumentNullException(nameof(outcome));
 
             return new OutcomeOdds(
                 outcome.oddsSpecified ? outcome.odds : (double?)null,
@@ -111,7 +111,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
         private IMarketWithOdds GetMarketWithOdds(oddsChangeMarket oddsChangeMarket)
         {
             if (oddsChangeMarket is null)
-                throw new ArgumentNullException($"{nameof(oddsChangeMarket)}");
+                throw new ArgumentNullException(nameof(oddsChangeMarket));
 
             var marketStatus = oddsChangeMarket.statusSpecified
                     ? EnumParsingHelper.GetEnumFromInt<MarketStatus>(oddsChangeMarket.status)
@@ -153,7 +153,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
             where T : ISportEvent
         {
             if (message is null)
-                throw new ArgumentNullException($"{nameof(message)}");
+                throw new ArgumentNullException(nameof(message));
 
             var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
             ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy, _loggerFactory);
@@ -173,7 +173,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
             where T : ISportEvent
         {
             if (message is null)
-                throw new ArgumentNullException($"{nameof(message)}");
+                throw new ArgumentNullException(nameof(message));
 
             var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
             ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy, _loggerFactory);

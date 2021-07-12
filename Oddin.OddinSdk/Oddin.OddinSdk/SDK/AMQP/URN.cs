@@ -22,7 +22,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
         public URN(string urn)
         {
             if (urn is null)
-                throw new ArgumentNullException($"{nameof(urn)}");
+                throw new ArgumentNullException(nameof(urn));
 
             if (TryParseUrn(urn, out var prefix, out var type, out var id) == false)
                 throw new ArgumentException($"Given argument {nameof(urn)} of type {typeof(string).Name} is not a valid {typeof(URN).Name}");

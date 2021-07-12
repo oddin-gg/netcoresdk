@@ -15,10 +15,10 @@ namespace Oddin.OddinSdk.SDK.AMQP.EventArguments
         internal BetStopEventArgs(IFeedMessageMapper messageMapper, bet_stop feedMessage, byte[] rawMessage)
         {
             if (messageMapper is null)
-                throw new ArgumentNullException($"{nameof(messageMapper)}");
+                throw new ArgumentNullException(nameof(messageMapper));
 
             if (feedMessage is null)
-                throw new ArgumentNullException($"{nameof(feedMessage)}");
+                throw new ArgumentNullException(nameof(feedMessage));
 
 
             _messageMapper = messageMapper;

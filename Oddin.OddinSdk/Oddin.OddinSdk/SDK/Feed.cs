@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using Oddin.OddinSdk.Common.Exceptions;
 using System.Linq;
 using Oddin.OddinSdk.Common;
+using Oddin.OddinSdk.SDK.Dispatch.EventArguments;
 
 namespace Oddin.OddinSdk.SDK
 {
@@ -121,7 +122,7 @@ namespace Oddin.OddinSdk.SDK
         public Feed(IOddsFeedConfiguration config, ILoggerFactory loggerFactory = null) : base(loggerFactory)
         {
             if (config is null)
-                throw new ArgumentNullException($"{nameof(config)}");
+                throw new ArgumentNullException(nameof(config));
 
             _config = config;
             _loggerFactory = loggerFactory;
@@ -253,10 +254,32 @@ namespace Oddin.OddinSdk.SDK
         /// </summary>
         public event EventHandler<EventArgs> Disconnected;
 
+        /// <summary>
+        /// Occurs when feed is closed
+        /// </summary>
+        public event EventHandler<FeedCloseEventArgs> Closed;
+
+        /// <summary>
+        /// Occurs when a requested event recovery completes
+        /// </summary>
+        public event EventHandler<EventRecoveryCompletedEventArgs> EventRecoveryCompleted;
+
+        /// <summary>
+        /// Raised when the current <see cref="IOddsFeed" /> instance determines that the <see cref="IProducer" /> associated with
+        /// the odds feed went down
+        /// </summary>
+        public event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
+
+        /// <summary>
+        /// Raised when the current <see cref="IOddsFeed" /> instance determines that the <see cref="IProducer" /> associated with
+        /// the odds feed went up (back online)
+        /// </summary>
+        public event EventHandler<ProducerStatusChangeEventArgs> ProducerUp;
+
         internal IOddsFeedSession CreateSession(MessageInterest messageInterest)
         {
             if (messageInterest is null)
-                throw new ArgumentNullException($"{nameof(messageInterest)}");
+                throw new ArgumentNullException(nameof(messageInterest));
 
             if (IsOpened())
                 throw new InvalidOperationException($"Cannot create a session in an already opened feed!");

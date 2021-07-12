@@ -25,10 +25,10 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
             : base(loggerFactory)
         {
             if (specifiers is null)
-                throw new ArgumentNullException($"{nameof(specifiers)}");
+                throw new ArgumentNullException(nameof(specifiers));
 
             if (apiClient is null)
-                throw new ArgumentNullException($"{nameof(apiClient)}");
+                throw new ArgumentNullException(nameof(apiClient));
 
             Id = id;
             Specifiers = specifiers as IReadOnlyDictionary<string, string>;

@@ -1,4 +1,4 @@
-﻿using Oddin.OddinSdk.SDK.Dispatch;
+﻿using Oddin.OddinSdk.SDK.Dispatch.EventArguments;
 using Oddin.OddinSdk.SDK.Managers.Abstractions;
 using Oddin.OddinSdk.SDK.Sessions.Abstractions;
 using System;

@@ -32,13 +32,13 @@ namespace Oddin.OddinSdk.SDK.Sessions
             : base(loggerFactory)
         {
             if (amqpClient is null)
-                throw new ArgumentNullException($"{nameof(amqpClient)}");
+                throw new ArgumentNullException(nameof(amqpClient));
 
             if (feedMessageMapper is null)
-                throw new ArgumentNullException($"{nameof(feedMessageMapper)}");
+                throw new ArgumentNullException(nameof(feedMessageMapper));
 
             if (messageInterest is null)
-                throw new ArgumentNullException($"{nameof(messageInterest)}");
+                throw new ArgumentNullException(nameof(messageInterest));
 
             _amqpClient = amqpClient;
             _feedMessageMapper = feedMessageMapper;

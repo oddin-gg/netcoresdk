@@ -15,6 +15,7 @@ namespace Oddin.OddinSdk.SDK.Managers
     internal class ProducerManager : LoggingBase, IProducerManager
     {
         public const int UNKNOWN_PRODUCER_ID = 99;
+        public const int MAX_INACTIVITY_SECONDS = 10;
         public const int STATEFUL_RECOVERY_WINDOW_MINUTES = 60;
 
         private readonly IApiClient _apiClient;
@@ -83,7 +84,7 @@ namespace Oddin.OddinSdk.SDK.Managers
             : base(loggerFactory)
         {
             if (apiClient is null)
-                throw new ArgumentNullException($"{nameof(apiClient)}");
+                throw new ArgumentNullException(nameof(apiClient));
 
             _apiClient = apiClient;
             _exceptionHandlingStrategy = exceptionHandlingStrategy;
@@ -102,6 +103,6 @@ namespace Oddin.OddinSdk.SDK.Managers
 
 
         private Producer CreateUnknownProducer()
-            => new Producer(UNKNOWN_PRODUCER_ID, "Unknown", "Unknown producer", false, "live|prematch", STATEFUL_RECOVERY_WINDOW_MINUTES);
+            => new Producer(UNKNOWN_PRODUCER_ID, "Unknown", "Unknown producer", false, "live|prematch", MAX_INACTIVITY_SECONDS, STATEFUL_RECOVERY_WINDOW_MINUTES);
     }
 }

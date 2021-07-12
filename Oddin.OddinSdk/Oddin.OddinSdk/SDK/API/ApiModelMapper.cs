@@ -130,6 +130,10 @@ namespace Oddin.OddinSdk.SDK.API
                 model.description,
                 model.active,
                 model.scope,
+
+                // TODO: use SdkInfo (~ config) to provide maxInactivitySeconds !!!!!!!!!!!!!!!!!!
+                10,
+
                 model.stateful_recovery_window_in_minutes);
         }
 

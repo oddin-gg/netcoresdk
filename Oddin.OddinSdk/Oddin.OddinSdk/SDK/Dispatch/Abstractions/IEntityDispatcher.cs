@@ -2,7 +2,7 @@
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using System;
 
-namespace Oddin.OddinSdk.SDK.Dispatch
+namespace Oddin.OddinSdk.SDK.Dispatch.Abstractions
 {
     /// <summary>
     /// Specifies a contract defining events used for user notification

@@ -23,7 +23,7 @@ namespace Oddin.OddinSdk.SDK.API.Entities
             : base(loggerFactory)
         {
             if (apiClient is null)
-                throw new ArgumentNullException($"{nameof(apiClient)}");
+                throw new ArgumentNullException(nameof(apiClient));
 
             _id = urn;
             _apiClient = apiClient;
