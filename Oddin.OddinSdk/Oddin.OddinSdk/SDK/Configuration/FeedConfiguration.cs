@@ -24,7 +24,6 @@ namespace Oddin.OddinSdk.SDK.Configuration
         public int MaxRecoveryTime { get; }
         public int MaxInactivitySeconds { get; }
         public int HttpClientTimeout { get; }
-        public int RecoveryHttpClientTimeout { get; }
 
         internal AppConfigurationSection Section { get; }
 
