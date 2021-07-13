@@ -6,12 +6,13 @@ using Oddin.OddinSdk.SDK.Sessions;
 using Serilog;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Oddin.OddinSdk.SampleIntegration
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var serilogLogger = new LoggerConfiguration()
                 .MinimumLevel.Warning()
@@ -38,6 +39,12 @@ namespace Oddin.OddinSdk.SampleIntegration
             session.OnBetStop += OnBetStopReceived;
 
             feed.Open();
+            Console.ReadLine();
+
+            var producer = feed.ProducerManager.Producers.Where(p => p.Name == "live").FirstOrDefault();
+            var eventId = new SDK.AMQP.URN("od:match:34849");
+            Console.WriteLine($"Recover request response code: {await feed.EventRecoveryRequestIssuer.RecoverEventMessagesAsync(producer, eventId)}");
+
             Console.ReadLine();
             feed.Close();
 

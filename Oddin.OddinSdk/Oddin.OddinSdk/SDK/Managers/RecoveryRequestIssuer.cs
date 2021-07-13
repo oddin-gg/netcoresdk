@@ -1,7 +1,7 @@
 ﻿using Oddin.OddinSdk.SDK.AMQP;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using Oddin.OddinSdk.SDK.Managers.Abstractions;
 using System;
 using System.Threading.Tasks;
@@ -10,31 +10,34 @@ namespace Oddin.OddinSdk.SDK.Managers
 {
     internal class RecoveryRequestIssuer : IEventRecoveryRequestIssuer
     {
+        private readonly IRequestIdFactory _requestIdFactory;
         private readonly IApiClient _apiClient;
         private readonly int _nodeId;
 
-        public RecoveryRequestIssuer(IApiClient apiClient, IOddsFeedConfiguration config)
+        public RecoveryRequestIssuer(IRequestIdFactory requestIdFactory, IApiClient apiClient, IFeedConfiguration config)
         {
+            if (requestIdFactory is null)
+                throw new ArgumentNullException(nameof(requestIdFactory));
+
             if (apiClient is null)
                 throw new ArgumentNullException(nameof(apiClient));
 
             if (config is null)
                 throw new ArgumentNullException(nameof(config));
 
+            _requestIdFactory = requestIdFactory;
             _apiClient = apiClient;
-
-            // TODO: load node id from config !!!!!!!!!!!!!!!!!!!!!!
-            _nodeId = 0;
+            _nodeId = config.NodeId;
         }
 
-        public Task<long> RecoverEventMessagesAsync(IProducer producer, URN eventId)
+        public async Task<long> RecoverEventMessagesAsync(IProducer producer, URN eventId)
         {
-            throw new System.NotImplementedException();
+            return await _apiClient.PostEventRecoveryRequest(producer.Name, eventId);
         }
 
-        public Task<long> RecoverEventStatefulMessagesAsync(IProducer producer, URN eventId)
+        public async Task<long> RecoverEventStatefulMessagesAsync(IProducer producer, URN eventId)
         {
-            throw new System.NotImplementedException();
+            return await _apiClient.PostEventStatefulRecoveryRequest(producer.Name, eventId);
         }
     }
 }

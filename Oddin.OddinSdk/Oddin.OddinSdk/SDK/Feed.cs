@@ -39,6 +39,14 @@ namespace Oddin.OddinSdk.SDK
         private bool _isDisposed;
 
         /// <summary>
+        /// Gets a <see cref="IEventRecoveryRequestIssuer"/> instance used to issue recovery requests to the feed
+        /// </summary>
+        public IEventRecoveryRequestIssuer EventRecoveryRequestIssuer
+        {
+            get => _unityContainer.Resolve<IEventRecoveryRequestIssuer>();
+        }
+
+        /// <summary>
         /// Gets a <see cref="IProducerManager" /> instance used to retrieve producer related data
         /// </summary>
         /// <value>The producer manager</value>
@@ -75,10 +83,18 @@ namespace Oddin.OddinSdk.SDK
 
             // register existing logger factory
             _unityContainer.RegisterInstance(typeof(ILoggerFactory), _loggerFactory);
+
+            // register ApiModelMapper
+            _unityContainer.RegisterType<IApiModelMapper, ApiModelMapper>(
+                new InjectionConstructor(
+                    _config
+                    )
+                );
             
             // register ApiClient as singleton
             _unityContainer.RegisterSingleton<IApiClient, ApiClient>(
                 new InjectionConstructor(
+                    _unityContainer.Resolve<IApiModelMapper>(),
                     _config,
                     _unityContainer.Resolve<ILoggerFactory>()
                     )
@@ -103,7 +119,7 @@ namespace Oddin.OddinSdk.SDK
                     )
                 );
 
-            // register Amqp client as singleton
+            // register AmqpClient as singleton
             _unityContainer.RegisterSingleton<IAmqpClient, AmqpClient>(
                 new InjectionConstructor(
                     _config,
@@ -111,6 +127,19 @@ namespace Oddin.OddinSdk.SDK
                     (EventHandler<CallbackExceptionEventArgs>)OnAmqpCallbackException,
                     (EventHandler<ShutdownEventArgs>)OnConnectionShutdown,
                     _unityContainer.Resolve<ILoggerFactory>()
+                    )
+                );
+
+            // register RequestIdFactory as singleton
+            _unityContainer.RegisterSingleton<IRequestIdFactory, RequestIdFactory>(
+                new InjectionConstructor());
+
+            // register RecoveryRequestIssuer as singleton
+            _unityContainer.RegisterSingleton<IEventRecoveryRequestIssuer, RecoveryRequestIssuer>(
+                new InjectionConstructor(
+                    _unityContainer.Resolve<IRequestIdFactory>(),
+                    _unityContainer.Resolve<IApiClient>(),
+                    _config
                     )
                 );
         }
