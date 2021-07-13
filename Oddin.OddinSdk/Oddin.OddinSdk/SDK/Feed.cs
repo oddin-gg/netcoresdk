@@ -30,6 +30,8 @@ namespace Oddin.OddinSdk.SDK
 {
     public class Feed : DispatcherBase, IOddsFeed
     {
+        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(Feed));
+
         private readonly IUnityContainer _unityContainer;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IFeedConfiguration _config;
@@ -81,9 +83,6 @@ namespace Oddin.OddinSdk.SDK
         {
             // INFO: registration order matters!
 
-            // register existing logger factory
-            _unityContainer.RegisterInstance(typeof(ILoggerFactory), _loggerFactory);
-
             // register ApiModelMapper
             _unityContainer.RegisterType<IApiModelMapper, ApiModelMapper>(
                 new InjectionConstructor(
@@ -95,8 +94,7 @@ namespace Oddin.OddinSdk.SDK
             _unityContainer.RegisterSingleton<IApiClient, ApiClient>(
                 new InjectionConstructor(
                     _unityContainer.Resolve<IApiModelMapper>(),
-                    _config,
-                    _unityContainer.Resolve<ILoggerFactory>()
+                    _config
                     )
                 );
             
@@ -104,8 +102,7 @@ namespace Oddin.OddinSdk.SDK
             _unityContainer.RegisterSingleton<IProducerManager, ProducerManager>(
                 new InjectionConstructor(
                     _unityContainer.Resolve<IApiClient>(),
-                    _config.ExceptionHandlingStrategy,
-                    _unityContainer.Resolve<ILoggerFactory>()
+                    _config.ExceptionHandlingStrategy
                     )
                 );
 
@@ -114,8 +111,7 @@ namespace Oddin.OddinSdk.SDK
                 new InjectionConstructor(
                     _unityContainer.Resolve<IApiClient>(),
                     _unityContainer.Resolve<IProducerManager>(),
-                    _config.ExceptionHandlingStrategy,
-                    _unityContainer.Resolve<ILoggerFactory>()
+                    _config.ExceptionHandlingStrategy
                     )
                 );
 
@@ -125,8 +121,7 @@ namespace Oddin.OddinSdk.SDK
                     _config,
                     BookmakerDetails.VirtualHost,
                     (EventHandler<CallbackExceptionEventArgs>)OnAmqpCallbackException,
-                    (EventHandler<ShutdownEventArgs>)OnConnectionShutdown,
-                    _unityContainer.Resolve<ILoggerFactory>()
+                    (EventHandler<ShutdownEventArgs>)OnConnectionShutdown
                     )
                 );
 
@@ -150,13 +145,14 @@ namespace Oddin.OddinSdk.SDK
         /// <param name="config">Feed configuration</param>
         /// <param name="loggerFactory">Logger factory</param>
         /// <exception cref="ArgumentNullException"/>
-        public Feed(IFeedConfiguration config, ILoggerFactory loggerFactory = null) : base(loggerFactory)
+        public Feed(IFeedConfiguration config, ILoggerFactory loggerFactory = null)
         {
             if (config is null)
                 throw new ArgumentNullException(nameof(config));
 
             _config = config;
             _loggerFactory = loggerFactory;
+            SdkLoggerFactory.Initialize(_loggerFactory);
 
             _unityContainer = new UnityContainer();
             RegisterObjectsToUnityContainer();
@@ -343,7 +339,6 @@ namespace Oddin.OddinSdk.SDK
                 throw new InvalidOperationException($"Cannot create a session in an already opened feed!");
 
             var session = new OddsFeedSession(
-                _loggerFactory,
                 _unityContainer.Resolve<IAmqpClient>(),
                 _unityContainer.Resolve<IFeedMessageMapper>(),
                 messageInterest,

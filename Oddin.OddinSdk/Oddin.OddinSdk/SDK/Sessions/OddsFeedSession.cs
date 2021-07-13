@@ -14,6 +14,8 @@ namespace Oddin.OddinSdk.SDK.Sessions
 {
     internal class OddsFeedSession : DispatcherBase, IOddsFeedSession, IOpenable
     {
+        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(OddsFeedSession));
+
         private readonly IAmqpClient _amqpClient;
         private readonly IFeedMessageMapper _feedMessageMapper;
         private readonly MessageInterest _messageInterest;
@@ -24,12 +26,10 @@ namespace Oddin.OddinSdk.SDK.Sessions
         public string Name { get; }
 
         public OddsFeedSession(
-            ILoggerFactory loggerFactory,
             IAmqpClient amqpClient,
             IFeedMessageMapper feedMessageMapper,
             MessageInterest messageInterest,
             ExceptionHandlingStrategy exceptionHandlingStrategy)
-            : base(loggerFactory)
         {
             if (amqpClient is null)
                 throw new ArgumentNullException(nameof(amqpClient));

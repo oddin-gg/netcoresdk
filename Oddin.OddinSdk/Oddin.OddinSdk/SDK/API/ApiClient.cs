@@ -18,13 +18,13 @@ namespace Oddin.OddinSdk.SDK.API
         private readonly RestClient _restClient;
         private readonly CultureInfo _defaultCulture;
 
-        public ApiClient(IApiModelMapper apiModelMapper, IFeedConfiguration config, ILoggerFactory loggerFactory)
+        public ApiClient(IApiModelMapper apiModelMapper, IFeedConfiguration config)
         {
             if (apiModelMapper is null)
                 throw new ArgumentNullException(nameof(apiModelMapper));
 
             _apiModelMapper = apiModelMapper;
-            _restClient = new RestClient(config, loggerFactory);
+            _restClient = new RestClient(config);
             _defaultCulture = config.DefaultLocale;
         }
 
@@ -59,14 +59,14 @@ namespace Oddin.OddinSdk.SDK.API
         public async Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId)
         {
             var route = $"v1/{producerName}/odds/events/{sportEventId}/initiate_request";
-            var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, deserializeResponse: false);
+            var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, deserializeResponse: false, ignoreUnsuccessfulStatusCode: true);
             return (long)response.ResponseCode;
         }
 
         public async Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId)
         {
             var route = $"v1/{producerName}/stateful_messages/events/{sportEventId}/initiate_request";
-            var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, deserializeResponse: false);
+            var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, deserializeResponse: false, ignoreUnsuccessfulStatusCode: true);
             return (long)response.ResponseCode;
         }
     }

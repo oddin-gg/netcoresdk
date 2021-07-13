@@ -10,14 +10,16 @@ using System.Threading.Tasks;
 
 namespace Oddin.OddinSdk.SDK.API
 {
-    internal class RestClient : LoggingBase
+    internal class RestClient
     {
+        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(RestClient));
+
         private readonly string _apiHost;
         private readonly bool _useSsl;
         private readonly int _timeoutSeconds;
         private HttpClient _httpClient = new HttpClient();
 
-        public RestClient(IFeedConfiguration config, ILoggerFactory loggerFactory) : base(loggerFactory)
+        public RestClient(IFeedConfiguration config)
         {
             _apiHost = config.ApiHost;
             _useSsl = config.UseApiSsl;
@@ -32,11 +34,12 @@ namespace Oddin.OddinSdk.SDK.API
             HttpMethod method, 
             object objectToBeSent = null, 
             (string key, object value)[] parameters = default,
-            bool deserializeResponse = true
+            bool deserializeResponse = true,
+            bool ignoreUnsuccessfulStatusCode = false
             )
             where TData : class
         {
-            var result = await SendRequestGetResult<TData>(route, method, objectToBeSent, parameters, deserializeResponse);
+            var result = await SendRequestGetResult<TData>(route, method, objectToBeSent, parameters, deserializeResponse, ignoreUnsuccessfulStatusCode);
 
             if (result.Successful == false)
             {
@@ -58,14 +61,15 @@ namespace Oddin.OddinSdk.SDK.API
             HttpMethod method, 
             object objectToBeSent = null, 
             (string key, object value)[] parameters = default,
-            bool deserializeResponse = true
+            bool deserializeResponse = true,
+            bool ignoreUnsuccessfulStatusCode = false
             )
             where TData : class
         {
             RequestResult<TData> result;
             try
             {
-                result = SendRequestGetResult<TData>(route, method, objectToBeSent, parameters, deserializeResponse)
+                result = SendRequestGetResult<TData>(route, method, objectToBeSent, parameters, deserializeResponse, ignoreUnsuccessfulStatusCode)
                     .GetAwaiter()
                     .GetResult();
             }
@@ -101,7 +105,8 @@ namespace Oddin.OddinSdk.SDK.API
             HttpMethod method, 
             object objectToBeSent = null, 
             (string key, object value)[] parameters = default,
-            bool deserializeResponse = true
+            bool deserializeResponse = true,
+            bool ignoreUnsuccessufulStatusCode = false
             )
             where TData : class
         {
@@ -130,15 +135,26 @@ namespace Oddin.OddinSdk.SDK.API
                 return RequestResult<TData>.Failure(failureMessage: $"Http request timed out with timeout {_timeoutSeconds}s!");
             }
 
-            if (httpResponse.IsSuccessStatusCode == false)
-                return RequestResult<TData>.Failure(
-                    failureMessage: $"Received failure http status code: {httpResponse?.StatusCode} {httpResponse?.ReasonPhrase}",
-                    responseCode: httpResponse.StatusCode);
-
             var requestResultString = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
+            if (httpResponse.IsSuccessStatusCode == false)
+            {
+                if (ignoreUnsuccessufulStatusCode)
+                    return RequestResult<TData>.Success(
+                        data: default,
+                        responseCode: httpResponse.StatusCode,
+                        rawData: requestResultString);
+                else
+                    return RequestResult<TData>.Failure(
+                        failureMessage: $"Received failure http status code: {httpResponse?.StatusCode} {httpResponse?.ReasonPhrase}",
+                        responseCode: httpResponse.StatusCode);
+            }
+
             if (deserializeResponse == false)
-                return RequestResult<TData>.Success(default, httpResponse.StatusCode, requestResultString);
+                return RequestResult<TData>.Success(
+                    data: default,
+                    responseCode: httpResponse.StatusCode,
+                    rawData: requestResultString);
 
             if (XmlHelper.TryDeserialize<TData>(requestResultString, out var responseDto) == false)
                 return RequestResult<TData>.Failure(
@@ -152,7 +168,10 @@ namespace Oddin.OddinSdk.SDK.API
                     responseCode: httpResponse.StatusCode,
                     rawData: requestResultString);
 
-            return RequestResult<TData>.Success(responseDto, httpResponse.StatusCode, requestResultString);
+            return RequestResult<TData>.Success(
+                data: responseDto,
+                responseCode: httpResponse.StatusCode,
+                rawData: requestResultString);
         }
 
 

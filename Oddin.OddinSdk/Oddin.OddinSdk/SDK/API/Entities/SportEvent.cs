@@ -11,16 +11,17 @@ using System.Threading.Tasks;
 
 namespace Oddin.OddinSdk.SDK.API.Entities
 {
-    internal class SportEvent : LoggingBase, ISportEvent
+    internal class SportEvent : ISportEvent
     {
+        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(SportEvent));
+
         private readonly URN _id;
         private readonly IApiClient _apiClient;
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
 
         public URN Id => _id;
 
-        public SportEvent(URN urn, IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy, ILoggerFactory loggerFactory)
-            : base(loggerFactory)
+        public SportEvent(URN urn, IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
             if (apiClient is null)
                 throw new ArgumentNullException(nameof(apiClient));

@@ -40,12 +40,6 @@ namespace Oddin.OddinSdk.SampleIntegration
 
             feed.Open();
             Console.ReadLine();
-
-            var producer = feed.ProducerManager.Producers.Where(p => p.Name == "live").FirstOrDefault();
-            var eventId = new SDK.AMQP.URN("od:match:34849");
-            Console.WriteLine($"Recover request response code: {await feed.EventRecoveryRequestIssuer.RecoverEventMessagesAsync(producer, eventId)}");
-
-            Console.ReadLine();
             feed.Close();
 
             session.OnOddsChange -= OnOddsChangeReceived;

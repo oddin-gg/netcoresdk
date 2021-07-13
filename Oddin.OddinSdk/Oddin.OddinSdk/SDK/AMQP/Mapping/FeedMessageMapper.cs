@@ -21,11 +21,10 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
         private readonly IApiClient _apiClient;
         private readonly IProducerManager _producerManager;
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
-        private readonly ILoggerFactory _loggerFactory;
 
         public const MarketStatus DEFAULT_MARKET_STATUS = MarketStatus.SUSPENDED;
 
-        public FeedMessageMapper(IApiClient apiClient, IProducerManager producerManager, ExceptionHandlingStrategy exceptionHandlingStrategy, ILoggerFactory loggerFactory)
+        public FeedMessageMapper(IApiClient apiClient, IProducerManager producerManager, ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
             if (apiClient is null)
                 throw new ArgumentNullException(nameof(apiClient));
@@ -36,7 +35,6 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
             _apiClient = apiClient;
             _producerManager = producerManager;
             _exceptionHandlingStrategy = exceptionHandlingStrategy;
-            _loggerFactory = loggerFactory;
         }
 
         private IDictionary<string, string> GetSpecifiers(string specifiersString)
@@ -122,7 +120,6 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                 GetSpecifiers(oddsChangeMarket.specifiers),
                 _apiClient,
                 _exceptionHandlingStrategy,
-                _loggerFactory,
                 marketStatus,
                 oddsChangeMarket.favouriteSpecified && oddsChangeMarket.favourite == 1,
                 oddsChangeMarket.outcome?.Select(outcome => GetOutcomeOdds(outcome)),
@@ -156,7 +153,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                 throw new ArgumentNullException(nameof(message));
 
             var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy, _loggerFactory);
+            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
 
             return new OddsChange<T>(
                 _producerManager.Get(message.product),
@@ -176,7 +173,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                 throw new ArgumentNullException(nameof(message));
 
             var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy, _loggerFactory);
+            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
             var marketStatus = message.market_statusSpecified
                     ? EnumParsingHelper.GetEnumFromInt<MarketStatus>(message.market_status)
                     : DEFAULT_MARKET_STATUS;
