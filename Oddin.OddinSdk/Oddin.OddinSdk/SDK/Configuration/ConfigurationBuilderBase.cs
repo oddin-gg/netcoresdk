@@ -25,7 +25,7 @@ namespace Oddin.OddinSdk.SDK.Configuration
         internal ConfigurationBuilderBase(string accessToken, IAppConfigurationSectionProvider sectionProvider)
         {
             if (string.IsNullOrEmpty(accessToken))
-                throw new ArgumentNullException(nameof(accessToken));
+                throw new ArgumentException(nameof(accessToken));
 
             if (sectionProvider is null)
                 throw new ArgumentNullException(nameof(sectionProvider));

@@ -44,7 +44,7 @@ namespace Oddin.OddinSdk.SDK.Configuration
             AppConfigurationSection section)
         {
             if (string.IsNullOrEmpty(accessToken))
-                throw new ArgumentNullException(nameof(accessToken));
+                throw new ArgumentException(nameof(accessToken));
             
             if (defaultLocale is null)
                 throw new ArgumentNullException(nameof(defaultLocale));

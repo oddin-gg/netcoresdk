@@ -1,4 +1,5 @@
 ﻿using Oddin.OddinSdk.SDK.Configuration.Abstractions;
+using System;
 
 namespace Oddin.OddinSdk.SDK.Configuration
 {
@@ -11,10 +12,10 @@ namespace Oddin.OddinSdk.SDK.Configuration
         internal EnvironmentSelector(string accessToken, IAppConfigurationSectionProvider sectionProvider)
         {
             if (string.IsNullOrEmpty(accessToken))
-                throw new System.ArgumentNullException(nameof(accessToken));
+                throw new ArgumentException(nameof(accessToken));
             
             if (sectionProvider is null)
-                throw new System.ArgumentNullException(nameof(sectionProvider));
+                throw new ArgumentNullException(nameof(sectionProvider));
 
             _accessToken = accessToken;
             _sectionProvider = sectionProvider;

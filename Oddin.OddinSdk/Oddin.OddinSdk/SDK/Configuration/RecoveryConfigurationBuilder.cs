@@ -30,7 +30,7 @@ namespace Oddin.OddinSdk.SDK.Configuration
                 throw new ArgumentException($"Value must be at least {SdkDefaults.MinInactivitySeconds}.");
 
             if (inactivitySeconds > SdkDefaults.MaxInactivitySeconds)
-                throw new ArgumentException($"Value must be less then {SdkDefaults.MaxInactivitySeconds}.");
+                throw new ArgumentException($"Value must be less than or equal to {SdkDefaults.MaxInactivitySeconds}.");
 
             MaxInactivitySeconds = inactivitySeconds;
             return this as T;
@@ -45,7 +45,7 @@ namespace Oddin.OddinSdk.SDK.Configuration
                 throw new ArgumentException($"Value must be at least {SdkDefaults.MinRecoveryExecutionInSeconds}.");
 
             if (maxRecoveryTimeInSeconds > SdkDefaults.MaxRecoveryExecutionInSeconds)
-                throw new ArgumentException($"Value must be less then {SdkDefaults.MaxRecoveryExecutionInSeconds}.");
+                throw new ArgumentException($"Value must be less than or equal to {SdkDefaults.MaxRecoveryExecutionInSeconds}.");
 
             MaxRecoveryTimeInSeconds = maxRecoveryTimeInSeconds;
             return this as T;

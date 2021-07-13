@@ -6,7 +6,7 @@ namespace Oddin.OddinSdk.SDK.Configuration
 {
     internal class AppConfigurationSection : ConfigurationSection
     {
-        private const string SectionName = "Oddin";
+        private const string SECTION_NAME = "Oddin";
 
         [ConfigurationProperty("AccessToken", IsRequired = true)]
         internal string AccessToken
@@ -65,10 +65,10 @@ namespace Oddin.OddinSdk.SDK.Configuration
                 throw new InvalidOperationException("Could not load exe configuration");
             }
 
-            var section = (AppConfigurationSection)config.GetSection(SectionName);
+            var section = (AppConfigurationSection)config.GetSection(SECTION_NAME);
             if (section == null)
             {
-                throw new InvalidOperationException($"Could not retrieve section {SectionName} from exe configuration");
+                throw new InvalidOperationException($"Could not retrieve section {SECTION_NAME} from exe configuration");
             }
             return section;
         }
