@@ -94,9 +94,7 @@ namespace Oddin.OddinSdk.SDK.Managers
             {
                 _producers = _apiClient.GetProducers();
             }
-            catch (Exception e)
-            when (e is CommunicationException
-                || e is MappingException)
+            catch (SdkException e)
             {
                 e.HandleAccordingToStrategy(GetType().Name, _log, _exceptionHandlingStrategy);
             }

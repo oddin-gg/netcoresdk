@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Oddin.OddinSdk.Common;
 using Oddin.OddinSdk.SDK.AMQP;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
@@ -68,6 +69,18 @@ namespace Oddin.OddinSdk.SDK.API
             var route = $"v1/{producerName}/stateful_messages/events/{sportEventId}/initiate_request";
             var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, deserializeResponse: false, ignoreUnsuccessfulStatusCode: true);
             return (long)response.ResponseCode;
+        }
+
+        public async Task PostRecoveryRequest(string producerName, DateTime timestamp, long requestId, int nodeId)
+        {
+            var route = $"v1/{producerName}/recovery/initiate_request";
+            var parameters = new (string key, object value)[]
+            {
+                ("after", timestamp.ToEpochTimeMilliseconds()),
+                ("request_id", requestId),
+                ("node_id", nodeId)
+            };
+            await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters, deserializeResponse: false);
         }
     }
 }

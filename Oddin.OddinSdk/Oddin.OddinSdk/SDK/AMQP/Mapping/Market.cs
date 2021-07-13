@@ -47,9 +47,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                     .First()
                     .Name;
             }
-            catch (Exception e)
-            when (e is CommunicationException
-                || e is MappingException)
+            catch (SdkException e)
             {
                 e.HandleAccordingToStrategy(GetType().Name, _log, _exceptionHandlingStrategy);
             }
