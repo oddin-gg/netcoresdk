@@ -208,6 +208,9 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 case bet_stop betStopMessage:
                     Dispatch(BetStopMessageReceived, new SimpleMessageEventArgs<bet_stop>(betStopMessage, body), nameof(BetStopMessageReceived));
                     break;
+                case bet_settlement betSettlement:
+                    Dispatch(BetSettlementMessageReceived, new SimpleMessageEventArgs<bet_settlement>(betSettlement, body), nameof(BetStopMessageReceived));
+                    break;
 
                     // ...
 
@@ -248,5 +251,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
         public event EventHandler<SimpleMessageEventArgs<odds_change>> OddsChangeMessageReceived;
 
         public event EventHandler<SimpleMessageEventArgs<bet_stop>> BetStopMessageReceived;
+
+        public event EventHandler<SimpleMessageEventArgs<bet_settlement>> BetSettlementMessageReceived;
     }
 }

@@ -188,45 +188,60 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                 rawMessage);
         }
 
-        public IBetStop<T> MapBetSettlement<T>(bet_settlement message, byte[] rawMessage) 
+        public IBetSettlement<T> MapBetSettlement<T>(bet_settlement message, byte[] rawMessage) 
             where T : ISportEvent
         {
-            // TODO: Implement
-            throw new NotImplementedException();
+            if (message is null)
+                throw new ArgumentNullException($"{nameof(message)}");
 
-            //if (message is null)
-            //    throw new ArgumentNullException($"{nameof(message)}");
+            var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
+            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
 
-            //var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            //ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy, _loggerFactory);
-
-            //return new BetSettlement<T>(
-            //    messageTimestamp,
-            //    _producerManager.Get(message.product),
-            //    (T)sportEvent,
-            //    message.request_idSpecified ? (long?)message.request_id : null,
-            //    message.outcomes.Select(m => GetMarketWithResults(GetEventForNameProvider<T>(URN.Parse(message.event_id), message.SportId, culturesList),
-            //                                                    m, m.specifiers, m.id, )),
-            //    message.certainty,
-            //    rawMessage);
+            return new BetSettlement<T>(
+                messageTimestamp,
+                _producerManager.Get(message.product),
+                (T)sportEvent,
+                message.request_idSpecified ? (long?)message.request_id : null,
+                message.outcomes.Select(m => GetMarketWithResults(sportEvent, m)),
+                message.certainty,
+                rawMessage);
         }
 
-        //protected virtual IMarketWithSettlement GetMarketWithResults(ISportEvent sportEvent, betSettlementMarket marketSettlement, int producerId, URN sportId)
-        //{
-        //    Guard.Argument(sportEvent, nameof(sportEvent)).NotNull("SportEvent missing");
-        //    Guard.Argument(marketSettlement, nameof(marketSettlement)).NotNull("marketSettlement != null");
-        //    var marketDefinition = new MarketDefinition(marketSettlement.id, _marketCacheProvider, sportId, producerId, specifiers, cultureInfos, _externalExceptionStrategy);
+        private IMarketWithSettlement GetMarketWithResults(ISportEvent sportEvent, betSettlementMarket message)
+        {
+            if (sportEvent is null)
+                throw new ArgumentNullException(nameof(sportEvent));
 
-        //    return new MarketWithSettlement(marketSettlement.id,
-        //                                    specifiers,
-        //                                    additionalInfo,
-        //                                    outcomes,
-        //                                    nameProvider,
-        //                                    mappingProvider,
-        //                                    marketDefinition,
-        //                                    marketSettlement.void_reasonSpecified ? (int?)marketSettlement.void_reason : null,
-        //                                    _namedValuesProvider.VoidReasons,
-        //                                    cultureInfos);
-        //}
+            if (message is null)
+                throw new ArgumentNullException(nameof(message));
+
+            return new MarketWithSettlement(
+                marketId: message.id,
+                specifiers: GetSpecifiers(message.specifiers),
+                extentedSpecifiers: message.extended_specifiers,
+                outcomes: GetOutcomeSettlements(message.Items),
+                apiClient: _apiClient,
+                exceptionHandlingStrategy: _exceptionHandlingStrategy,
+                voidReason: message.void_reason);
+        }
+
+        private IEnumerable<IOutcomeSettlement> GetOutcomeSettlements(betSettlementMarketOutcome[] betSettlementMarkets)
+        {
+            return betSettlementMarkets.Select(b =>
+                new OutcomeSettlement(
+                    b.dead_heat_factor,
+                    b.id,
+                    _apiClient,
+                    b.result,
+                    GetVoidFactor(b.void_factor)));
+        }
+
+        internal VoidFactor GetVoidFactor(double voidFactor)
+            => voidFactor switch
+            {
+                1 => VoidFactor.One,
+                0.5 => VoidFactor.Half,
+                _ => throw new ArgumentException(nameof(voidFactor))
+            };
     }
 }

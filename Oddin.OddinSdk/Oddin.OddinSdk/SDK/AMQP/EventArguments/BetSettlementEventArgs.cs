@@ -10,7 +10,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.EventArguments
         private readonly IFeedMessageMapper _messageMapper;
         private readonly bet_settlement _feedMessage;
         private readonly byte[] _rawMessage;
-        private readonly IBetStop<T> _betStop;
+        private readonly IBetSettlement<T> _betSettlement;
 
         internal BetSettlementEventArgs(IFeedMessageMapper messageMapper, bet_settlement feedMessage, byte[] rawMessage)
         {
@@ -25,13 +25,13 @@ namespace Oddin.OddinSdk.SDK.AMQP.EventArguments
             _feedMessage = feedMessage;
             _rawMessage = rawMessage;
 
-            _betStop = GetBetSettlement();
+            _betSettlement = GetBetSettlement();
         }
 
-        public IBetStop<T> GetBetSettlement()
+        public IBetSettlement<T> GetBetSettlement()
         {
-            if ((_betStop is null) == false)
-                return _betStop;
+            if ((_betSettlement is null) == false)
+                return _betSettlement;
 
             return _messageMapper.MapBetSettlement<T>(_feedMessage, _rawMessage);
         }

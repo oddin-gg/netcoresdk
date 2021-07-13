@@ -9,16 +9,6 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
     public interface IMarketWithOdds : IMarket
     {
         /// <summary>
-        /// Gets a <see cref="MarketStatus"/> enum member specifying the status of the market associated with the current <see cref="IMarketWithOdds"/> instance
-        /// </summary>
-        MarketStatus Status { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the market associated with the current instance is the favorite market (i.e. the one with most balanced odds)
-        /// </summary>
-        bool IsFavorite { get; }
-
-        /// <summary>
         /// Gets an <see cref="IEnumerable{IOutcomeOdds}"/> where each <see cref="IOutcomeOdds"/> instance provides
         /// odds information for one outcome(selection)
         /// </summary>
