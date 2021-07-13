@@ -51,14 +51,17 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
             if (isProducerLive && (isProducerPre == false))
                 return LIVE_PRODUCER_STRING;
+
             if (isProducerPre && (isProducerLive == false))
                 return PRE_PRODUCER_STRING;
+
             return string.Empty;
         }
 
         public static string GetEventId(string topic)
         {
             var sections = GetSections(topic);
+            // INFO: "-" in event ID section means ID is not specified
             return sections[EVENT_ID_SECTION_INDEX] == "-" ? string.Empty : sections[EVENT_ID_SECTION_INDEX];
         }
     }

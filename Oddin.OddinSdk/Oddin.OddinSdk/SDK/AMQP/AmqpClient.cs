@@ -190,10 +190,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
             var xml = Encoding.UTF8.GetString(body);
             var success = FeedMessageDeserializer.TryDeserializeMessage(xml, out var message);
 
-            // TODO: remove when tested
-            //Console.WriteLine(xml);
-            //return;
-
             if (success == false || message is null)
             {
                 HandleUnparsableMessage(body, eventArgs.RoutingKey);
