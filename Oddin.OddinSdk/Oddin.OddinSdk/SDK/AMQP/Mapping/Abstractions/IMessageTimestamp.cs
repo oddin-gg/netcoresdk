@@ -1,4 +1,4 @@
-﻿namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
+﻿namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {
     /// <summary>
     /// Defines a contract for all message timestamps

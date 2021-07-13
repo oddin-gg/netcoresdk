@@ -1,6 +1,6 @@
 ﻿using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 
-namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
+namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {
     /// <summary>
     /// Defines a contract implemented by all messages associated with sport events

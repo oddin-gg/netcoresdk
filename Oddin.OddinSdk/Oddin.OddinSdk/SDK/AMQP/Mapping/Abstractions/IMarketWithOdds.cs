@@ -1,7 +1,7 @@
 ﻿using Oddin.OddinSdk.SDK.AMQP.Enums;
 using System.Collections.Generic;
 
-namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
+namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {
     /// <summary>
     /// Defines a contract implemented by classes providing odds information for betting markets

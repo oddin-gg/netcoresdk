@@ -1,6 +1,6 @@
 ﻿using Oddin.OddinSdk.SDK.AMQP.Enums;
 
-namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
+namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {
     /// <summary>
     /// Represents an odds for an outcome(selection)

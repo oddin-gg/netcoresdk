@@ -1,4 +1,5 @@
 ﻿using Oddin.OddinSdk.SDK.AMQP.Abstractions;
+using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using System.Globalization;
 using System.Threading.Tasks;

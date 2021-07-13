@@ -20,12 +20,12 @@ namespace Oddin.OddinSdk.SDK.Dispatch
         /// </summary>
         event EventHandler<BetStopEventArgs<T>> OnBetStop;
 
-        // TODO: implement
-
         ///// <summary>
         ///// Raised when a bet settlement message is received from the feed
         ///// </summary>
-        //event EventHandler<BetSettlementEventArgs<T>> OnBetSettlement;
+        event EventHandler<BetSettlementEventArgs<T>> OnBetSettlement;
+        
+        // TODO: implement
 
         ///// <summary>
         ///// Raised when a rollback bet settlement is received from the feed

@@ -1,6 +1,6 @@
 ﻿using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 
-namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
+namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {
     /// <summary>
     /// Defines a contract followed by all top-level messages produced by the feed

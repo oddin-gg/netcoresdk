@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oddin.OddinSdk.Common;
 using Oddin.OddinSdk.Common.Exceptions;
-using Oddin.OddinSdk.SDK.AMQP.Abstractions;
+using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using System;

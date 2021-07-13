@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Threading.Tasks;
 
-namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
+namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {
     /// <summary>
     /// Represent a betting market outcome
