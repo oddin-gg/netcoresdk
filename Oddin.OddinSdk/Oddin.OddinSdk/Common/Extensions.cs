@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using System;
 
 namespace Oddin.OddinSdk.Common

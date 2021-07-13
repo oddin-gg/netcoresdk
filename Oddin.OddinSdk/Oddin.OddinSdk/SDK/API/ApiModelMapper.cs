@@ -10,12 +10,8 @@ namespace Oddin.OddinSdk.SDK.API
 {
     internal static class ApiModelMapper
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="model"></param>
+        
         /// <exception cref="MappingException"></exception>
-        /// <returns></returns>
         public static IBookmakerDetails MapBookmakerDetails(BookmakerDetailsModel model)
         {
             try
@@ -60,12 +56,7 @@ namespace Oddin.OddinSdk.SDK.API
                 outcomes);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="model"></param>
         /// <exception cref="MappingException"></exception>
-        /// <returns></returns>
         public static List<IMarketDescription> MapMarketDescriptionsList(MarketDescriptionsModel model)
         {
             try
@@ -87,12 +78,7 @@ namespace Oddin.OddinSdk.SDK.API
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="model"></param>
         /// <exception cref="MappingException"></exception>
-        /// <returns></returns>
         public static IMatchSummary MapMatchSummary(MatchSummaryModel model)
         {
             try
@@ -137,12 +123,7 @@ namespace Oddin.OddinSdk.SDK.API
                 model.stateful_recovery_window_in_minutes);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="model"></param>
         /// <exception cref="MappingException"></exception>
-        /// <returns></returns>
         public static List<IProducer> MapProducersList(ProducersModel model)
         {
             try

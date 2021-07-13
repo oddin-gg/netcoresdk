@@ -5,7 +5,7 @@ using Oddin.OddinSdk.SDK.Dispatch;
 using Oddin.OddinSdk.SDK.Managers;
 using Oddin.OddinSdk.SDK.Managers.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Configuration;
 using System;
 using Unity;
 using Unity.Injection;
@@ -13,14 +13,16 @@ using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Mapping;
 using Oddin.OddinSdk.SDK.Abstractions;
 using Oddin.OddinSdk.SDK.Sessions.Abstractions;
 using Oddin.OddinSdk.SDK.Sessions;
-using System.Collections.Generic;
 using Oddin.OddinSdk.Common.Exceptions;
-using System.Linq;
 using Oddin.OddinSdk.Common;
 using Oddin.OddinSdk.SDK.Dispatch.EventArguments;
 
@@ -30,7 +32,7 @@ namespace Oddin.OddinSdk.SDK
     {
         private readonly IUnityContainer _unityContainer;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly IOddsFeedConfiguration _config;
+        private readonly IFeedConfiguration _config;
         private bool _isOpened;
         private readonly object _isOpenedLock = new object();
         private readonly IList<IOpenable> Sessions = new List<IOpenable>();
@@ -119,7 +121,7 @@ namespace Oddin.OddinSdk.SDK
         /// <param name="config">Feed configuration</param>
         /// <param name="loggerFactory">Logger factory</param>
         /// <exception cref="ArgumentNullException"/>
-        public Feed(IOddsFeedConfiguration config, ILoggerFactory loggerFactory = null) : base(loggerFactory)
+        public Feed(IFeedConfiguration config, ILoggerFactory loggerFactory = null) : base(loggerFactory)
         {
             if (config is null)
                 throw new ArgumentNullException(nameof(config));
@@ -153,6 +155,7 @@ namespace Oddin.OddinSdk.SDK
             {
                 if (_isOpened)
                     return false;
+
                 _isOpened = true;
                 return true;
             }
@@ -165,6 +168,32 @@ namespace Oddin.OddinSdk.SDK
                 _isOpened = false;
             }
         }
+
+        /// <summary>
+        /// Constructs a <see cref="IFeedConfiguration"/> instance from provided information
+        /// </summary>
+        /// <returns>A <see cref="IFeedConfiguration"/> instance created from provided information</returns>
+        /// <summary>
+        /// Constructs a <see cref="IFeedConfiguration"/> instance from provided information
+        /// </summary>
+        /// <returns>A <see cref="IFeedConfiguration"/> instance created from provided information</returns>
+        public static ITokenSetter GetConfigurationBuilder()
+        {
+            return new TokenSetter(new AppConfigurationSectionProvider());
+        }
+        
+        /// <summary>
+        /// Get all available languages that can be used within the SDK and are supported by the messages
+        /// </summary>
+        /// <returns>IEnumerable&lt;CultureInfo&gt;</returns>
+        public static IEnumerable<CultureInfo> AvailableLanguages()
+        {
+            var codes = new[] { "en" };
+            return codes
+                .Select(c => CultureInfo.GetCultureInfo(c))
+                .OrderBy(c => c.Name);
+        }
+
 
         /// <summary>
         /// Opens connection to the feed

@@ -4,8 +4,9 @@ using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.EventArguments;
 using Oddin.OddinSdk.SDK.AMQP.Messages;
+using Oddin.OddinSdk.SDK.Configuration;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using Oddin.OddinSdk.SDK.Dispatch;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
 using Oddin.OddinSdk.SDK.Sessions;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -31,7 +32,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
         public const string EXCHANGE_NAME = "oddinfeed";
 
-        public AmqpClient(IOddsFeedConfiguration config,
+        public AmqpClient(IFeedConfiguration config,
             string virtualHost,
             EventHandler<CallbackExceptionEventArgs> onCallbackException,
             EventHandler<ShutdownEventArgs> onConnectionShutdown,
@@ -188,10 +189,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
             var body = eventArgs.Body.ToArray();
             var xml = Encoding.UTF8.GetString(body);
             var success = FeedMessageDeserializer.TryDeserializeMessage(xml, out var message);
-
-            // TODO: remove when tested
-            //Console.WriteLine(xml);
-            //return;
 
             if (success == false || message is null)
             {

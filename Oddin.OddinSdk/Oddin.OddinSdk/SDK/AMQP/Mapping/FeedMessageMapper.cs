@@ -7,7 +7,7 @@ using Oddin.OddinSdk.SDK.AMQP.Messages;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using Oddin.OddinSdk.SDK.Managers.Abstractions;
 using System;
 using System.Collections.Generic;
@@ -87,11 +87,11 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
             }
 
             return new AdditionalProbabilities(
-                outcome.win_probabilitiesSpecified ? outcome.win_probabilities : (double?)null,
-                outcome.lose_probabilitiesSpecified ? outcome.lose_probabilities : (double?)null,
-                outcome.half_win_probabilitiesSpecified ? outcome.half_win_probabilities : (double?)null,
-                outcome.half_lose_probabilitiesSpecified ? outcome.half_lose_probabilities : (double?)null,
-                outcome.refund_probabilitiesSpecified ? outcome.refund_probabilities : (double?)null);
+                outcome.win_probabilitiesSpecified ? outcome.win_probabilities : default,
+                outcome.lose_probabilitiesSpecified ? outcome.lose_probabilities : default,
+                outcome.half_win_probabilitiesSpecified ? outcome.half_win_probabilities : default,
+                outcome.half_lose_probabilitiesSpecified ? outcome.half_lose_probabilities : default,
+                outcome.refund_probabilitiesSpecified ? outcome.refund_probabilities : default);
         }
 
         private IOutcomeOdds GetOutcomeOdds(oddsChangeMarketOutcome outcome)
@@ -100,9 +100,9 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                 throw new ArgumentNullException(nameof(outcome));
 
             return new OutcomeOdds(
-                outcome.oddsSpecified ? outcome.odds : (double?)null,
-                outcome.activeSpecified ? outcome.active == 1 : (bool?)null,
-                outcome.probabilitiesSpecified ? outcome.probabilities : (double?)null,
+                outcome.oddsSpecified ? outcome.odds : default,
+                outcome.activeSpecified ? outcome.active == 1 : default,
+                outcome.probabilitiesSpecified ? outcome.probabilities : default,
                 GetAdditionalProbabilities(outcome),
                 outcome.id,
                 _apiClient);

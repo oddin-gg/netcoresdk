@@ -3,7 +3,7 @@ using Oddin.OddinSdk.SDK.AMQP;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using Oddin.OddinSdk.SDK.API.Models;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
@@ -16,7 +16,7 @@ namespace Oddin.OddinSdk.SDK.API
         private readonly RestClient _restClient;
         private readonly CultureInfo _defaultCulture;
 
-        public ApiClient(IOddsFeedConfiguration config, ILoggerFactory loggerFactory)
+        public ApiClient(IFeedConfiguration config, ILoggerFactory loggerFactory)
         {
             _restClient = new RestClient(config, loggerFactory);
             _defaultCulture = config.DefaultLocale;
