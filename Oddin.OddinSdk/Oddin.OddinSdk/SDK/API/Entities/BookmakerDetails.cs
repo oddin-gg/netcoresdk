@@ -1,5 +1,4 @@
 ﻿using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
-using Oddin.OddinSdk.SDK.API.Models;
 using System;
 
 namespace Oddin.OddinSdk.SDK.API.Entities
@@ -12,11 +11,11 @@ namespace Oddin.OddinSdk.SDK.API.Entities
 
         public string VirtualHost { get; }
 
-        public BookmakerDetails(BookmakerDetailsModel model)
+        public BookmakerDetails(DateTime expireAt, int bookmakerId, string virtualHost)
         {
-            ExpireAt = model.expire_at;
-            BookmakerId = model.bookmaker_id;
-            VirtualHost = model.virtual_host;
+            ExpireAt = expireAt;
+            BookmakerId = bookmakerId;
+            VirtualHost = virtualHost;
         }
     }
 }

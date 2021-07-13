@@ -2,13 +2,13 @@
 {
     using System;
 
-    public class MessageEventArgs<T> : EventArgs
+    public class SimpleMessageEventArgs<T> : EventArgs
     {
         public T FeedMessage { get; }
 
         public byte[] RawMessage { get; }
 
-        public MessageEventArgs(T feedMessage, byte[] rawMessage)
+        public SimpleMessageEventArgs(T feedMessage, byte[] rawMessage)
         {
             FeedMessage = feedMessage;
             RawMessage = rawMessage;

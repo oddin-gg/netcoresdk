@@ -1,5 +1,8 @@
-﻿using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
+﻿using Oddin.OddinSdk.SDK.AMQP;
+using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Oddin.OddinSdk.SDK.API.Abstractions
 {
@@ -16,5 +19,20 @@ namespace Oddin.OddinSdk.SDK.API.Abstractions
         /// </summary>
         /// <returns></returns>
         IBookmakerDetails GetBookmakerDetails();
+
+        /// <summary>
+        /// Gets <see cref="IMatchSummary"/> from API
+        /// </summary>
+        /// <param name="sportEventId">Unique identifier of the sport event</param>
+        /// <param name="culture">Culture info for translations</param>
+        /// <returns></returns>
+        Task<IMatchSummary> GetMatchSummaryAsync(URN sportEventId, CultureInfo culture = null);
+
+        /// <summary>
+        /// Gets a list of <see cref="IMarketDescription"/> from API
+        /// </summary>
+        /// <param name="culture">Culture info for translations</param>
+        /// <returns></returns>
+        Task<List<IMarketDescription>> GetMarketDescriptionsAsync(CultureInfo culture = null);
     }
 }

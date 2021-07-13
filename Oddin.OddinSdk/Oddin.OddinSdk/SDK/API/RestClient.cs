@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Oddin.OddinSdk.Common;
+using Oddin.OddinSdk.SDK.Configuration;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using Oddin.OddinSdk.SDK.Exceptions;
-using Oddin.OddinSdk.SDK.FeedConfiguration;
 using System;
 using System.Net.Http;
 using System.Text;
@@ -16,7 +17,7 @@ namespace Oddin.OddinSdk.SDK.API
         private readonly int _timeoutSeconds;
         private HttpClient _httpClient = new HttpClient();
 
-        public RestClient(IOddsFeedConfiguration config, ILoggerFactory loggerFactory) : base(loggerFactory)
+        public RestClient(IFeedConfiguration config, ILoggerFactory loggerFactory) : base(loggerFactory)
         {
             _apiHost = config.ApiHost;
             _useSsl = config.UseApiSsl;
@@ -26,6 +27,25 @@ namespace Oddin.OddinSdk.SDK.API
             _httpClient.DefaultRequestHeaders.Add("x-access-token", config.AccessToken);
         }
 
+        public async Task<TData> SendRequestAsync<TData>(string route, HttpMethod method, object objectToBeSent = null)
+            where TData : class
+        {
+            var result = await SendRequestGetResult<TData>(route, method, objectToBeSent);
+
+            if (result.Successful == false)
+            {
+                _log.LogError($"API request [{method} to {CombineAddress(route)}] failed. Reason: {result.Message}");
+
+                throw new CommunicationException(
+                    message: "API request failed!",
+                    innerException: null,
+                    url: CombineAddress(route),
+                    responseCode: result.ResponseCode,
+                    response: result.RawData);
+            }
+
+            return result.Data;
+        }
 
         public TData SendRequest<TData>(string route, HttpMethod method, object objectToBeSent = null)
             where TData : class
@@ -33,7 +53,7 @@ namespace Oddin.OddinSdk.SDK.API
             RequestResult<TData> result;
             try
             {
-                result = SendRequestAsync<TData>(route, method, objectToBeSent).GetAwaiter().GetResult();
+                result = SendRequestGetResult<TData>(route, method, objectToBeSent).GetAwaiter().GetResult();
             }
             catch(Exception e)
             {
@@ -62,7 +82,7 @@ namespace Oddin.OddinSdk.SDK.API
             return result.Data;
         }
 
-        private async Task<RequestResult<TData>> SendRequestAsync<TData>(string route, HttpMethod method, object objectToBeSent = null)
+        private async Task<RequestResult<TData>> SendRequestGetResult<TData>(string route, HttpMethod method, object objectToBeSent = null)
             where TData : class
         {
             if (XmlHelper.TrySerialize(objectToBeSent, out var serializedObject) == false)
@@ -71,7 +91,7 @@ namespace Oddin.OddinSdk.SDK.API
             HttpResponseMessage httpResponse;
             try
             {
-                httpResponse = await SendRequestGetResponseAsync(route, method, serializedObject);
+                httpResponse = await SendRequestGetHttpResponse(route, method, serializedObject);
             }
             catch (ArgumentNullException)
             {
@@ -113,7 +133,7 @@ namespace Oddin.OddinSdk.SDK.API
         }
 
 
-        private async Task<HttpResponseMessage> SendRequestGetResponseAsync(string route, HttpMethod method, string objectToBeSent = default)
+        private async Task<HttpResponseMessage> SendRequestGetHttpResponse(string route, HttpMethod method, string objectToBeSent = default)
         {
             using (var content = new StringContent(objectToBeSent, Encoding.UTF8, "application/xml"))
             {

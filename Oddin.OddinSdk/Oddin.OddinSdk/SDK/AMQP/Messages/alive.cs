@@ -6,8 +6,11 @@
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
     [System.Xml.Serialization.XmlRootAttribute(ElementName = "alive", IsNullable = false)]
-    public class AliveMessage : FeedMessage
+    public class alive : FeedMessageModel
     {
+        public override long GeneratedAt => timestamp;
+
+        // -------------------------------------------------
 
         private int productField;
 

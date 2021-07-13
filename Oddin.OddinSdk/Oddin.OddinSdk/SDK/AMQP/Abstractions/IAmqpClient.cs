@@ -1,5 +1,6 @@
 ﻿using Oddin.OddinSdk.SDK.AMQP.EventArguments;
 using Oddin.OddinSdk.SDK.AMQP.Messages;
+using Oddin.OddinSdk.SDK.Sessions;
 using System;
 
 namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
@@ -9,7 +10,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
         /// <summary>
         /// Connects the AMQP consumer to the AMQP broker
         /// </summary>
-        void Connect();
+        void Connect(MessageInterest messageInterest);
 
         /// <summary>
         /// Disconnects the AMQP consumer from the AMQP broker
@@ -24,8 +25,16 @@ namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
         /// <summary>
         /// Raised when the AMQP client receives an Alive message through AMQP feed
         /// </summary>
-        event EventHandler<MessageEventArgs<AliveMessage>> AliveMessageReceived;
+        event EventHandler<SimpleMessageEventArgs<alive>> AliveMessageReceived;
 
-        event EventHandler<MessageEventArgs<OddsChangeMessage>> OddsChangeMessageReceived;
+        /// <summary>
+        /// Raised when the AMQP client receives an OddsChange message through AMQP feed
+        /// </summary>
+        event EventHandler<SimpleMessageEventArgs<odds_change>> OddsChangeMessageReceived;
+
+        /// <summary>
+        /// Raised when the AMQP client receives a BetStop message through AMQP feed
+        /// </summary>
+        event EventHandler<SimpleMessageEventArgs<bet_stop>> BetStopMessageReceived;
     }
 }
