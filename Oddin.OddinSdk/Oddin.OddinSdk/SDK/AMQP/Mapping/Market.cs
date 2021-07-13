@@ -12,8 +12,10 @@ using System.Threading.Tasks;
 
 namespace Oddin.OddinSdk.SDK.AMQP.Mapping
 {
-    internal class Market : LoggingBase, IMarket
+    internal class Market : IMarket
     {
+        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(Market));
+
         private readonly IApiClient _apiClient;
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
 
@@ -21,14 +23,13 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
 
         public IReadOnlyDictionary<string, string> Specifiers { get; }
 
-        public Market(int id, IDictionary<string, string> specifiers, IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy, ILoggerFactory loggerFactory)
-            : base(loggerFactory)
+        public Market(int id, IDictionary<string, string> specifiers, IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
             if (specifiers is null)
-                throw new ArgumentNullException($"{nameof(specifiers)}");
+                throw new ArgumentNullException(nameof(specifiers));
 
             if (apiClient is null)
-                throw new ArgumentNullException($"{nameof(apiClient)}");
+                throw new ArgumentNullException(nameof(apiClient));
 
             Id = id;
             Specifiers = specifiers as IReadOnlyDictionary<string, string>;
@@ -46,9 +47,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                     .First()
                     .Name;
             }
-            catch (Exception e)
-            when (e is CommunicationException
-                || e is MappingException)
+            catch (SdkException e)
             {
                 e.HandleAccordingToStrategy(GetType().Name, _log, _exceptionHandlingStrategy);
             }

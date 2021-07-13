@@ -1,18 +1,26 @@
 ﻿using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.AMQP;
+using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using Oddin.OddinSdk.SDK.API.Models;
+using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using System;
 using System.Collections.Generic;
 
 namespace Oddin.OddinSdk.SDK.API
 {
-    internal static class ApiModelMapper
+    internal class ApiModelMapper : IApiModelMapper
     {
+        private readonly int _maxInactivitySeconds;
+
+        public ApiModelMapper(IFeedConfiguration config)
+        {
+            _maxInactivitySeconds = config.MaxInactivitySeconds;
+        }
         
         /// <exception cref="MappingException"></exception>
-        public static IBookmakerDetails MapBookmakerDetails(BookmakerDetailsModel model)
+        public IBookmakerDetails MapBookmakerDetails(BookmakerDetailsModel model)
         {
             try
             {
@@ -30,7 +38,7 @@ namespace Oddin.OddinSdk.SDK.API
             }
         }
 
-        private static IOutcomeDescription MapOutcomeDescription(outcome_descriptionOutcome model)
+        private IOutcomeDescription MapOutcomeDescription(outcome_descriptionOutcome model)
         {
             if (model is null)
                 throw new ArgumentNullException($"{typeof(outcome_descriptionOutcome).Name} argument cannot be null!");
@@ -40,7 +48,7 @@ namespace Oddin.OddinSdk.SDK.API
                 model.name);
         }
 
-        private static IMarketDescription MapMarketDescription(market_description model)
+        private IMarketDescription MapMarketDescription(market_description model)
         {
             if (model is null)
                 throw new ArgumentNullException($"{typeof(market_description).Name} argument cannot be null!");
@@ -57,7 +65,7 @@ namespace Oddin.OddinSdk.SDK.API
         }
 
         /// <exception cref="MappingException"></exception>
-        public static List<IMarketDescription> MapMarketDescriptionsList(MarketDescriptionsModel model)
+        public List<IMarketDescription> MapMarketDescriptionsList(MarketDescriptionsModel model)
         {
             try
             {
@@ -79,7 +87,7 @@ namespace Oddin.OddinSdk.SDK.API
         }
 
         /// <exception cref="MappingException"></exception>
-        public static IMatchSummary MapMatchSummary(MatchSummaryModel model)
+        public IMatchSummary MapMatchSummary(MatchSummaryModel model)
         {
             try
             {
@@ -105,7 +113,7 @@ namespace Oddin.OddinSdk.SDK.API
             }
         }
 
-        private static IProducer GetProducer(producer model)
+        private IProducer GetProducer(producer model)
         {
             if (model is null)
                 throw new ArgumentNullException($"{typeof(producer).Name} argument cannot be null!");
@@ -116,11 +124,12 @@ namespace Oddin.OddinSdk.SDK.API
                 model.description,
                 model.active,
                 model.scope,
+                _maxInactivitySeconds,
                 model.stateful_recovery_window_in_minutes);
         }
 
         /// <exception cref="MappingException"></exception>
-        public static List<IProducer> MapProducersList(ProducersModel model)
+        public List<IProducer> MapProducersList(ProducersModel model)
         {
             try
             {

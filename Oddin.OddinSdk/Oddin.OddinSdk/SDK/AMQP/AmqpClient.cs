@@ -4,7 +4,6 @@ using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.EventArguments;
 using Oddin.OddinSdk.SDK.AMQP.Messages;
-using Oddin.OddinSdk.SDK.Configuration;
 using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using Oddin.OddinSdk.SDK.Dispatch;
 using Oddin.OddinSdk.SDK.Sessions;
@@ -19,6 +18,8 @@ namespace Oddin.OddinSdk.SDK.AMQP
 {
     internal class AmqpClient : DispatcherBase, IAmqpClient
     {
+        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(AmqpClient));
+
         private readonly string _host;
         private readonly int _port;
         private readonly string _username;
@@ -35,9 +36,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
         public AmqpClient(IFeedConfiguration config,
             string virtualHost,
             EventHandler<CallbackExceptionEventArgs> onCallbackException,
-            EventHandler<ShutdownEventArgs> onConnectionShutdown,
-            ILoggerFactory loggerFactory)
-            : base(loggerFactory)
+            EventHandler<ShutdownEventArgs> onConnectionShutdown)
         {
             _host = config.Host;
             _port = config.Port;

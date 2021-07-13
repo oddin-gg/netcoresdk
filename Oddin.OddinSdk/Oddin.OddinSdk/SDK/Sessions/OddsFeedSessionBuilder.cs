@@ -12,7 +12,7 @@ namespace Oddin.OddinSdk.SDK.Sessions
         public OddsFeedSessionBuilder(Feed feed)
         {
             if (feed is null)
-                throw new ArgumentNullException($"{nameof(feed)}");
+                throw new ArgumentNullException(nameof(feed));
 
             _feed = feed;
         }

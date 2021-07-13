@@ -7,7 +7,7 @@ namespace Oddin.OddinSdk.Common.Exceptions
     /// An exception thrown by the SDK when an error occurred while communicating with external source (Feed REST-ful API)
     /// </summary>
     /// <seealso cref="FeedSdkException" />
-    public class CommunicationException : Exception
+    public class CommunicationException : SdkException
     {
         /// <summary>
         /// Gets the <see cref="string"/> representation of the url specifying the resource which was being accessed

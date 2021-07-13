@@ -34,5 +34,21 @@ namespace Oddin.OddinSdk.SDK.API.Abstractions
         /// <param name="culture">Culture info for translations</param>
         /// <returns></returns>
         Task<List<IMarketDescription>> GetMarketDescriptionsAsync(CultureInfo culture = null);
+
+        /// <summary>
+        /// Posts an event recovery request to API
+        /// </summary>
+        /// <param name="producerId">Id of the producer</param>
+        /// <param name="sportEventId">Id of the event</param>
+        /// <returns><see cref="long"/> representing <see cref="HttpStatusCode"/></returns>
+        Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId);
+
+        /// <summary>
+        /// Posts a stateful event recovery request to API
+        /// </summary>
+        /// <param name="producerId">Id of the producer</param>
+        /// <param name="sportEventId">Id of the event</param>
+        /// <returns><see cref="long"/> representing <see cref="HttpStatusCode"/></returns>
+        Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId);
     }
 }

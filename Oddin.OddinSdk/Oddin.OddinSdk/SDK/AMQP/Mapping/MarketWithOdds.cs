@@ -22,12 +22,11 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
             IDictionary<string, string> specifiers,
             IApiClient apiClient,
             ExceptionHandlingStrategy exceptionHandlingStrategy,
-            ILoggerFactory loggerFactory,
             MarketStatus marketStatus,
             bool isFavorite,
             IEnumerable<IOutcomeOdds> outcomeOdds,
             IMarketMetadata marketMetadata)
-            : base(marketId, specifiers, apiClient, exceptionHandlingStrategy, loggerFactory)
+            : base(marketId, specifiers, apiClient, exceptionHandlingStrategy)
         {
             Status = marketStatus;
             IsFavorite = isFavorite;

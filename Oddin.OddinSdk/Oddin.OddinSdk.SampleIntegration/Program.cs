@@ -6,12 +6,13 @@ using Oddin.OddinSdk.SDK.Sessions;
 using Serilog;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Oddin.OddinSdk.SampleIntegration
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var serilogLogger = new LoggerConfiguration()
                 .MinimumLevel.Warning()

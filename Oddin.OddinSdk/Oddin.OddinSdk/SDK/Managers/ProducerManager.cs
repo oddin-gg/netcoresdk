@@ -12,10 +12,13 @@ using System.Linq;
 
 namespace Oddin.OddinSdk.SDK.Managers
 {
-    internal class ProducerManager : LoggingBase, IProducerManager
+    internal class ProducerManager : IProducerManager
     {
         public const int UNKNOWN_PRODUCER_ID = 99;
+        public const int MAX_INACTIVITY_SECONDS = 10;
         public const int STATEFUL_RECOVERY_WINDOW_MINUTES = 60;
+
+        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(ProducerManager));
 
         private readonly IApiClient _apiClient;
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
@@ -79,11 +82,10 @@ namespace Oddin.OddinSdk.SDK.Managers
         }
 
 
-        public ProducerManager(IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy, ILoggerFactory loggerFactory)
-            : base(loggerFactory)
+        public ProducerManager(IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
             if (apiClient is null)
-                throw new ArgumentNullException($"{nameof(apiClient)}");
+                throw new ArgumentNullException(nameof(apiClient));
 
             _apiClient = apiClient;
             _exceptionHandlingStrategy = exceptionHandlingStrategy;
@@ -92,9 +94,7 @@ namespace Oddin.OddinSdk.SDK.Managers
             {
                 _producers = _apiClient.GetProducers();
             }
-            catch (Exception e)
-            when (e is CommunicationException
-                || e is MappingException)
+            catch (SdkException e)
             {
                 e.HandleAccordingToStrategy(GetType().Name, _log, _exceptionHandlingStrategy);
             }
@@ -102,6 +102,6 @@ namespace Oddin.OddinSdk.SDK.Managers
 
 
         private Producer CreateUnknownProducer()
-            => new Producer(UNKNOWN_PRODUCER_ID, "Unknown", "Unknown producer", false, "live|prematch", STATEFUL_RECOVERY_WINDOW_MINUTES);
+            => new Producer(UNKNOWN_PRODUCER_ID, "Unknown", "Unknown producer", false, "live|prematch", MAX_INACTIVITY_SECONDS, STATEFUL_RECOVERY_WINDOW_MINUTES);
     }
 }
