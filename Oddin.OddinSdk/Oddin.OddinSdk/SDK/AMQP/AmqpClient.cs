@@ -189,6 +189,10 @@ namespace Oddin.OddinSdk.SDK.AMQP
             var xml = Encoding.UTF8.GetString(body);
             var success = FeedMessageDeserializer.TryDeserializeMessage(xml, out var message);
 
+#if DEBUG
+            _log.LogDebug(xml);
+#endif
+
             if (success == false || message is null)
             {
                 HandleUnparsableMessage(body, eventArgs.RoutingKey);
@@ -209,7 +213,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
                     Dispatch(BetStopMessageReceived, new SimpleMessageEventArgs<bet_stop>(betStopMessage, body), nameof(BetStopMessageReceived));
                     break;
                 case bet_settlement betSettlement:
-                    Dispatch(BetSettlementMessageReceived, new SimpleMessageEventArgs<bet_settlement>(betSettlement, body), nameof(BetStopMessageReceived));
+                    Dispatch(BetSettlementMessageReceived, new SimpleMessageEventArgs<bet_settlement>(betSettlement, body), nameof(BetSettlementMessageReceived));
                     break;
 
                     // ...

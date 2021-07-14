@@ -15,7 +15,7 @@ namespace Oddin.OddinSdk.SampleIntegration
         static async Task Main(string[] args)
         {
             var serilogLogger = new LoggerConfiguration()
-                .MinimumLevel.Warning()
+                .MinimumLevel.Verbose()
                 .WriteTo
                 .Console()
                 .CreateLogger();
@@ -26,17 +26,19 @@ namespace Oddin.OddinSdk.SampleIntegration
                 .GetConfigurationBuilder()
                 .SetAccessToken("1a0c5a30-74ed-416d-b120-8c05f92e382f")
                 .SelectIntegration()
-                .LoadFromConfigFile()
                 .Build();
 
             var feed = new Feed(config, loggerFactory);
 
-            var session = feed.CreateBuilder()
+            var session = feed
+                .CreateBuilder()
                 .SetMessageInterest(MessageInterest.AllMessages)
                 .Build();
 
             session.OnOddsChange += OnOddsChangeReceived;
             session.OnBetStop += OnBetStopReceived;
+            session.OnBetSettlement += OnBetSettlement;
+            session.OnUnparsableMessageReceived += OnUnparsableMessageReceived;
 
             feed.Open();
             Console.ReadLine();
@@ -44,6 +46,18 @@ namespace Oddin.OddinSdk.SampleIntegration
 
             session.OnOddsChange -= OnOddsChangeReceived;
             session.OnBetStop -= OnBetStopReceived;
+            session.OnBetSettlement -= OnBetSettlement;
+            session.OnUnparsableMessageReceived -= OnUnparsableMessageReceived;
+        }
+
+        private static void OnUnparsableMessageReceived(object sender, UnparsableMessageEventArgs e)
+        {
+            Console.WriteLine($"On Unparsable Message Received in {e.MessageType}");
+        }
+
+        private static async void OnBetSettlement(object sender, BetSettlementEventArgs<ISportEvent> eventArgs)
+        {
+            Console.WriteLine($"On Bet Settlement in {await eventArgs.GetBetSettlement().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
         }
 
         private static async void OnOddsChangeReceived(object sender, OddsChangeEventArgs<ISportEvent> eventArgs)

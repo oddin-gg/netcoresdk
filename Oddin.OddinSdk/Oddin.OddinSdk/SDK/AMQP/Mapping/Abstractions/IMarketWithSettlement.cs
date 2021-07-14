@@ -10,12 +10,14 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {
     public interface IMarketWithSettlement : IMarketCancel
     {
+        MarketStatus MarketStatus { get; }
+
         IEnumerable<IOutcomeSettlement> OutcomeSettlements { get; }
     }
 
     public interface IMarketCancel : IMarket
     {
-        INamedValue VoidReason { get; }
+        int? VoidReason { get; }
     }
 
     public interface INamedValue
@@ -53,7 +55,10 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 
         public string ExtentedSpecifiers { get; }
 
+        public MarketStatus MarketStatus { get; }
+
         public MarketWithSettlement(
+            MarketStatus marketStatus,
             int marketId,
             IDictionary<string, string> specifiers,
             string extentedSpecifiers,
@@ -64,7 +69,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
             : base(marketId, specifiers, apiClient, exceptionHandlingStrategy, voidReason)
         {
             ExtentedSpecifiers = extentedSpecifiers;
-
+            MarketStatus = marketStatus;
             var readonlyOutcomes = outcomes as IReadOnlyCollection<IOutcomeSettlement>;
             OutcomeSettlements = readonlyOutcomes ?? new ReadOnlyCollection<IOutcomeSettlement>(outcomes.ToList());
         }
@@ -75,9 +80,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
     /// </summary>
     internal class MarketCancel : Market, IMarketCancel
     {
-        private readonly int? _voidReason;
-
-        public INamedValue VoidReason => throw new NotImplementedException();//_voidReason == null ? null : _voidReasonsCache.GetNamedValue(_voidReason.Value);
+        public int? VoidReason { get; set; }
 
         internal MarketCancel(int id,
                             IDictionary<string, string> specifiers,
@@ -86,7 +89,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
                             int? voidReason)
             : base(id, specifiers, client, exceptionHandlingStrategy)
         {
-            _voidReason = voidReason;
+            VoidReason = voidReason;
         }
     }
 

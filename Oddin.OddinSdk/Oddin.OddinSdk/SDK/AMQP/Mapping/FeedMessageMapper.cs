@@ -202,38 +202,38 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                 _producerManager.Get(message.product),
                 (T)sportEvent,
                 message.request_idSpecified ? (long?)message.request_id : null,
-                message.outcomes.Select(m => GetMarketWithResults(sportEvent, m)),
+                message.outcomes.Select(m => GetMarketWithResults(m)),
                 message.certainty,
                 rawMessage);
         }
 
-        private IMarketWithSettlement GetMarketWithResults(ISportEvent sportEvent, betSettlementMarket message)
+        private IMarketWithSettlement GetMarketWithResults(betSettlementMarket message)
         {
-            if (sportEvent is null)
-                throw new ArgumentNullException(nameof(sportEvent));
-
             if (message is null)
                 throw new ArgumentNullException(nameof(message));
 
+            var marketStatus = EnumParsingHelper.GetEnumFromInt<MarketStatus>(message.status);
+            
             return new MarketWithSettlement(
+                marketStatus: marketStatus,
                 marketId: message.id,
                 specifiers: GetSpecifiers(message.specifiers),
                 extentedSpecifiers: message.extended_specifiers,
                 outcomes: GetOutcomeSettlements(message.Items),
                 apiClient: _apiClient,
                 exceptionHandlingStrategy: _exceptionHandlingStrategy,
-                voidReason: message.void_reason);
+                voidReason: message.void_reasonSpecified ? message.void_reason : default);
         }
 
         private IEnumerable<IOutcomeSettlement> GetOutcomeSettlements(betSettlementMarketOutcome[] betSettlementMarkets)
         {
             return betSettlementMarkets.Select(b =>
                 new OutcomeSettlement(
-                    b.dead_heat_factor,
+                    b.dead_heat_factorSpecified ? b.dead_heat_factor : default,
                     b.id,
                     _apiClient,
                     b.result,
-                    GetVoidFactor(b.void_factor)));
+                    b.void_factorSpecified ? GetVoidFactor(b.void_factor) : default));
         }
 
         internal VoidFactor GetVoidFactor(double voidFactor)

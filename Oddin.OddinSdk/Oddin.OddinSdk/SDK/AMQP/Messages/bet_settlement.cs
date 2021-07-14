@@ -158,7 +158,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Messages
 
         private bool void_reasonFieldSpecified;
 
-        private string resultField;
+        private int statusField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("outcome")]
@@ -246,15 +246,15 @@ namespace Oddin.OddinSdk.SDK.AMQP.Messages
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string result
+        public int status
         {
             get
             {
-                return this.resultField;
+                return this.statusField;
             }
             set
             {
-                this.resultField = value;
+                this.statusField = value;
             }
         }
     }
