@@ -27,19 +27,22 @@ namespace Oddin.OddinSdk.SampleIntegration
                 .GetConfigurationBuilder()
                 .SetAccessToken("1a0c5a30-74ed-416d-b120-8c05f92e382f")
                 .SelectIntegration()
-                .LoadFromConfigFile()
                 .Build();
 
             var feed = new Feed(config, loggerFactory);
 
-            var session = feed.CreateBuilder()
+            var session = feed
+                .CreateBuilder()
                 .SetMessageInterest(MessageInterest.AllMessages)
                 .Build();
 
             feed.EventRecoveryCompleted += OnEventRecoveryComplete;
             session.OnOddsChange += OnOddsChangeReceived;
             session.OnBetStop += OnBetStopReceived;
-            
+            session.OnBetSettlement += OnBetSettlement;
+            session.OnUnparsableMessageReceived += OnUnparsableMessageReceived;
+            session.OnBetCancel += Session_OnBetCancel;
+
             feed.Open();
             Console.ReadLine();
 
@@ -53,6 +56,19 @@ namespace Oddin.OddinSdk.SampleIntegration
             feed.EventRecoveryCompleted -= OnEventRecoveryComplete;
             session.OnOddsChange -= OnOddsChangeReceived;
             session.OnBetStop -= OnBetStopReceived;
+            session.OnBetSettlement -= OnBetSettlement;
+            session.OnUnparsableMessageReceived -= OnUnparsableMessageReceived;
+            session.OnBetCancel -= Session_OnBetCancel;
+        }
+
+        private static void Session_OnBetCancel(object sender, BetCancelEventArgs<ISportEvent> e)
+        {
+            Console.WriteLine($"On Bet Cancel Message Received in {e.GetBetCancel().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+        }
+
+        private static async void OnBetSettlement(object sender, BetSettlementEventArgs<ISportEvent> eventArgs)
+        {
+            Console.WriteLine($"On Bet Settlement in {await eventArgs.GetBetSettlement().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
         }
 
         private static async void OnOddsChangeReceived(object sender, OddsChangeEventArgs<ISportEvent> eventArgs)
@@ -65,6 +81,11 @@ namespace Oddin.OddinSdk.SampleIntegration
             Console.WriteLine($"Bet stop in {await eventArgs.GetBetStop().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
         }
 
+        private static void OnUnparsableMessageReceived(object sender, UnparsableMessageEventArgs e)
+        {
+            Console.WriteLine($"On Unparsable Message Received in {e.MessageType}");
+        }
+        
         private static async void OnEventRecoveryComplete(object sender, EventRecoveryCompletedEventArgs eventArgs)
         {
             Console.WriteLine($"Event recovery completed [event id: {eventArgs.GetEventId()}, request id: {eventArgs.GetRequestId()}");

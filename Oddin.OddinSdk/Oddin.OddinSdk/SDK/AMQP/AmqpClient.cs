@@ -189,6 +189,8 @@ namespace Oddin.OddinSdk.SDK.AMQP
             var xml = Encoding.UTF8.GetString(body);
             var success = FeedMessageDeserializer.TryDeserializeMessage(xml, out var message);
 
+            _log.LogDebug(xml);
+
             if (success == false || message is null)
             {
                 HandleUnparsableMessage(body, eventArgs.RoutingKey);
@@ -211,8 +213,14 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 case bet_stop betStopMessage:
                     Dispatch(BetStopMessageReceived, new SimpleMessageEventArgs<bet_stop>(betStopMessage, body), nameof(BetStopMessageReceived));
                     break;
+                case bet_settlement betSettlement:
+                    Dispatch(BetSettlementMessageReceived, new SimpleMessageEventArgs<bet_settlement>(betSettlement, body), nameof(BetSettlementMessageReceived));
+                    break;
+                case bet_cancel betCancel:
+                    Dispatch(BetCancelMessageReceived, new SimpleMessageEventArgs<bet_cancel>(betCancel, body), nameof(BetCancelMessageReceived));
+                    break;
 
-                    // ...
+                // ...
 
                 default:
                     var errorMessage = $"FeedMessage of type '{message.GetType().Name}' is not supported.";
@@ -253,5 +261,9 @@ namespace Oddin.OddinSdk.SDK.AMQP
         public event EventHandler<SimpleMessageEventArgs<odds_change>> OddsChangeMessageReceived;
 
         public event EventHandler<SimpleMessageEventArgs<bet_stop>> BetStopMessageReceived;
+
+        public event EventHandler<SimpleMessageEventArgs<bet_settlement>> BetSettlementMessageReceived;
+
+        public event EventHandler<SimpleMessageEventArgs<bet_cancel>> BetCancelMessageReceived;
     }
 }

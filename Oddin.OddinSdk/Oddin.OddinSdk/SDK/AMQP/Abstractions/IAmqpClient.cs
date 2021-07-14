@@ -41,5 +41,9 @@ namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
         /// Raised when the AMQP client receives a BetStop message through AMQP feed
         /// </summary>
         event EventHandler<SimpleMessageEventArgs<bet_stop>> BetStopMessageReceived;
+
+        event EventHandler<SimpleMessageEventArgs<bet_settlement>> BetSettlementMessageReceived;
+        
+        event EventHandler<SimpleMessageEventArgs<bet_cancel>> BetCancelMessageReceived;
     }
 }
