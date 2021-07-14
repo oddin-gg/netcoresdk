@@ -63,28 +63,60 @@ namespace Oddin.OddinSdk.SDK.Managers.Recovery
             AttachToEvents();
             GenerateProducerRecoveryManagers();
 
-            //foreach (var producerRecoveryManager in _producerRecoveryManagers)
-            //    producerRecoveryManager.Open();
+            foreach (var producerRecoveryManager in _producerRecoveryManagers)
+                producerRecoveryManager.Open();
         }
 
         public void Close()
         {
-            //foreach (var producerRecoveryManager in _producerRecoveryManagers)
-            //    producerRecoveryManager.Close();
+            foreach (var producerRecoveryManager in _producerRecoveryManagers)
+                producerRecoveryManager.Close();
 
             DetachFromEvents();
         }
 
+        private bool TryGetProducerRecoveryManager(int producerId, out ProducerRecoveryManager prm)
+        {
+            var prms = _producerRecoveryManagers.Where(prm => prm.MatchesProducer(producerId));
+            if (prms.Count() >= 2)
+            {
+                var errorMessage = $"There are multiple {typeof(ProducerRecoveryManager).Name}s related to the same Producer ID!";
+                _log.LogError(errorMessage);
+                throw new InvalidOperationException(errorMessage);
+            }
+
+            prm = prms.FirstOrDefault();
+            return prm != default;
+        }
+
         private void OnSnapshotCompleteReceived(object sender, SimpleMessageEventArgs<snapshot_complete> eventArgs)
         {
-            var requestId = eventArgs?.FeedMessage?.request_id;
-            if (requestId.HasValue == false)
+            var producerId = eventArgs?.FeedMessage?.product;
+            if (producerId.HasValue == false)
             {
-                _log.LogWarning($"A {typeof(snapshot_complete).Name} message without request ID was received!");
+                _log.LogWarning($"An incomplete {typeof(snapshot_complete).Name} message was received!");
                 return;
             }
-            
-            // TODO
+
+            if (TryGetProducerRecoveryManager(producerId.Value, out var prm) == false)
+                return;
+
+            prm.HandleSnapshotCompletedReceived(eventArgs.FeedMessage);
+        }
+
+        private void OnAliveReceived(object sender, SimpleMessageEventArgs<alive> eventArgs)
+        {
+            var producerId = eventArgs?.FeedMessage?.product;
+            if (producerId.HasValue == false)
+            {
+                _log.LogWarning($"An incomplete {typeof(alive).Name} message was received!");
+                return;
+            }
+
+            if (TryGetProducerRecoveryManager(producerId.Value, out var prm) == false)
+                return;
+
+            prm.HandleAliveReceived(eventArgs.FeedMessage);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Oddin.OddinSdk.SDK.API.Abstractions;
+﻿using Oddin.OddinSdk.SDK.AMQP.Messages;
+using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using Oddin.OddinSdk.SDK.Managers.Abstractions;
 using System;
@@ -37,6 +38,30 @@ namespace Oddin.OddinSdk.SDK.Managers.Recovery
             return false;
         }
 
+        public bool MatchesProducer(int producerId)
+        {
+            return _producer.Id == producerId;
+        }
+
+        public void Open()
+        {
+            // TODO: start timer etc.
+        }
+
+        public void Close()
+        {
+            // ???
+        }
+
+        public void HandleSnapshotCompletedReceived(snapshot_complete message)
+        {
+            // TODO: implement (check the request id!)
+        }
+
+        public void HandleAliveReceived(alive message)
+        {
+            // TODO: implement (check the request id!)
+        }
 
 
         //private async Task RequestFullOddsRecoveryAsync(IProducer producer, int nodeId)
