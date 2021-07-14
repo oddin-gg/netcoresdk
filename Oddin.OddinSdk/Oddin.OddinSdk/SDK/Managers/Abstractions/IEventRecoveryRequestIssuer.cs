@@ -1,5 +1,7 @@
 ﻿using Oddin.OddinSdk.SDK.AMQP;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
+using Oddin.OddinSdk.SDK.Dispatch.EventArguments;
+using System;
 using System.Threading.Tasks;
 
 namespace Oddin.OddinSdk.SDK.Managers.Abstractions

@@ -13,6 +13,12 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 return true;
             }
 
+            if (XmlHelper.TryDeserialize(message, out snapshot_complete snapshotComplete))
+            {
+                feedMessage = snapshotComplete;
+                return true;
+            }
+
             if (XmlHelper.TryDeserialize(message, out odds_change oddsChangeMessage))
             {
                 feedMessage = oddsChangeMessage;

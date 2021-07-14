@@ -5,7 +5,7 @@ using System;
 
 namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
 {
-    public interface IAmqpClient
+    internal interface IAmqpClient
     {
         /// <summary>
         /// Connects the AMQP consumer to the AMQP broker
@@ -26,6 +26,11 @@ namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
         /// Raised when the AMQP client receives an Alive message through AMQP feed
         /// </summary>
         event EventHandler<SimpleMessageEventArgs<alive>> AliveMessageReceived;
+
+        /// <summary>
+        /// Raised when the AMQP client receives a SnapshotComplete message through AMQP feed
+        /// </summary>
+        event EventHandler<SimpleMessageEventArgs<snapshot_complete>> SnapshotCompleteMessageReceived;
 
         /// <summary>
         /// Raised when the AMQP client receives an OddsChange message through AMQP feed
