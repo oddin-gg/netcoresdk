@@ -6,7 +6,8 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
     /// Defines a contract implemented by all messages associated with sport events
     /// </summary>
     /// <typeparam name="T">A <see cref="ISportEvent"/> derived type used to describe the sport event associated with the fixture change</typeparam>
-    public interface IEventMessage<out T> : IMessage where T : ISportEvent
+    public interface IEventMessage<out T> : IMessage 
+        where T : ISportEvent
     {
         /// <summary>
         /// Gets a <see cref="ISportEvent"/> derived instance representing the sport event associated with the current message

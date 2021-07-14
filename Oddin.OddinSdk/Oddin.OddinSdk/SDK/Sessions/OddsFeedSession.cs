@@ -52,6 +52,7 @@ namespace Oddin.OddinSdk.SDK.Sessions
         public event EventHandler<OddsChangeEventArgs<ISportEvent>> OnOddsChange;
         public event EventHandler<BetStopEventArgs<ISportEvent>> OnBetStop;
         public event EventHandler<BetSettlementEventArgs<ISportEvent>> OnBetSettlement;
+        public event EventHandler<BetCancelEventArgs<ISportEvent>> OnBetCancel;
 
         private void HandleUnparsableMessageReceived(object sender, UnparsableMessageEventArgs eventArgs)
         {
@@ -96,6 +97,12 @@ namespace Oddin.OddinSdk.SDK.Sessions
         {
             var betSettlementEventArgs = new BetSettlementEventArgs<ISportEvent>(_feedMessageMapper, eventArgs.FeedMessage, eventArgs.RawMessage);
             Dispatch(OnBetSettlement, betSettlementEventArgs, nameof(OnBetSettlement));
+        } 
+        
+        private void CreateAndDispatchBetCancel(object sender, SimpleMessageEventArgs<bet_cancel> eventArgs)
+        {
+            var betCancelEventArgs = new BetCancelEventArgs<ISportEvent>(_feedMessageMapper, eventArgs.FeedMessage, eventArgs.RawMessage);
+            Dispatch(OnBetCancel, betCancelEventArgs, nameof(OnBetCancel));
         }
 
         private void HandleOddsChangeMessageReceived(object sender, SimpleMessageEventArgs<odds_change> eventArgs)
@@ -106,6 +113,9 @@ namespace Oddin.OddinSdk.SDK.Sessions
         
         private void HandleBetSettlementMessageReceived(object sender, SimpleMessageEventArgs<bet_settlement> eventArgs)
             => CreateAndDispatchFeedMessageEventArgs<BetSettlementEventArgs<ISportEvent>, bet_settlement>(CreateAndDispatchBetSettlement, sender, eventArgs);
+        
+        private void HandleBetCancelMessageReceived(object sender, SimpleMessageEventArgs<bet_cancel> eventArgs)
+            => CreateAndDispatchFeedMessageEventArgs<BetCancelEventArgs<ISportEvent>, bet_cancel>(CreateAndDispatchBetCancel, sender, eventArgs);
 
         private void AttachAmqpClientEvents()
         {
@@ -114,6 +124,8 @@ namespace Oddin.OddinSdk.SDK.Sessions
             _amqpClient.OddsChangeMessageReceived += HandleOddsChangeMessageReceived;
             _amqpClient.BetStopMessageReceived += HandleBetStopMessageReceived;
             _amqpClient.BetSettlementMessageReceived += HandleBetSettlementMessageReceived;
+            _amqpClient.BetCancelMessageReceived += HandleBetCancelMessageReceived;
+
         }
 
         private void DetachAmqpClintEvents()
@@ -123,6 +135,7 @@ namespace Oddin.OddinSdk.SDK.Sessions
             _amqpClient.OddsChangeMessageReceived -= HandleOddsChangeMessageReceived;
             _amqpClient.BetStopMessageReceived -= HandleBetStopMessageReceived;
             _amqpClient.BetSettlementMessageReceived -= HandleBetSettlementMessageReceived;
+            _amqpClient.BetCancelMessageReceived -= HandleBetCancelMessageReceived;
         }
 
         /// <summary>

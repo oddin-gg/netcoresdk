@@ -21,6 +21,11 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
         IReadOnlyDictionary<string, string> Specifiers { get; }
 
         /// <summary>
+        /// Gets string containing extended specifiers
+        /// </summary>
+        string ExtendedSpecifiers { get; }
+
+        /// <summary>
         /// Asynchronously gets the name of the market in the specified language
         /// </summary>
         /// <param name="culture">A <see cref="CultureInfo"/> specifying the language in which to get the name</param>

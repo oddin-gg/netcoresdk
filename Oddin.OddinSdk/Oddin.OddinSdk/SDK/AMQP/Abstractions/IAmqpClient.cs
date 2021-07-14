@@ -38,5 +38,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
         event EventHandler<SimpleMessageEventArgs<bet_stop>> BetStopMessageReceived;
 
         event EventHandler<SimpleMessageEventArgs<bet_settlement>> BetSettlementMessageReceived;
+        
+        event EventHandler<SimpleMessageEventArgs<bet_cancel>> BetCancelMessageReceived;
     }
 }

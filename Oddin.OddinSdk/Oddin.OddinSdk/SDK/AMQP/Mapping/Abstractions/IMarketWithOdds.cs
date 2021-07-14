@@ -1,5 +1,4 @@
-﻿using Oddin.OddinSdk.SDK.AMQP.Enums;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {

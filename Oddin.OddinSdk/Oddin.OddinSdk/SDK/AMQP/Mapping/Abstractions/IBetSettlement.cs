@@ -1,4 +1,5 @@
-﻿using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
+﻿using Oddin.OddinSdk.SDK.AMQP.Enums;
+using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 
 namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {
@@ -6,12 +7,5 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
         where T : ISportEvent
     {
         BetSettlementCertainty Certainty { get; }
-    }
-
-    public enum BetSettlementCertainty
-    {
-        LiveScouted = 1,
-        Confirmed = 2,
-        Unknown = 0
     }
 }

@@ -4,7 +4,8 @@ using System.Collections.Generic;
 
 namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {
-    public interface IBetStop<out T> : IEventMessage<T> where T : ISportEvent
+    public interface IBetStop<out T> : IEventMessage<T> 
+        where T : ISportEvent
     {
         /// <summary>
         /// Gets a <see cref="MarketStatus"/> specifying the new status of the associated markets

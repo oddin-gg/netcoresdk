@@ -23,7 +23,9 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
 
         public IReadOnlyDictionary<string, string> Specifiers { get; }
 
-        public Market(int id, IDictionary<string, string> specifiers, IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy)
+        public string ExtendedSpecifiers { get; }
+
+        public Market(int id, IDictionary<string, string> specifiers, string extendedSpecifiers, IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
             if (specifiers is null)
                 throw new ArgumentNullException(nameof(specifiers));
@@ -33,6 +35,8 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
 
             Id = id;
             Specifiers = specifiers as IReadOnlyDictionary<string, string>;
+            ExtendedSpecifiers = extendedSpecifiers;
+
             _apiClient = apiClient;
             _exceptionHandlingStrategy = exceptionHandlingStrategy;
         }

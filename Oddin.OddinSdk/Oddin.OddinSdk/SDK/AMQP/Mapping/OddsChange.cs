@@ -1,5 +1,4 @@
-﻿using Oddin.OddinSdk.SDK.AMQP.Abstractions;
-using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
+﻿using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using System.Collections.Generic;
 
@@ -19,8 +18,8 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
             byte[] rawMessage,
             IEnumerable<IMarketWithOdds> markets,
             int? betStopReason,
-            int? bettingStatus
-            ) : base(producer, messageTimestamp, sportEvent, requestId, rawMessage, markets)
+            int? bettingStatus)
+            : base(producer, messageTimestamp, sportEvent, requestId, rawMessage, markets)
         {
             BettingStatus = bettingStatus;
             BetStopReason = betStopReason;

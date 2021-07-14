@@ -24,8 +24,20 @@ namespace Oddin.OddinSdk.SDK.Dispatch.Abstractions
         ///// Raised when a bet settlement message is received from the feed
         ///// </summary>
         event EventHandler<BetSettlementEventArgs<T>> OnBetSettlement;
-        
+
+        /// <summary>
+        /// Raised when a bet cancel message is received from the feed
+        /// </summary>
+        event EventHandler<BetCancelEventArgs<T>> OnBetCancel;
+
         // TODO: implement
+
+        ///// <summary>
+        ///// Raised when a fixture change message is received from the feed
+        ///// </summary>
+        //event EventHandler<FixtureChangeEventArgs<T>> OnFixtureChange;
+
+        // Not implemented: It should happen only in rare cases and you should be notified via your preferred support channel
 
         ///// <summary>
         ///// Raised when a rollback bet settlement is received from the feed
@@ -33,18 +45,8 @@ namespace Oddin.OddinSdk.SDK.Dispatch.Abstractions
         //event EventHandler<RollbackBetSettlementEventArgs<T>> OnRollbackBetSettlement;
 
         ///// <summary>
-        ///// Raised when a bet cancel message is received from the feed
-        ///// </summary>
-        //event EventHandler<BetCancelEventArgs<T>> OnBetCancel;
-
-        ///// <summary>
         ///// Raised when a rollback bet cancel message is received from the feed
         ///// </summary>
         //event EventHandler<RollbackBetCancelEventArgs<T>> OnRollbackBetCancel;
-
-        ///// <summary>
-        ///// Raised when a fixture change message is received from the feed
-        ///// </summary>
-        //event EventHandler<FixtureChangeEventArgs<T>> OnFixtureChange;
     }
 }

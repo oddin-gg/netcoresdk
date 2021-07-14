@@ -10,5 +10,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
         IBetStop<T> MapBetStop<T>(bet_stop message, byte[] rawMessage) where T : ISportEvent;
 
         IBetSettlement<T> MapBetSettlement<T>(bet_settlement message, byte[] rawMessage) where T : ISportEvent;
+
+        IBetCancel<T> MapBetCancel<T>(bet_cancel message, byte[] rawMessage) where T : ISportEvent;
     }
 }

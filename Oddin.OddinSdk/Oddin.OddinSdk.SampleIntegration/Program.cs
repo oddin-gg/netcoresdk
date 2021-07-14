@@ -39,6 +39,7 @@ namespace Oddin.OddinSdk.SampleIntegration
             session.OnBetStop += OnBetStopReceived;
             session.OnBetSettlement += OnBetSettlement;
             session.OnUnparsableMessageReceived += OnUnparsableMessageReceived;
+            session.OnBetCancel += Session_OnBetCancel;
 
             feed.Open();
             Console.ReadLine();
@@ -48,11 +49,12 @@ namespace Oddin.OddinSdk.SampleIntegration
             session.OnBetStop -= OnBetStopReceived;
             session.OnBetSettlement -= OnBetSettlement;
             session.OnUnparsableMessageReceived -= OnUnparsableMessageReceived;
+            session.OnBetCancel -= Session_OnBetCancel;
         }
 
-        private static void OnUnparsableMessageReceived(object sender, UnparsableMessageEventArgs e)
+        private static void Session_OnBetCancel(object sender, BetCancelEventArgs<ISportEvent> e)
         {
-            Console.WriteLine($"On Unparsable Message Received in {e.MessageType}");
+            Console.WriteLine($"On Bet Cancel Message Received in {e.GetBetCancel().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
         }
 
         private static async void OnBetSettlement(object sender, BetSettlementEventArgs<ISportEvent> eventArgs)
@@ -68,6 +70,10 @@ namespace Oddin.OddinSdk.SampleIntegration
         private static async void OnBetStopReceived(object sender, BetStopEventArgs<ISportEvent> eventArgs)
         {
             Console.WriteLine($"Bet stop in {await eventArgs.GetBetStop().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+        }
+        private static void OnUnparsableMessageReceived(object sender, UnparsableMessageEventArgs e)
+        {
+            Console.WriteLine($"On Unparsable Message Received in {e.MessageType}");
         }
     }
 }

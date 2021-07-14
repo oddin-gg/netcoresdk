@@ -1,4 +1,5 @@
-﻿using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
+﻿using Oddin.OddinSdk.SDK.AMQP.Enums;
+using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using System.Collections.Generic;
 
@@ -8,27 +9,22 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
     {
         public BetSettlementCertainty Certainty { get; }
 
-        public BetSettlement(IMessageTimestamp timestamp,
-                             IProducer producer,
-                             T @event,
-                             long? requestId,
-                             IEnumerable<IMarketWithSettlement> markets,
-                             int certainty,
-                             byte[] rawMessage)
+        public BetSettlement(
+            IMessageTimestamp timestamp,
+            IProducer producer,
+            T @event,
+            long? requestId,
+            IEnumerable<IMarketWithSettlement> markets,
+            int certainty,
+            byte[] rawMessage)
             : base(producer, timestamp, @event, requestId, rawMessage, markets)
         {
-            if (certainty == 1)
+            Certainty = certainty switch
             {
-                Certainty = BetSettlementCertainty.LiveScouted;
-            }
-            else if (certainty == 2)
-            {
-                Certainty = BetSettlementCertainty.Confirmed;
-            }
-            else
-            {
-                Certainty = BetSettlementCertainty.Unknown;
-            }
+                1 => BetSettlementCertainty.LiveScouted,
+                2 => BetSettlementCertainty.Confirmed,
+                _ => BetSettlementCertainty.Unknown
+            };
         }
     }
 }

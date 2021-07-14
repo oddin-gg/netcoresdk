@@ -31,7 +31,13 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 return true;
             }
 
-            // ...
+            if (XmlHelper.TryDeserialize(message, out bet_cancel betCancel))
+            {
+                feedMessage = betCancel;
+                return true;
+            }
+
+            // TODO: add remaining messages
 
             feedMessage = null;
             return false;
