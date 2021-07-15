@@ -49,7 +49,7 @@ namespace Oddin.OddinSdk.SampleIntegration
             Console.ReadLine();
 
             var producer = feed.ProducerManager.Get("live");
-            var urn = new URN("od:match:35667");
+            var urn = new URN("od:match:32927");
             Console.WriteLine($"Event recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventMessagesAsync(producer, urn)}");
 
             Console.ReadLine();
@@ -120,7 +120,7 @@ namespace Oddin.OddinSdk.SampleIntegration
         
         private static void OnEventRecoveryComplete(object sender, EventRecoveryCompletedEventArgs eventArgs)
         {
-            Console.WriteLine($"Event recovery completed [event id: {eventArgs.GetEventId()}, request id: {eventArgs.GetRequestId()}");
+            Console.WriteLine($"Event recovery completed [event id: {eventArgs.GetEventId()}, request id: {eventArgs.GetRequestId()}]");
         }
     }
 }
