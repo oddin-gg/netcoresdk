@@ -2,7 +2,8 @@
 
 namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {
-    public interface IBetCancel<out T> : IMarketMessage<IMarketCancel, T> where T : ISportEvent
+    public interface IBetCancel<out T> : IMarketMessage<IMarketCancel, T> 
+        where T : ISportEvent
     {
         long? StartTime { get; }
 

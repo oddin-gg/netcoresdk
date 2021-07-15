@@ -269,5 +269,24 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                 exceptionHandlingStrategy: _exceptionHandlingStrategy,
                 voidReason: message.void_reasonSpecified ? message.void_reason : default);
         }
+
+        public IFixtureChange<T> MapFixtureChange<T>(fixture_change message, byte[] rawMessage) where T : ISportEvent
+        {
+            if (message is null)
+                throw new ArgumentNullException(nameof(message));
+
+            var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
+            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
+
+            return new FixtureChange<T>(
+                timestamp: messageTimestamp,
+                producer: _producerManager.Get(message.product),
+                @event: (T)sportEvent,
+                requestId: message.request_idSpecified ? (long?)message.request_id : null,
+                changeType: message.change_typeSpecified ? message.change_type : default,
+                nextLiveTime: message.next_live_timeSpecified ? (long?)message.next_live_time : null,
+                startTime: message.start_time,
+                rawMessage: rawMessage);
+        }
     }
 }

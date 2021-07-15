@@ -216,8 +216,9 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 case bet_cancel betCancel:
                     Dispatch(BetCancelMessageReceived, new SimpleMessageEventArgs<bet_cancel>(betCancel, body), nameof(BetCancelMessageReceived));
                     break;
-
-                // ...
+                case fixture_change fixtureChange:
+                    Dispatch(FixtureChangeMessageReceived, new SimpleMessageEventArgs<fixture_change>(fixtureChange, body), nameof(FixtureChangeMessageReceived));
+                    break;
 
                 default:
                     var errorMessage = $"FeedMessage of type '{message.GetType().Name}' is not supported.";
@@ -260,5 +261,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
         public event EventHandler<SimpleMessageEventArgs<bet_settlement>> BetSettlementMessageReceived;
 
         public event EventHandler<SimpleMessageEventArgs<bet_cancel>> BetCancelMessageReceived;
+
+        public event EventHandler<SimpleMessageEventArgs<fixture_change>> FixtureChangeMessageReceived;
     }
 }

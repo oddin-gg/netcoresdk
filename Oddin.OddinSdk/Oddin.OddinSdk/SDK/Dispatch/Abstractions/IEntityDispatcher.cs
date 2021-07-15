@@ -30,12 +30,10 @@ namespace Oddin.OddinSdk.SDK.Dispatch.Abstractions
         /// </summary>
         event EventHandler<BetCancelEventArgs<T>> OnBetCancel;
 
-        // TODO: implement
-
-        ///// <summary>
-        ///// Raised when a fixture change message is received from the feed
-        ///// </summary>
-        //event EventHandler<FixtureChangeEventArgs<T>> OnFixtureChange;
+        /// <summary>
+        /// Raised when a fixture change message is received from the feed
+        /// </summary>
+        event EventHandler<FixtureChangeEventArgs<T>> OnFixtureChange;
 
         // Not implemented: It should happen only in rare cases and you should be notified via your preferred support channel
 

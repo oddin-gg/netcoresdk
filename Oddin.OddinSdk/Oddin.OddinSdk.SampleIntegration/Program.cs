@@ -40,6 +40,7 @@ namespace Oddin.OddinSdk.SampleIntegration
             session.OnBetSettlement += OnBetSettlement;
             session.OnUnparsableMessageReceived += OnUnparsableMessageReceived;
             session.OnBetCancel += Session_OnBetCancel;
+            session.OnFixtureChange += Session_OnFixtureChange;
 
             feed.Open();
             Console.ReadLine();
@@ -50,11 +51,17 @@ namespace Oddin.OddinSdk.SampleIntegration
             session.OnBetSettlement -= OnBetSettlement;
             session.OnUnparsableMessageReceived -= OnUnparsableMessageReceived;
             session.OnBetCancel -= Session_OnBetCancel;
+            session.OnFixtureChange -= Session_OnFixtureChange;
         }
 
-        private static void Session_OnBetCancel(object sender, BetCancelEventArgs<ISportEvent> e)
+        private static async void Session_OnFixtureChange(object sender, FixtureChangeEventArgs<ISportEvent> e)
         {
-            Console.WriteLine($"On Bet Cancel Message Received in {e.GetBetCancel().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine($"On Bet Cancel Message Received in {await e.GetFixtureChange().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+        }
+
+        private static async void Session_OnBetCancel(object sender, BetCancelEventArgs<ISportEvent> e)
+        {
+            Console.WriteLine($"On Bet Cancel Message Received in {await e.GetBetCancel().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
         }
 
         private static async void OnBetSettlement(object sender, BetSettlementEventArgs<ISportEvent> eventArgs)

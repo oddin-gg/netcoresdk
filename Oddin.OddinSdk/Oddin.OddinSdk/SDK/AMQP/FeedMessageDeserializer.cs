@@ -5,7 +5,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
 {
     internal static class FeedMessageDeserializer
     {
-        public static bool TryDeserializeMessage(string message, out FeedMessageModel feedMessage)
+        internal static bool TryDeserializeMessage(string message, out FeedMessageModel feedMessage)
         {
             if (XmlHelper.TryDeserialize(message, out alive aliveMessage))
             {
@@ -37,7 +37,11 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 return true;
             }
 
-            // TODO: add remaining messages
+            if (XmlHelper.TryDeserialize(message, out fixture_change fixtureChange))
+            {
+                feedMessage = fixtureChange;
+                return true;
+            }
 
             feedMessage = null;
             return false;

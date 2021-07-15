@@ -2,9 +2,6 @@
 
 namespace Oddin.OddinSdk.SDK.AMQP
 {
-    /// <summary>
-    /// Represents a Uniform Resource Name
-    /// </summary>
     public class URN
     {
         public string Prefix { get; }
@@ -13,12 +10,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
         public long Id { get; }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="URN"/>. The <see cref="URN"/> structure is <code>prefix:type:id</code>
-        /// </summary>
-        /// <param name="prefix">The prefix</param>
-        /// <param name="type">The type</param>
-        /// <param name="id">The id</param>
         public URN(string prefix, string type, long id)
         {
             Prefix = prefix;
@@ -26,10 +17,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
             Id = id;
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="URN"/>. The <see cref="URN"/> structure is <code>prefix:type:id</code>
-        /// </summary>
-        /// <param name="urn">The complete URN string</param>
         public URN(string urn)
         {
             if (urn is null)
