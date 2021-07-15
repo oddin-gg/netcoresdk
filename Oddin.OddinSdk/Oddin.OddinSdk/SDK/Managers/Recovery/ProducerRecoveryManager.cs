@@ -56,6 +56,7 @@ namespace Oddin.OddinSdk.SDK.Managers.Recovery
             //  - check if request ID matches _producer.RecoveryInfo.RequestId
             //  - mark recovery as completed (set _producer.RecoveryInfo accordingly)
             //  - invoke ProducerUp event (pass _producer to eventArgs)
+            //      Dispatch(ProducerUp, ...)
         }
 
         public void HandleAliveReceived(alive message)

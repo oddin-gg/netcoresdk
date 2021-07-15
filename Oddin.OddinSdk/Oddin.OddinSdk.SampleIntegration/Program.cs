@@ -48,7 +48,7 @@ namespace Oddin.OddinSdk.SampleIntegration
             Console.ReadLine();
 
             var producer = feed.ProducerManager.Get("live");
-            var urn = new URN("od:match:34615");
+            var urn = new URN("od:match:35671");
             Console.WriteLine($"Event recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventMessagesAsync(producer, urn)}");
 
             Console.ReadLine();

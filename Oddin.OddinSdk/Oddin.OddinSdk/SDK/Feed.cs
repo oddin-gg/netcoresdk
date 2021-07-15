@@ -352,6 +352,8 @@ namespace Oddin.OddinSdk.SDK
         {
             _log.LogWarning($"The AMQP connection was shut down. Cause: {shutdownEventArgs.Cause}");
             
+            // INFO: this method is called when Rabbit library informs that the connection has been shut down
+
             // TODO: handle feed recovery
 
             Dispatch(Disconnected, new EventArgs(), nameof(Disconnected));
