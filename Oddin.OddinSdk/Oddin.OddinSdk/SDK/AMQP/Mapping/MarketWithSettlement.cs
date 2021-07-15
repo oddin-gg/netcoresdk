@@ -26,8 +26,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
             : base(marketId, specifiers, extentedSpecifiers, apiClient, exceptionHandlingStrategy, voidReason)
         {
             MarketStatus = marketStatus;
-            var readonlyOutcomes = outcomes as IReadOnlyCollection<IOutcomeSettlement>;
-            OutcomeSettlements = readonlyOutcomes ?? new ReadOnlyCollection<IOutcomeSettlement>(outcomes.ToList());
+            OutcomeSettlements = outcomes.ToList().AsReadOnly();
         }
     }
 }

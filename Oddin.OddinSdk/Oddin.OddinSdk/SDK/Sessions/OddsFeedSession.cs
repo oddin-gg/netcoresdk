@@ -60,11 +60,6 @@ namespace Oddin.OddinSdk.SDK.Sessions
             Dispatch(OnUnparsableMessageReceived, eventArgs, nameof(OnUnparsableMessageReceived));
         }
 
-        private void HandleAliveMessageReceived(object sender, SimpleMessageEventArgs<alive> eventArgs)
-        {
-            // TODO: implement heartbeat handling (and potential recovery?)
-        }
-
         private void CreateAndDispatchFeedMessageEventArgs<TMessageEventArgs, TMessage>(Action<object, SimpleMessageEventArgs<TMessage>> createAndDispatch, object sender, SimpleMessageEventArgs<TMessage> eventArgs)
         {
             try
@@ -130,7 +125,6 @@ namespace Oddin.OddinSdk.SDK.Sessions
         private void AttachAmqpClientEvents()
         {
             _amqpClient.UnparsableMessageReceived += HandleUnparsableMessageReceived;
-            _amqpClient.AliveMessageReceived += HandleAliveMessageReceived;
             _amqpClient.OddsChangeMessageReceived += HandleOddsChangeMessageReceived;
             _amqpClient.BetStopMessageReceived += HandleBetStopMessageReceived;
             _amqpClient.BetSettlementMessageReceived += HandleBetSettlementMessageReceived;
@@ -142,7 +136,6 @@ namespace Oddin.OddinSdk.SDK.Sessions
         private void DetachAmqpClintEvents()
         {
             _amqpClient.UnparsableMessageReceived -= HandleUnparsableMessageReceived;
-            _amqpClient.AliveMessageReceived -= HandleAliveMessageReceived;
             _amqpClient.OddsChangeMessageReceived -= HandleOddsChangeMessageReceived;
             _amqpClient.BetStopMessageReceived -= HandleBetStopMessageReceived;
             _amqpClient.BetSettlementMessageReceived -= HandleBetSettlementMessageReceived;

@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Oddin.OddinSdk.Common;
+﻿using Oddin.OddinSdk.Common;
 using Oddin.OddinSdk.SDK.AMQP;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
@@ -57,29 +56,49 @@ namespace Oddin.OddinSdk.SDK.API
             return _apiModelMapper.MapMarketDescriptionsList(response.Data);
         }
 
-        public async Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId)
+        public async Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId)
         {
             var route = $"v1/{producerName}/odds/events/{sportEventId}/initiate_request";
-            var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, deserializeResponse: false, ignoreUnsuccessfulStatusCode: true);
-            return (long)response.ResponseCode;
-        }
-
-        public async Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId)
-        {
-            var route = $"v1/{producerName}/stateful_messages/events/{sportEventId}/initiate_request";
-            var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, deserializeResponse: false, ignoreUnsuccessfulStatusCode: true);
-            return (long)response.ResponseCode;
-        }
-
-        public async Task PostRecoveryRequest(string producerName, DateTime timestamp, long requestId, int nodeId)
-        {
-            var route = $"v1/{producerName}/recovery/initiate_request";
             var parameters = new (string key, object value)[]
             {
-                ("after", timestamp.ToEpochTimeMilliseconds()),
-                ("request_id", requestId),
-                ("node_id", nodeId)
+                ("request_id", requestId)
             };
+
+            var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters, deserializeResponse: false, ignoreUnsuccessfulStatusCode: true);
+            return (long)response.ResponseCode;
+        }
+
+        public async Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId)
+        {
+            var route = $"v1/{producerName}/stateful_messages/events/{sportEventId}/initiate_request";
+            var parameters = new (string key, object value)[]
+            {
+                ("request_id", requestId)
+            };
+
+            var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters, deserializeResponse: false, ignoreUnsuccessfulStatusCode: true);
+            return (long)response.ResponseCode;
+        }
+
+        public async Task PostRecoveryRequest(string producerName, long requestId, int nodeId, DateTime timestamp = default)
+        {
+            var route = $"v1/{producerName}/recovery/initiate_request";
+            (string key, object value)[] parameters;
+
+            if (timestamp == default)
+                parameters = new (string key, object value)[]
+                {
+                    ("request_id", requestId),
+                    ("node_id", nodeId)
+                };
+            else
+                parameters = new (string key, object value)[]
+                {
+                    ("after", timestamp.ToEpochTimeMilliseconds()),
+                    ("request_id", requestId),
+                    ("node_id", nodeId)
+                };
+
             await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters, deserializeResponse: false);
         }
     }

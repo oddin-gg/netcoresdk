@@ -23,7 +23,7 @@ namespace Oddin.OddinSdk.SDK.Sessions
         /// <summary>
         /// Initializes a new instance of the <see cref="MessageInterest"/> class
         /// </summary>
-        public MessageInterest(string name, string routingKey)
+        internal MessageInterest(string name, string routingKey)
         {
             Name = name;
             RoutingKeys = new List<string>() { routingKey };
@@ -32,10 +32,10 @@ namespace Oddin.OddinSdk.SDK.Sessions
         /// <summary>
         /// Initializes a new instance of the <see cref="MessageInterest"/> class
         /// </summary>
-        public MessageInterest(string name, IEnumerable<string> routingKeys)
+        internal MessageInterest(string name, IEnumerable<string> routingKeys)
         {
             Name = name;
-            RoutingKeys = routingKeys as IReadOnlyCollection<string>;
+            RoutingKeys = routingKeys.ToList().AsReadOnly();
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Oddin.OddinSdk.SDK.Sessions
 
         private static IEnumerable<string> BuildRoutingKeysFromEvents(IEnumerable<URN> eventIds)
         {
-            return eventIds.Select(eid => $"#.{eid.Prefix}:{eid.Type}.{eid.Id}");
+            return eventIds.Select(eid => $"#.{eid.Prefix}:{eid.Type}.{eid.Id}.*");
         }
     }
 }

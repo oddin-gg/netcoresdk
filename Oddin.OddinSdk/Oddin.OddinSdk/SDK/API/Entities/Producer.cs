@@ -14,12 +14,11 @@ namespace Oddin.OddinSdk.SDK.API.Entities
 
         public bool IsAvailable { get; }
 
-        // TODO: implement?
-        public bool IsDisabled => throw new NotImplementedException();
+        public bool IsDisabled { get; private set; }
 
-        public bool IsProducerDown { get; }
+        public bool IsProducerDown { get; private set; }
 
-        public DateTime LastTimestampBeforeDisconnect { get; }
+        public DateTime LastTimestampBeforeDisconnect { get; private set; }
 
         public int MaxRecoveryTime { get; }
 
@@ -62,10 +61,26 @@ namespace Oddin.OddinSdk.SDK.API.Entities
             Description = description;
             IsAvailable = active;
             IsProducerDown = true;
+            IsDisabled = false;
             LastTimestampBeforeDisconnect = DateTime.MinValue;
             Scope = scope?.Split("|");
             MaxInactivitySeconds = maxInactivitySeconds;
             MaxRecoveryTime = statefulRecoveryWindowInMinutes;
+        }
+
+        internal void SetDisabled(bool disabled)
+        {
+            IsDisabled = disabled;
+        }
+
+        internal void SetProducerDown(bool down)
+        {
+            IsProducerDown = down;
+        }
+
+        internal void SetLastTimestampBeforeDisconnect(DateTime timestamp)
+        {
+            LastTimestampBeforeDisconnect = timestamp;
         }
     }
 }

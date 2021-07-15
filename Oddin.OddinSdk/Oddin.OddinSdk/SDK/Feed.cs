@@ -25,6 +25,7 @@ using Oddin.OddinSdk.SDK.Sessions;
 using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.Common;
 using Oddin.OddinSdk.SDK.Dispatch.EventArguments;
+using Oddin.OddinSdk.SDK.Managers.Recovery;
 
 namespace Oddin.OddinSdk.SDK
 {
@@ -39,6 +40,9 @@ namespace Oddin.OddinSdk.SDK
         private readonly object _isOpenedLock = new object();
         private readonly IList<IOpenable> Sessions = new List<IOpenable>();
         private bool _isDisposed;
+
+        private IFeedRecoveryManager _feedRecoveryManager
+            => _unityContainer.Resolve<IFeedRecoveryManager>();
 
         /// <summary>
         /// Gets a <see cref="IEventRecoveryRequestIssuer"/> instance used to issue recovery requests to the feed
@@ -127,12 +131,23 @@ namespace Oddin.OddinSdk.SDK
             _unityContainer.RegisterSingleton<IRequestIdFactory, RequestIdFactory>(
                 new InjectionConstructor());
 
-            // register RecoveryRequestIssuer as singleton
-            _unityContainer.RegisterSingleton<IEventRecoveryRequestIssuer, RecoveryRequestIssuer>(
+            // register EventRecoveryRequestIssuer as singleton
+            _unityContainer.RegisterSingleton<IEventRecoveryRequestIssuer, EventRecoveryRequestIssuer>(
                 new InjectionConstructor(
-                    _unityContainer.Resolve<IRequestIdFactory>(),
                     _unityContainer.Resolve<IApiClient>(),
+                    _unityContainer.Resolve<IRequestIdFactory>(),
+                    _unityContainer.Resolve<IAmqpClient>(),
                     _config
+                    )
+                );
+
+            // register FeedRecoveryManager as singleton
+            _unityContainer.RegisterSingleton<IFeedRecoveryManager, FeedRecoveryManager>(
+                new InjectionConstructor(
+                    _unityContainer.Resolve<IProducerManager>(),
+                    _unityContainer.Resolve<IApiClient>(),
+                    _unityContainer.Resolve<IRequestIdFactory>(),
+                    _unityContainer.Resolve<IAmqpClient>()
                     )
                 );
         }
@@ -217,6 +232,41 @@ namespace Oddin.OddinSdk.SDK
                 .OrderBy(c => c.Name);
         }
 
+        private void OnEventRecoveryCompleted(object sender, EventRecoveryCompletedEventArgs eventArgs)
+        {
+            Dispatch(EventRecoveryCompleted, eventArgs, nameof(EventRecoveryCompleted));
+        }
+
+        private void OnClosed(object sender, FeedCloseEventArgs eventArgs)
+        {
+            Dispatch(Closed, eventArgs, nameof(Closed));
+        }
+
+        private void OnProducerDown(object sender, ProducerStatusChangeEventArgs eventArgs)
+        {
+            Dispatch(ProducerDown, eventArgs, nameof(ProducerDown));
+        }
+
+        private void OnProducerUp(object sender, ProducerStatusChangeEventArgs eventArgs)
+        {
+            Dispatch(ProducerUp, eventArgs, nameof(ProducerUp));
+        }
+
+        private void AttachToEvents()
+        {
+            ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).EventRecoveryCompleted += OnEventRecoveryCompleted;
+            ((FeedRecoveryManager)_feedRecoveryManager).Closed += OnClosed;
+            ((FeedRecoveryManager)_feedRecoveryManager).ProducerDown += OnProducerDown;
+            ((FeedRecoveryManager)_feedRecoveryManager).ProducerUp += OnProducerUp;
+        }
+
+        private void DetachFromEvents()
+        {
+            ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).EventRecoveryCompleted -= OnEventRecoveryCompleted;
+            ((FeedRecoveryManager)_feedRecoveryManager).Closed -= OnClosed;
+            ((FeedRecoveryManager)_feedRecoveryManager).ProducerDown -= OnProducerDown;
+            ((FeedRecoveryManager)_feedRecoveryManager).ProducerUp -= OnProducerUp;
+        }
 
         /// <summary>
         /// Opens connection to the feed
@@ -228,6 +278,9 @@ namespace Oddin.OddinSdk.SDK
 
             if (TrySetAsOpened() == false)
                 throw new InvalidOperationException($"{nameof(Open)} cannot be called when the feed is already opened!");
+
+            AttachToEvents();
+            ProducerManager.Lock();
 
             try
             {
@@ -242,6 +295,9 @@ namespace Oddin.OddinSdk.SDK
                 SetAsClosed();
                 throw;
             }
+
+            _feedRecoveryManager.Open();
+            ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).Open();
         }
 
         public void Close()
@@ -250,6 +306,11 @@ namespace Oddin.OddinSdk.SDK
 
             foreach (var session in Sessions)
                 session.Close();
+
+            _feedRecoveryManager.Close();
+            ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).Close();
+
+            DetachFromEvents();
 
             SetAsClosed();
         }
@@ -291,6 +352,8 @@ namespace Oddin.OddinSdk.SDK
         {
             _log.LogWarning($"The AMQP connection was shut down. Cause: {shutdownEventArgs.Cause}");
             
+            // INFO: this method is called when Rabbit library informs that the connection has been shut down
+
             // TODO: handle feed recovery
 
             Dispatch(Disconnected, new EventArgs(), nameof(Disconnected));

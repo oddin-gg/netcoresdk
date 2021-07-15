@@ -204,6 +204,9 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 case alive aliveMessage:
                     Dispatch(AliveMessageReceived, new SimpleMessageEventArgs<alive>(aliveMessage, body), nameof(AliveMessageReceived));
                     break;
+                case snapshot_complete snapshotComplete:
+                    Dispatch(SnapshotCompleteMessageReceived, new SimpleMessageEventArgs<snapshot_complete>(snapshotComplete, body), nameof(SnapshotCompleteMessageReceived));
+                    break;
                 case odds_change oddsChangeMessage:
                     Dispatch(OddsChangeMessageReceived, new SimpleMessageEventArgs<odds_change>(oddsChangeMessage, body), nameof(OddsChangeMessageReceived));
                     break;
@@ -253,6 +256,8 @@ namespace Oddin.OddinSdk.SDK.AMQP
         public event EventHandler<UnparsableMessageEventArgs> UnparsableMessageReceived;
 
         public event EventHandler<SimpleMessageEventArgs<alive>> AliveMessageReceived;
+
+        public event EventHandler<SimpleMessageEventArgs<snapshot_complete>> SnapshotCompleteMessageReceived;
 
         public event EventHandler<SimpleMessageEventArgs<odds_change>> OddsChangeMessageReceived;
 

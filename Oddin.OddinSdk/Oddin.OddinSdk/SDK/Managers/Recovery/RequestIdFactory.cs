@@ -1,6 +1,6 @@
 ﻿using Oddin.OddinSdk.SDK.Managers.Abstractions;
 
-namespace Oddin.OddinSdk.SDK.Managers
+namespace Oddin.OddinSdk.SDK.Managers.Recovery
 {
     internal class RequestIdFactory : IRequestIdFactory
     {
