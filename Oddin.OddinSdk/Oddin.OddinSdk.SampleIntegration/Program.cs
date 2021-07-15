@@ -30,7 +30,6 @@ namespace Oddin.OddinSdk.SampleIntegration
             var session = feed
                 .CreateBuilder()
                 .SetMessageInterest(MessageInterest.AllMessages)
-                //.SetMessageInterest(MessageInterest.SpecificEventsOnly(new URN[] { new URN("od:match:35669") }))
                 .Build();
 
             AttachEvents(feed);
@@ -49,7 +48,7 @@ namespace Oddin.OddinSdk.SampleIntegration
             Console.ReadLine();
 
             var producer = feed.ProducerManager.Get("live");
-            var urn = new URN("od:match:32927");
+            var urn = new URN("od:match:34615");
             Console.WriteLine($"Event recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventMessagesAsync(producer, urn)}");
 
             Console.ReadLine();

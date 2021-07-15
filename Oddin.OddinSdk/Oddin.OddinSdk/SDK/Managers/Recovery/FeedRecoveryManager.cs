@@ -4,6 +4,7 @@ using Oddin.OddinSdk.SDK.AMQP.EventArguments;
 using Oddin.OddinSdk.SDK.AMQP.Messages;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 using Oddin.OddinSdk.SDK.Dispatch;
+using Oddin.OddinSdk.SDK.Dispatch.EventArguments;
 using Oddin.OddinSdk.SDK.Managers.Abstractions;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,10 @@ namespace Oddin.OddinSdk.SDK.Managers.Recovery
         private readonly IRequestIdFactory _requestIdFactory;
         private readonly IAmqpClient _amqpClient;
         private IEnumerable<ProducerRecoveryManager> _producerRecoveryManagers;
+
+        public event EventHandler<FeedCloseEventArgs> Closed;
+        public event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
+        public event EventHandler<ProducerStatusChangeEventArgs> ProducerUp;
 
         public FeedRecoveryManager(IProducerManager producerManager, IApiClient apiClient, IRequestIdFactory requestIdFactory, IAmqpClient amqpClient)
         {
@@ -51,17 +56,31 @@ namespace Oddin.OddinSdk.SDK.Managers.Recovery
         private void AttachToEvents()
         {
             _amqpClient.SnapshotCompleteMessageReceived += OnSnapshotCompleteReceived;
+
+            foreach (var prm in _producerRecoveryManagers)
+            {
+                prm.Closed += OnClosed;
+                prm.ProducerDown += OnProducerDown;
+                prm.ProducerUp += OnProducerUp;
+            }
         }
 
         private void DetachFromEvents()
         {
             _amqpClient.SnapshotCompleteMessageReceived -= OnSnapshotCompleteReceived;
+
+            foreach (var prm in _producerRecoveryManagers)
+            {
+                prm.Closed -= OnClosed;
+                prm.ProducerDown -= OnProducerDown;
+                prm.ProducerUp -= OnProducerUp;
+            }
         }
 
         public void Open()
         {
-            AttachToEvents();
             GenerateProducerRecoveryManagers();
+            AttachToEvents();
 
             foreach (var producerRecoveryManager in _producerRecoveryManagers)
                 producerRecoveryManager.Open();
@@ -117,6 +136,21 @@ namespace Oddin.OddinSdk.SDK.Managers.Recovery
                 return;
 
             prm.HandleAliveReceived(eventArgs.FeedMessage);
+        }
+
+        private void OnClosed(object sender, FeedCloseEventArgs eventArgs)
+        {
+            Dispatch(Closed, eventArgs, nameof(Closed));
+        }
+
+        private void OnProducerDown(object sender, ProducerStatusChangeEventArgs eventArgs)
+        {
+            Dispatch(ProducerDown, eventArgs, nameof(ProducerDown));
+        }
+
+        private void OnProducerUp(object sender, ProducerStatusChangeEventArgs eventArgs)
+        {
+            Dispatch(ProducerUp, eventArgs, nameof(ProducerUp));
         }
     }
 }

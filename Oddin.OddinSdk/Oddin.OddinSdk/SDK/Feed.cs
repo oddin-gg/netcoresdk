@@ -237,14 +237,35 @@ namespace Oddin.OddinSdk.SDK
             Dispatch(EventRecoveryCompleted, eventArgs, nameof(EventRecoveryCompleted));
         }
 
+        private void OnClosed(object sender, FeedCloseEventArgs eventArgs)
+        {
+            Dispatch(Closed, eventArgs, nameof(Closed));
+        }
+
+        private void OnProducerDown(object sender, ProducerStatusChangeEventArgs eventArgs)
+        {
+            Dispatch(ProducerDown, eventArgs, nameof(ProducerDown));
+        }
+
+        private void OnProducerUp(object sender, ProducerStatusChangeEventArgs eventArgs)
+        {
+            Dispatch(ProducerUp, eventArgs, nameof(ProducerUp));
+        }
+
         private void AttachToEvents()
         {
             ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).EventRecoveryCompleted += OnEventRecoveryCompleted;
+            ((FeedRecoveryManager)_feedRecoveryManager).Closed += OnClosed;
+            ((FeedRecoveryManager)_feedRecoveryManager).ProducerDown += OnProducerDown;
+            ((FeedRecoveryManager)_feedRecoveryManager).ProducerUp += OnProducerUp;
         }
 
         private void DetachFromEvents()
         {
             ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).EventRecoveryCompleted -= OnEventRecoveryCompleted;
+            ((FeedRecoveryManager)_feedRecoveryManager).Closed -= OnClosed;
+            ((FeedRecoveryManager)_feedRecoveryManager).ProducerDown -= OnProducerDown;
+            ((FeedRecoveryManager)_feedRecoveryManager).ProducerUp -= OnProducerUp;
         }
 
         /// <summary>

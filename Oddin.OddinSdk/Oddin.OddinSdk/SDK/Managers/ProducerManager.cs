@@ -56,7 +56,7 @@ namespace Oddin.OddinSdk.SDK.Managers
         public void AddTimestampBeforeDisconnect(int id, DateTime timestamp)
         {
             if (_locked)
-                throw new InvalidOperationException("Changing the producer is not allowed anymore.");
+                throw new InvalidOperationException("Producers cannot be changed after the feed was opened!");
 
             if (id <= 0)
                 throw new ArgumentException($"Producer id must be a positive integer!");
@@ -76,7 +76,7 @@ namespace Oddin.OddinSdk.SDK.Managers
         public void RemoveTimestampBeforeDisconnect(int id)
         {
             if (_locked)
-                throw new InvalidOperationException("Changing the producer is not allowed anymore.");
+                throw new InvalidOperationException("Producers cannot be changed after the feed was opened!");
 
             if (id <= 0)
                 throw new ArgumentException($"Producer id must be a positive integer!");
@@ -88,7 +88,7 @@ namespace Oddin.OddinSdk.SDK.Managers
         public void DisableProducer(int id)
         {
             if (_locked)
-                throw new InvalidOperationException("Changing the producer is not allowed anymore.");
+                throw new InvalidOperationException("Producers cannot be changed after the feed was opened!");
 
             var producer = (Producer)Get(id);
             producer.SetDisabled(true);
