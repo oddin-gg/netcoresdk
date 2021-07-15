@@ -5,6 +5,7 @@ using Oddin.OddinSdk.SDK.AMQP.EventArguments;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using Oddin.OddinSdk.SDK.Dispatch.EventArguments;
 using Oddin.OddinSdk.SDK.Sessions;
+using Oddin.OddinSdk.SDK.Sessions.Abstractions;
 using Serilog;
 using System;
 using System.Linq;
@@ -16,12 +17,7 @@ namespace Oddin.OddinSdk.SampleIntegration
     {
         static async Task Main(string[] args)
         {
-            var serilogLogger = new LoggerConfiguration()
-                .MinimumLevel.Warning()
-                .WriteTo.Console()
-                .CreateLogger();
-
-            var loggerFactory = new LoggerFactory().AddSerilog(serilogLogger);
+            var loggerFactory = CreateLoggerFactory();
 
             var config = Feed
                 .GetConfigurationBuilder()
@@ -34,26 +30,62 @@ namespace Oddin.OddinSdk.SampleIntegration
             var session = feed
                 .CreateBuilder()
                 .SetMessageInterest(MessageInterest.AllMessages)
+                //.SetMessageInterest(MessageInterest.SpecificEventsOnly(new URN[] { new URN("od:match:35669") }))
                 .Build();
 
-            feed.EventRecoveryCompleted += OnEventRecoveryComplete;
-            session.OnOddsChange += OnOddsChangeReceived;
-            session.OnBetStop += OnBetStopReceived;
-            session.OnBetSettlement += OnBetSettlement;
-            session.OnUnparsableMessageReceived += OnUnparsableMessageReceived;
-            session.OnBetCancel += Session_OnBetCancel;
+            AttachEvents(feed);
+            AttachEvents(session);
 
             feed.Open();
+            await DoStuff(feed);
+            feed.Close();
+
+            DetachEvents(feed);
+            DetachEvents(session);
+        }
+
+        private async static Task DoStuff(Feed feed)
+        {
             Console.ReadLine();
 
             var producer = feed.ProducerManager.Get("live");
             var urn = new URN("od:match:35667");
             Console.WriteLine($"Event recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventMessagesAsync(producer, urn)}");
-            
-            Console.ReadLine();
-            feed.Close();
 
+            Console.ReadLine();
+        }
+
+        private static ILoggerFactory CreateLoggerFactory()
+        {
+            var serilogLogger = new LoggerConfiguration()
+                .MinimumLevel.Error()
+                .WriteTo.Console()
+                .CreateLogger();
+
+            return new LoggerFactory().AddSerilog(serilogLogger);
+        }
+
+        private static void AttachEvents(Feed feed)
+        {
+            feed.EventRecoveryCompleted += OnEventRecoveryComplete;
+        }
+
+        private static void DetachEvents(Feed feed)
+        {
             feed.EventRecoveryCompleted -= OnEventRecoveryComplete;
+        }
+
+        private static void AttachEvents(IOddsFeedSession session)
+        {
+            session.OnOddsChange += OnOddsChangeReceived;
+            session.OnBetStop += OnBetStopReceived;
+            session.OnBetSettlement += OnBetSettlement;
+            session.OnUnparsableMessageReceived += OnUnparsableMessageReceived;
+            session.OnBetCancel += Session_OnBetCancel;
+        }
+
+        private static void DetachEvents(IOddsFeedSession session)
+        {
             session.OnOddsChange -= OnOddsChangeReceived;
             session.OnBetStop -= OnBetStopReceived;
             session.OnBetSettlement -= OnBetSettlement;
@@ -61,9 +93,9 @@ namespace Oddin.OddinSdk.SampleIntegration
             session.OnBetCancel -= Session_OnBetCancel;
         }
 
-        private static void Session_OnBetCancel(object sender, BetCancelEventArgs<ISportEvent> e)
+        private static async void Session_OnBetCancel(object sender, BetCancelEventArgs<ISportEvent> e)
         {
-            Console.WriteLine($"On Bet Cancel Message Received in {e.GetBetCancel().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine($"On Bet Cancel Message Received in {await e.GetBetCancel().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
         }
 
         private static async void OnBetSettlement(object sender, BetSettlementEventArgs<ISportEvent> eventArgs)
@@ -86,7 +118,7 @@ namespace Oddin.OddinSdk.SampleIntegration
             Console.WriteLine($"On Unparsable Message Received in {e.MessageType}");
         }
         
-        private static async void OnEventRecoveryComplete(object sender, EventRecoveryCompletedEventArgs eventArgs)
+        private static void OnEventRecoveryComplete(object sender, EventRecoveryCompletedEventArgs eventArgs)
         {
             Console.WriteLine($"Event recovery completed [event id: {eventArgs.GetEventId()}, request id: {eventArgs.GetRequestId()}");
         }
