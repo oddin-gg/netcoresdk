@@ -7,30 +7,31 @@ namespace Oddin.OddinSdk.Common
 {
     internal static class XmlHelper
     {
-        public static bool TryDeserialize<T>(string xml, out T result)
+        internal static bool TryDeserialize<T>(string xml, out T result)
         {
             try
             {
-                result = Deserialize<T>(xml);
+                using var stringReader = new StringReader(xml);
+                using var xmlReader = XmlReader.Create(stringReader);
+
+                var serializer = new XmlSerializer(typeof(T));
+                if (serializer.CanDeserialize(xmlReader) == false)
+                {
+                    result = default;
+                    return false;
+                }
+
+                result = (T)serializer.Deserialize(xmlReader);
+                return true;
             }
             catch (InvalidOperationException)
             {
                 result = default;
                 return false;
             }
-            return true;
         }
 
-        private static T Deserialize<T>(string xml)
-        {
-            using (var reader = new StringReader(xml))
-            {
-                var serializer = new XmlSerializer(typeof(T));
-                return (T)serializer.Deserialize(reader);
-            }
-        }
-
-        public static bool TrySerialize<T>(T toBeSerialized, out string result)
+        internal static bool TrySerialize<T>(T toBeSerialized, out string result)
         {
             try
             {
@@ -46,13 +47,12 @@ namespace Oddin.OddinSdk.Common
 
         private static string Serialize<T>(T toBeSerialized)
         {
-            using (var stream = new StringWriter())
-            using (var writer = XmlWriter.Create(stream))
-            {
-                var serializer = new XmlSerializer(typeof(T));
-                serializer.Serialize(writer, toBeSerialized);
-                return stream.ToString();
-            }
+            using var stream = new StringWriter();
+            using var writer = XmlWriter.Create(stream);
+
+            var serializer = new XmlSerializer(typeof(T));
+            serializer.Serialize(writer, toBeSerialized);
+            return stream.ToString();
         }
     }
 }
