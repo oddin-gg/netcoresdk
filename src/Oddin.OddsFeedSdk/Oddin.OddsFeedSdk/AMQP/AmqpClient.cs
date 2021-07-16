@@ -13,6 +13,8 @@ using RabbitMQ.Client.Exceptions;
 using System;
 using System.IO;
 using System.Text;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.API.Abstractions;
 
 namespace Oddin.OddsFeedSdk.AMQP
 {
@@ -24,7 +26,7 @@ namespace Oddin.OddsFeedSdk.AMQP
         private readonly int _port;
         private readonly string _username;
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
-        private readonly string _virtualHost;
+        private readonly IApiClient _apiClient;
         private readonly EventHandler<CallbackExceptionEventArgs> _onCallbackException;
         private readonly EventHandler<ShutdownEventArgs> _onConnectionShutdown;
         private IConnection _connection;
@@ -43,7 +45,7 @@ namespace Oddin.OddsFeedSdk.AMQP
         public event EventHandler<SimpleMessageEventArgs<fixture_change>> FixtureChangeMessageReceived;
 
         public AmqpClient(IFeedConfiguration config,
-            string virtualHost,
+            IApiClient apiClient,
             EventHandler<CallbackExceptionEventArgs> onCallbackException,
             EventHandler<ShutdownEventArgs> onConnectionShutdown)
         {
@@ -51,20 +53,22 @@ namespace Oddin.OddsFeedSdk.AMQP
             _port = config.Port;
             _username = config.AccessToken;
             _exceptionHandlingStrategy = config.ExceptionHandlingStrategy;
-            _virtualHost = virtualHost;
+            _apiClient = apiClient;
             _onCallbackException = onCallbackException;
             _onConnectionShutdown = onConnectionShutdown;
         }
 
         private ConnectionFactory CreateConnectionFactory()
         {
+            var bookmakerDetails = _apiClient.GetBookmakerDetails();
+
             var factory = new ConnectionFactory()
             {
                 HostName = _host,
                 Port = _port,
                 UserName = _username,
                 Password = "", // should be left blank
-                VirtualHost = _virtualHost,
+                VirtualHost = bookmakerDetails.VirtualHost,
 
                 AutomaticRecoveryEnabled = true
             };

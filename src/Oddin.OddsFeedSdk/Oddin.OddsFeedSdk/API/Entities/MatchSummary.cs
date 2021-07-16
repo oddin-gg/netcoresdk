@@ -1,6 +1,5 @@
-﻿using Oddin.OddsFeedSdk.AMQP;
-using Oddin.OddsFeedSdk.API.Entities.Abstractions;
-using Oddin.OddsFeedSdk.API.Models;
+﻿using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.Common;
 using System;
 
 namespace Oddin.OddsFeedSdk.API.Entities

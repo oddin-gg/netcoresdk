@@ -27,6 +27,26 @@ namespace Oddin.OddsFeedSdk.Managers
 
         public IReadOnlyCollection<IProducer> Producers => _producers;
 
+        public ProducerManager(IApiClient apiClient, IFeedConfiguration configuration)
+        {
+            if (apiClient is null)
+                throw new ArgumentNullException(nameof(apiClient));
+
+            _apiClient = apiClient;
+            _exceptionHandlingStrategy = configuration.ExceptionHandlingStrategy;
+
+            try
+            {
+                _producers = _apiClient
+                    .GetProducers()
+                    .ToList();
+            }
+            catch (SdkException e)
+            {
+                e.HandleAccordingToStrategy(GetType().Name, _log, _exceptionHandlingStrategy);
+            }
+        }
+
         void IProducerManager.Lock()
         {
             if (_producers == null)
@@ -130,26 +150,6 @@ namespace Oddin.OddsFeedSdk.Managers
         {
             TryGet(name, out var result);
             return result;
-        }
-
-        public ProducerManager(IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy)
-        {
-            if (apiClient is null)
-                throw new ArgumentNullException(nameof(apiClient));
-
-            _apiClient = apiClient;
-            _exceptionHandlingStrategy = exceptionHandlingStrategy;
-
-            try
-            {
-                _producers = _apiClient
-                    .GetProducers()
-                    .ToList();
-            }
-            catch (SdkException e)
-            {
-                e.HandleAccordingToStrategy(GetType().Name, _log, _exceptionHandlingStrategy);
-            }
         }
 
         private Producer CreateUnknownProducer()

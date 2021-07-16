@@ -22,7 +22,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
         public const MarketStatus DEFAULT_MARKET_STATUS = MarketStatus.SUSPENDED;
 
-        public FeedMessageMapper(IApiClient apiClient, IProducerManager producerManager, ExceptionHandlingStrategy exceptionHandlingStrategy)
+        public FeedMessageMapper(IApiClient apiClient, IProducerManager producerManager, IFeedConfiguration configuration)
         {
             if (apiClient is null)
                 throw new ArgumentNullException(nameof(apiClient));
@@ -32,7 +32,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
             _apiClient = apiClient;
             _producerManager = producerManager;
-            _exceptionHandlingStrategy = exceptionHandlingStrategy;
+            _exceptionHandlingStrategy = configuration.ExceptionHandlingStrategy;
         }
 
         private IDictionary<string, string> GetSpecifiers(string specifiersString)

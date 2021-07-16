@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.AMQP;
+﻿using Oddin.OddsFeedSdk.Common;
 using System;
 
 namespace Oddin.OddsFeedSdk.Dispatch.EventArguments

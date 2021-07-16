@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Oddin.OddsFeedSdk.AMQP
+namespace Oddin.OddsFeedSdk.Common
 {
     public class URN
     {
