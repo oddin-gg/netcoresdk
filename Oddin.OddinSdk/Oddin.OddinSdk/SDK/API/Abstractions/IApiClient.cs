@@ -1,5 +1,6 @@
 ﻿using Oddin.OddinSdk.SDK.AMQP;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -34,5 +35,31 @@ namespace Oddin.OddinSdk.SDK.API.Abstractions
         /// <param name="culture">Culture info for translations</param>
         /// <returns></returns>
         Task<List<IMarketDescription>> GetMarketDescriptionsAsync(CultureInfo culture = null);
+
+        /// <summary>
+        /// Posts an event recovery request to API
+        /// </summary>
+        /// <param name="producerId">Id of the producer</param>
+        /// <param name="sportEventId">Id of the event</param>
+        /// <returns><see cref="long"/> representing <see cref="HttpStatusCode"/></returns>
+        Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId);
+
+        /// <summary>
+        /// Posts a stateful event recovery request to API
+        /// </summary>
+        /// <param name="producerId">Id of the producer</param>
+        /// <param name="sportEventId">Id of the event</param>
+        /// <returns><see cref="long"/> representing <see cref="HttpStatusCode"/></returns>
+        Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId);
+
+        /// <summary>
+        /// Posts a recovery request to API
+        /// </summary>
+        /// <param name="producerName">Id of the producer</param>
+        /// <param name="timestamp"><see cref="DateTime"/> to recover from</param>
+        /// <param name="requestId">Id of the recovery request</param>
+        /// <param name="nodeId">Id of the node</param>
+        /// <returns></returns>
+        Task PostRecoveryRequest(string producerName, long requestId, int nodeId, DateTime timestamp = default);
     }
 }

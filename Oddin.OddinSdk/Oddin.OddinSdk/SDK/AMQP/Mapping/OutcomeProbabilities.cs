@@ -1,4 +1,4 @@
-﻿using Oddin.OddinSdk.SDK.AMQP.Abstractions;
+﻿using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
 using Oddin.OddinSdk.SDK.API.Abstractions;
 
 namespace Oddin.OddinSdk.SDK.AMQP.Mapping

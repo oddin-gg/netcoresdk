@@ -10,8 +10,6 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
         public long Id { get; }
 
-        public string Urn => $"{Prefix}:{Type}:{Id}";
-
         public URN(string prefix, string type, long id)
         {
             Prefix = prefix;
@@ -22,15 +20,18 @@ namespace Oddin.OddinSdk.SDK.AMQP
         public URN(string urn)
         {
             if (urn is null)
-                throw new ArgumentNullException($"{nameof(urn)}");
+                throw new ArgumentNullException(nameof(urn));
 
             if (TryParseUrn(urn, out var prefix, out var type, out var id) == false)
-                throw new ArgumentException($"Given argument {nameof(urn)} of type {typeof(string).Name} is not a valid {typeof(URN).Name}");
+                throw new ArgumentException($"Given argument {nameof(urn)} of type {typeof(string).Name} is not a valid {typeof(URN).Name}!");
 
             Prefix = prefix;
             Type = type;
             Id = id;
         }
+
+        public override string ToString()
+            => $"{Prefix}:{Type}:{Id}";
 
         private bool TryParseUrn(string urnString, out string prefix, out string type, out long id)
         {

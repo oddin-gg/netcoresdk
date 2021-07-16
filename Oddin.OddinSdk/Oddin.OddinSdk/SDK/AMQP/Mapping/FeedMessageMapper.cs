@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Oddin.OddinSdk.Common;
-using Oddin.OddinSdk.SDK.AMQP.Abstractions;
+﻿using Oddin.OddinSdk.Common;
 using Oddin.OddinSdk.SDK.AMQP.Enums;
 using Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.Messages;
@@ -21,22 +19,20 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
         private readonly IApiClient _apiClient;
         private readonly IProducerManager _producerManager;
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
-        private readonly ILoggerFactory _loggerFactory;
 
         public const MarketStatus DEFAULT_MARKET_STATUS = MarketStatus.SUSPENDED;
 
-        public FeedMessageMapper(IApiClient apiClient, IProducerManager producerManager, ExceptionHandlingStrategy exceptionHandlingStrategy, ILoggerFactory loggerFactory)
+        public FeedMessageMapper(IApiClient apiClient, IProducerManager producerManager, ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
             if (apiClient is null)
-                throw new ArgumentNullException($"{nameof(apiClient)}");
+                throw new ArgumentNullException(nameof(apiClient));
 
             if (producerManager is null)
-                throw new ArgumentNullException($"{nameof(producerManager)}");
+                throw new ArgumentNullException(nameof(producerManager));
 
             _apiClient = apiClient;
             _producerManager = producerManager;
             _exceptionHandlingStrategy = exceptionHandlingStrategy;
-            _loggerFactory = loggerFactory;
         }
 
         private IDictionary<string, string> GetSpecifiers(string specifiersString)
@@ -54,11 +50,11 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                 var splitKeyValue = keyValueString.Split("=", StringSplitOptions.RemoveEmptyEntries);
                 if (splitKeyValue.Length != 2)
                     throw new FormatException($"Incorrect format of the specifier {keyValueString}! It needs to consist a key and a value separated by \"=\"");
-                
+
                 var key = splitKeyValue[0].Trim();
                 if (string.IsNullOrEmpty(key))
                     throw new FormatException($"Incorrect format of the specifier {keyValueString}! The key must not be empty!");
-                
+
                 var value = splitKeyValue[1].Trim();
                 if (string.IsNullOrEmpty(value))
                     throw new FormatException($"Incorrect format of the specifier {keyValueString}! The value must not be empty!");
@@ -75,7 +71,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
         private IAdditionalProbabilities GetAdditionalProbabilities(oddsChangeMarketOutcome outcome)
         {
             if (outcome is null)
-                throw new ArgumentNullException($"{nameof(outcome)}");
+                throw new ArgumentNullException(nameof(outcome));
 
             if (outcome.win_probabilitiesSpecified == false
                 && outcome.lose_probabilitiesSpecified == false
@@ -97,7 +93,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
         private IOutcomeOdds GetOutcomeOdds(oddsChangeMarketOutcome outcome)
         {
             if (outcome is null)
-                throw new ArgumentNullException($"{nameof(outcome)}");
+                throw new ArgumentNullException(nameof(outcome));
 
             return new OutcomeOdds(
                 outcome.oddsSpecified ? outcome.odds : default,
@@ -111,7 +107,7 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
         private IMarketWithOdds GetMarketWithOdds(oddsChangeMarket oddsChangeMarket)
         {
             if (oddsChangeMarket is null)
-                throw new ArgumentNullException($"{nameof(oddsChangeMarket)}");
+                throw new ArgumentNullException(nameof(oddsChangeMarket));
 
             var marketStatus = oddsChangeMarket.statusSpecified
                     ? EnumParsingHelper.GetEnumFromInt<MarketStatus>(oddsChangeMarket.status)
@@ -120,9 +116,9 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
             return new MarketWithOdds(
                 oddsChangeMarket.id,
                 GetSpecifiers(oddsChangeMarket.specifiers),
+                oddsChangeMarket.extended_specifiers,
                 _apiClient,
                 _exceptionHandlingStrategy,
-                _loggerFactory,
                 marketStatus,
                 oddsChangeMarket.favouriteSpecified && oddsChangeMarket.favourite == 1,
                 oddsChangeMarket.outcome?.Select(outcome => GetOutcomeOdds(outcome)),
@@ -153,10 +149,10 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
             where T : ISportEvent
         {
             if (message is null)
-                throw new ArgumentNullException($"{nameof(message)}");
+                throw new ArgumentNullException(nameof(message));
 
             var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy, _loggerFactory);
+            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
 
             return new OddsChange<T>(
                 _producerManager.Get(message.product),
@@ -173,10 +169,10 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
             where T : ISportEvent
         {
             if (message is null)
-                throw new ArgumentNullException($"{nameof(message)}");
+                throw new ArgumentNullException(nameof(message));
 
             var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy, _loggerFactory);
+            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
             var marketStatus = message.market_statusSpecified
                     ? EnumParsingHelper.GetEnumFromInt<MarketStatus>(message.market_status)
                     : DEFAULT_MARKET_STATUS;
@@ -189,6 +185,108 @@ namespace Oddin.OddinSdk.SDK.AMQP.Mapping
                 (T)sportEvent,
                 message.request_idSpecified ? (long?)message.request_id : null,
                 rawMessage);
+        }
+
+        public IBetSettlement<T> MapBetSettlement<T>(bet_settlement message, byte[] rawMessage)
+            where T : ISportEvent
+        {
+            if (message is null)
+                throw new ArgumentNullException($"{nameof(message)}");
+
+            var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
+            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
+
+            return new BetSettlement<T>(
+                messageTimestamp,
+                _producerManager.Get(message.product),
+                (T)sportEvent,
+                message.request_idSpecified ? (long?)message.request_id : null,
+                message.outcomes.Select(m => GetMarketWithResults(m)),
+                message.certainty,
+                rawMessage);
+        }
+
+        private IMarketWithSettlement GetMarketWithResults(betSettlementMarket message)
+        {
+            if (message is null)
+                throw new ArgumentNullException(nameof(message));
+
+            var marketStatus = EnumParsingHelper.GetEnumFromInt<MarketStatus>(message.status);
+
+            return new MarketWithSettlement(
+                marketStatus: marketStatus,
+                marketId: message.id,
+                specifiers: GetSpecifiers(message.specifiers),
+                extentedSpecifiers: message.extended_specifiers,
+                outcomes: GetOutcomeSettlements(message.Items),
+                apiClient: _apiClient,
+                exceptionHandlingStrategy: _exceptionHandlingStrategy,
+                voidReason: message.void_reasonSpecified ? message.void_reason : default);
+        }
+
+        private IEnumerable<IOutcomeSettlement> GetOutcomeSettlements(betSettlementMarketOutcome[] betSettlementMarkets)
+        {
+            return betSettlementMarkets.Select(b =>
+                new OutcomeSettlement(
+                    b.dead_heat_factorSpecified ? b.dead_heat_factor : default,
+                    b.id,
+                    _apiClient,
+                    b.result,
+                    b.void_factorSpecified ? b.void_factor : default));
+        }
+
+        public IBetCancel<T> MapBetCancel<T>(bet_cancel message, byte[] rawMessage)
+            where T : ISportEvent
+        {
+            if (message is null)
+                throw new ArgumentNullException($"{nameof(message)}");
+
+            var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
+            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
+
+            return new BetCancel<T>(
+                timestamp: messageTimestamp,
+                producer: _producerManager.Get(message.product),
+                @event: (T)sportEvent,
+                requestId: message.request_idSpecified ? (long?)message.request_id : default,
+                startTime: message.start_timeSpecified ? message.start_time : default,
+                endTime: message.end_timeSpecified ? message.end_time : default,
+                supersededBy: message.superceded_by,
+                markets: message.market.Select(m => GetMarketWithCancel(m)),
+                rawMessage: rawMessage);
+        }
+
+        private IMarketCancel GetMarketWithCancel(bet_cancel_market message)
+        {
+            if (message is null)
+                throw new ArgumentNullException(nameof(message));
+
+            return new MarketCancel(
+                id: message.id,
+                specifiers: GetSpecifiers(message.specifiers),
+                extentedSpecifiers: message.extended_specifiers,
+                client: _apiClient,
+                exceptionHandlingStrategy: _exceptionHandlingStrategy,
+                voidReason: message.void_reasonSpecified ? message.void_reason : default);
+        }
+
+        public IFixtureChange<T> MapFixtureChange<T>(fixture_change message, byte[] rawMessage) where T : ISportEvent
+        {
+            if (message is null)
+                throw new ArgumentNullException(nameof(message));
+
+            var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
+            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
+
+            return new FixtureChange<T>(
+                timestamp: messageTimestamp,
+                producer: _producerManager.Get(message.product),
+                @event: (T)sportEvent,
+                requestId: message.request_idSpecified ? (long?)message.request_id : null,
+                changeType: message.change_typeSpecified ? message.change_type : default,
+                nextLiveTime: message.next_live_timeSpecified ? (long?)message.next_live_time : null,
+                startTime: message.start_time,
+                rawMessage: rawMessage);
         }
     }
 }

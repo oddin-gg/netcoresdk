@@ -1,11 +1,11 @@
-﻿using Oddin.OddinSdk.SDK.AMQP.Abstractions;
-using Oddin.OddinSdk.SDK.AMQP.Enums;
+﻿using Oddin.OddinSdk.SDK.AMQP.Enums;
 using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
 using System.Collections.Generic;
 
 namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {
-    public interface IBetStop<out T> : IEventMessage<T> where T : ISportEvent
+    public interface IBetStop<out T> : IEventMessage<T> 
+        where T : ISportEvent
     {
         /// <summary>
         /// Gets a <see cref="MarketStatus"/> specifying the new status of the associated markets

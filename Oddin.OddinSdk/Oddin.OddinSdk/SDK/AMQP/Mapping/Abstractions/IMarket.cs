@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Threading.Tasks;
 
-namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
+namespace Oddin.OddinSdk.SDK.AMQP.Mapping.Abstractions
 {
     /// <summary>
     /// Represents a betting market
@@ -19,6 +19,11 @@ namespace Oddin.OddinSdk.SDK.AMQP.Abstractions
         /// </summary>
         /// <remarks>Note that the <see cref="Id"/> and <see cref="Specifiers"/> combined uniquely identify the market within the event</remarks>
         IReadOnlyDictionary<string, string> Specifiers { get; }
+
+        /// <summary>
+        /// Gets string containing extended specifiers
+        /// </summary>
+        string ExtendedSpecifiers { get; }
 
         /// <summary>
         /// Asynchronously gets the name of the market in the specified language

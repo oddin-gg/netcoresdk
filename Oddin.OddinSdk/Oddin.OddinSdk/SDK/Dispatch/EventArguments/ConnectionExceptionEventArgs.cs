@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Oddin.OddinSdk.SDK.Dispatch
+namespace Oddin.OddinSdk.SDK.Dispatch.EventArguments
 {
     public class ConnectionExceptionEventArgs: EventArgs
     {

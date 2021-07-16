@@ -14,6 +14,8 @@ namespace Oddin.OddinSdk.SDK.Sessions
 {
     internal class OddsFeedSession : DispatcherBase, IOddsFeedSession, IOpenable
     {
+        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(OddsFeedSession));
+
         private readonly IAmqpClient _amqpClient;
         private readonly IFeedMessageMapper _feedMessageMapper;
         private readonly MessageInterest _messageInterest;
@@ -24,21 +26,19 @@ namespace Oddin.OddinSdk.SDK.Sessions
         public string Name { get; }
 
         public OddsFeedSession(
-            ILoggerFactory loggerFactory,
             IAmqpClient amqpClient,
             IFeedMessageMapper feedMessageMapper,
             MessageInterest messageInterest,
             ExceptionHandlingStrategy exceptionHandlingStrategy)
-            : base(loggerFactory)
         {
             if (amqpClient is null)
-                throw new ArgumentNullException($"{nameof(amqpClient)}");
+                throw new ArgumentNullException(nameof(amqpClient));
 
             if (feedMessageMapper is null)
-                throw new ArgumentNullException($"{nameof(feedMessageMapper)}");
+                throw new ArgumentNullException(nameof(feedMessageMapper));
 
             if (messageInterest is null)
-                throw new ArgumentNullException($"{nameof(messageInterest)}");
+                throw new ArgumentNullException(nameof(messageInterest));
 
             _amqpClient = amqpClient;
             _feedMessageMapper = feedMessageMapper;
@@ -51,15 +51,13 @@ namespace Oddin.OddinSdk.SDK.Sessions
         public event EventHandler<UnparsableMessageEventArgs> OnUnparsableMessageReceived;
         public event EventHandler<OddsChangeEventArgs<ISportEvent>> OnOddsChange;
         public event EventHandler<BetStopEventArgs<ISportEvent>> OnBetStop;
+        public event EventHandler<BetSettlementEventArgs<ISportEvent>> OnBetSettlement;
+        public event EventHandler<BetCancelEventArgs<ISportEvent>> OnBetCancel;
+        public event EventHandler<FixtureChangeEventArgs<ISportEvent>> OnFixtureChange;
 
         private void HandleUnparsableMessageReceived(object sender, UnparsableMessageEventArgs eventArgs)
         {
             Dispatch(OnUnparsableMessageReceived, eventArgs, nameof(OnUnparsableMessageReceived));
-        }
-
-        private void HandleAliveMessageReceived(object sender, SimpleMessageEventArgs<alive> eventArgs)
-        {
-            // TODO: implement heartbeat handling (and potential recovery?)
         }
 
         private void CreateAndDispatchFeedMessageEventArgs<TMessageEventArgs, TMessage>(Action<object, SimpleMessageEventArgs<TMessage>> createAndDispatch, object sender, SimpleMessageEventArgs<TMessage> eventArgs)
@@ -90,27 +88,59 @@ namespace Oddin.OddinSdk.SDK.Sessions
             var betStopEventArgs = new BetStopEventArgs<ISportEvent>(_feedMessageMapper, eventArgs.FeedMessage, eventArgs.RawMessage);
             Dispatch(OnBetStop, betStopEventArgs, nameof(OnBetStop));
         }
+        
+        private void CreateAndDispatchBetSettlement(object sender, SimpleMessageEventArgs<bet_settlement> eventArgs)
+        {
+            var betSettlementEventArgs = new BetSettlementEventArgs<ISportEvent>(_feedMessageMapper, eventArgs.FeedMessage, eventArgs.RawMessage);
+            Dispatch(OnBetSettlement, betSettlementEventArgs, nameof(OnBetSettlement));
+        } 
+        
+        private void CreateAndDispatchBetCancel(object sender, SimpleMessageEventArgs<bet_cancel> eventArgs)
+        {
+            var betCancelEventArgs = new BetCancelEventArgs<ISportEvent>(_feedMessageMapper, eventArgs.FeedMessage, eventArgs.RawMessage);
+            Dispatch(OnBetCancel, betCancelEventArgs, nameof(OnBetCancel));
+        }
+        
+        private void CreateAndDispatchFixtureChange(object sender, SimpleMessageEventArgs<fixture_change> eventArgs)
+        {
+            var fixtureChangeEventArgs = new FixtureChangeEventArgs<ISportEvent>(_feedMessageMapper, eventArgs.FeedMessage, eventArgs.RawMessage);
+            Dispatch(OnFixtureChange, fixtureChangeEventArgs, nameof(OnFixtureChange));
+        }
 
         private void HandleOddsChangeMessageReceived(object sender, SimpleMessageEventArgs<odds_change> eventArgs)
             => CreateAndDispatchFeedMessageEventArgs<OddsChangeEventArgs<ISportEvent>, odds_change>(CreateAndDispatchOddsChange, sender, eventArgs);
 
         private void HandleBetStopMessageReceived(object sender, SimpleMessageEventArgs<bet_stop> eventArgs)
-            => CreateAndDispatchFeedMessageEventArgs<BetStopEventArgs<ISportEvent>, bet_stop>(CreateAndDispatchBetStop, sender, eventArgs);
+            => CreateAndDispatchFeedMessageEventArgs<BetStopEventArgs<ISportEvent>, bet_stop>(CreateAndDispatchBetStop, sender, eventArgs); 
+        
+        private void HandleBetSettlementMessageReceived(object sender, SimpleMessageEventArgs<bet_settlement> eventArgs)
+            => CreateAndDispatchFeedMessageEventArgs<BetSettlementEventArgs<ISportEvent>, bet_settlement>(CreateAndDispatchBetSettlement, sender, eventArgs);
+        
+        private void HandleBetCancelMessageReceived(object sender, SimpleMessageEventArgs<bet_cancel> eventArgs)
+            => CreateAndDispatchFeedMessageEventArgs<BetCancelEventArgs<ISportEvent>, bet_cancel>(CreateAndDispatchBetCancel, sender, eventArgs);
+         
+        private void HandleFixtureChangeMessageReceived(object sender, SimpleMessageEventArgs<fixture_change> eventArgs)
+            => CreateAndDispatchFeedMessageEventArgs<FixtureChangeEventArgs<ISportEvent>, fixture_change>(CreateAndDispatchFixtureChange, sender, eventArgs);
 
         private void AttachAmqpClientEvents()
         {
             _amqpClient.UnparsableMessageReceived += HandleUnparsableMessageReceived;
-            _amqpClient.AliveMessageReceived += HandleAliveMessageReceived;
             _amqpClient.OddsChangeMessageReceived += HandleOddsChangeMessageReceived;
             _amqpClient.BetStopMessageReceived += HandleBetStopMessageReceived;
+            _amqpClient.BetSettlementMessageReceived += HandleBetSettlementMessageReceived;
+            _amqpClient.BetCancelMessageReceived += HandleBetCancelMessageReceived;
+            _amqpClient.FixtureChangeMessageReceived += HandleFixtureChangeMessageReceived;
+
         }
 
         private void DetachAmqpClintEvents()
         {
             _amqpClient.UnparsableMessageReceived -= HandleUnparsableMessageReceived;
-            _amqpClient.AliveMessageReceived -= HandleAliveMessageReceived;
             _amqpClient.OddsChangeMessageReceived -= HandleOddsChangeMessageReceived;
             _amqpClient.BetStopMessageReceived -= HandleBetStopMessageReceived;
+            _amqpClient.BetSettlementMessageReceived -= HandleBetSettlementMessageReceived;
+            _amqpClient.BetCancelMessageReceived -= HandleBetCancelMessageReceived;
+            _amqpClient.FixtureChangeMessageReceived -= HandleFixtureChangeMessageReceived;
         }
 
         /// <summary>
@@ -123,6 +153,7 @@ namespace Oddin.OddinSdk.SDK.Sessions
             {
                 if (_isOpened)
                     return false;
+
                 _isOpened = true;
                 return true;
             }
@@ -165,7 +196,6 @@ namespace Oddin.OddinSdk.SDK.Sessions
         {
             _amqpClient.Disconnect();
             DetachAmqpClintEvents();
-
             SetAsClosed();
         }
     }

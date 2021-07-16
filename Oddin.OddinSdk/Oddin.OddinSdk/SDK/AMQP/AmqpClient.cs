@@ -4,7 +4,6 @@ using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.SDK.AMQP.Abstractions;
 using Oddin.OddinSdk.SDK.AMQP.EventArguments;
 using Oddin.OddinSdk.SDK.AMQP.Messages;
-using Oddin.OddinSdk.SDK.Configuration;
 using Oddin.OddinSdk.SDK.Configuration.Abstractions;
 using Oddin.OddinSdk.SDK.Dispatch;
 using Oddin.OddinSdk.SDK.Sessions;
@@ -19,6 +18,8 @@ namespace Oddin.OddinSdk.SDK.AMQP
 {
     internal class AmqpClient : DispatcherBase, IAmqpClient
     {
+        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(AmqpClient));
+
         private readonly string _host;
         private readonly int _port;
         private readonly string _username;
@@ -35,9 +36,7 @@ namespace Oddin.OddinSdk.SDK.AMQP
         public AmqpClient(IFeedConfiguration config,
             string virtualHost,
             EventHandler<CallbackExceptionEventArgs> onCallbackException,
-            EventHandler<ShutdownEventArgs> onConnectionShutdown,
-            ILoggerFactory loggerFactory)
-            : base(loggerFactory)
+            EventHandler<ShutdownEventArgs> onConnectionShutdown)
         {
             _host = config.Host;
             _port = config.Port;
@@ -190,6 +189,8 @@ namespace Oddin.OddinSdk.SDK.AMQP
             var xml = Encoding.UTF8.GetString(body);
             var success = FeedMessageDeserializer.TryDeserializeMessage(xml, out var message);
 
+            _log.LogDebug(xml);
+
             if (success == false || message is null)
             {
                 HandleUnparsableMessage(body, eventArgs.RoutingKey);
@@ -203,14 +204,24 @@ namespace Oddin.OddinSdk.SDK.AMQP
                 case alive aliveMessage:
                     Dispatch(AliveMessageReceived, new SimpleMessageEventArgs<alive>(aliveMessage, body), nameof(AliveMessageReceived));
                     break;
+                case snapshot_complete snapshotComplete:
+                    Dispatch(SnapshotCompleteMessageReceived, new SimpleMessageEventArgs<snapshot_complete>(snapshotComplete, body), nameof(SnapshotCompleteMessageReceived));
+                    break;
                 case odds_change oddsChangeMessage:
                     Dispatch(OddsChangeMessageReceived, new SimpleMessageEventArgs<odds_change>(oddsChangeMessage, body), nameof(OddsChangeMessageReceived));
                     break;
                 case bet_stop betStopMessage:
                     Dispatch(BetStopMessageReceived, new SimpleMessageEventArgs<bet_stop>(betStopMessage, body), nameof(BetStopMessageReceived));
                     break;
-
-                    // ...
+                case bet_settlement betSettlement:
+                    Dispatch(BetSettlementMessageReceived, new SimpleMessageEventArgs<bet_settlement>(betSettlement, body), nameof(BetSettlementMessageReceived));
+                    break;
+                case bet_cancel betCancel:
+                    Dispatch(BetCancelMessageReceived, new SimpleMessageEventArgs<bet_cancel>(betCancel, body), nameof(BetCancelMessageReceived));
+                    break;
+                case fixture_change fixtureChange:
+                    Dispatch(FixtureChangeMessageReceived, new SimpleMessageEventArgs<fixture_change>(fixtureChange, body), nameof(FixtureChangeMessageReceived));
+                    break;
 
                 default:
                     var errorMessage = $"FeedMessage of type '{message.GetType().Name}' is not supported.";
@@ -246,8 +257,16 @@ namespace Oddin.OddinSdk.SDK.AMQP
 
         public event EventHandler<SimpleMessageEventArgs<alive>> AliveMessageReceived;
 
+        public event EventHandler<SimpleMessageEventArgs<snapshot_complete>> SnapshotCompleteMessageReceived;
+
         public event EventHandler<SimpleMessageEventArgs<odds_change>> OddsChangeMessageReceived;
 
         public event EventHandler<SimpleMessageEventArgs<bet_stop>> BetStopMessageReceived;
+
+        public event EventHandler<SimpleMessageEventArgs<bet_settlement>> BetSettlementMessageReceived;
+
+        public event EventHandler<SimpleMessageEventArgs<bet_cancel>> BetCancelMessageReceived;
+
+        public event EventHandler<SimpleMessageEventArgs<fixture_change>> FixtureChangeMessageReceived;
     }
 }

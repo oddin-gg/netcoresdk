@@ -6,9 +6,11 @@ namespace Oddin.OddinSdk.SDK.Dispatch
     /// <summary>
     /// A base class for classes used to dispatch messages
     /// </summary>
-    public abstract class DispatcherBase : LoggingBase
+    public abstract class DispatcherBase
     {
-        public DispatcherBase(ILoggerFactory loggerFactory) : base(loggerFactory)
+        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(DispatcherBase));
+
+        public DispatcherBase()
         {
 
         }

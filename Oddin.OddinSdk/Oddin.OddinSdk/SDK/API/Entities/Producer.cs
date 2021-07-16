@@ -1,40 +1,32 @@
 ﻿using Oddin.OddinSdk.SDK.API.Entities.Abstractions;
-using Oddin.OddinSdk.SDK.API.Models;
 using System;
+using System.Collections.Generic;
 
 namespace Oddin.OddinSdk.SDK.API.Entities
 {
     internal class Producer : IProducer
     {
-        private int _id;
-        private string _name;
-        private string _description;
-        private bool _active;
-        // TODO: change to smth cleaner than string (are multiple |-separated values possible?) and find usage
-        private string _scope;
-        private int _statefulRecoveryWindowInMinutes;
+        public int Id { get; }
 
-        public int Id => _id;
+        public string Name { get; }
 
-        public string Name => _name;
+        public string Description { get; }
 
-        public string Description => _description;
+        public bool IsAvailable { get; }
 
-        public bool IsAvailable => _active;
+        public bool IsDisabled { get; private set; }
 
-        // TODO: implement
+        public bool IsProducerDown { get; private set; }
 
-        public bool IsDisabled => throw new NotImplementedException();
+        public DateTime LastTimestampBeforeDisconnect { get; private set; }
 
-        public bool IsProducerDown => throw new NotImplementedException();
+        public int MaxRecoveryTime { get; }
 
-        public DateTime LastTimestampBeforeDisconnect => throw new NotImplementedException();
+        public int MaxInactivitySeconds { get; }
 
-        public int MaxRecoveryTime => throw new NotImplementedException();
+        public IRecoveryInfo RecoveryInfo { get; internal set; }
 
-        public int MaxInactivitySeconds => throw new NotImplementedException();
-
-        public IRecoveryInfo RecoveryInfo => throw new NotImplementedException();
+        public IEnumerable<string> Scope { get; }
 
         public Producer(
             int id,
@@ -42,15 +34,53 @@ namespace Oddin.OddinSdk.SDK.API.Entities
             string description,
             bool active,
             string scope,
+            int maxInactivitySeconds,
             int statefulRecoveryWindowInMinutes
             )
         {
-            _id = id;
-            _name = name;
-            _description = description;
-            _active = active;
-            _scope = scope;
-            _statefulRecoveryWindowInMinutes = statefulRecoveryWindowInMinutes;
+            if (name is null)
+                throw new ArgumentNullException(nameof(name));
+
+            if (name == string.Empty)
+                throw new ArgumentException($"Argument {nameof(name)} cannot be empty!");
+
+            if (description is null)
+                throw new ArgumentNullException(nameof(description));
+
+            if (description == string.Empty)
+                throw new ArgumentException($"Argument {nameof(description)} cannot be empty!");
+
+            if (maxInactivitySeconds <= 0)
+                throw new ArgumentException($"Argument {nameof(maxInactivitySeconds)} has to be positive!");
+
+            if (statefulRecoveryWindowInMinutes <= 0)
+                throw new ArgumentException($"Argument {nameof(statefulRecoveryWindowInMinutes)} has to be positive!");
+
+            Id = id;
+            Name = name;
+            Description = description;
+            IsAvailable = active;
+            IsProducerDown = true;
+            IsDisabled = false;
+            LastTimestampBeforeDisconnect = DateTime.MinValue;
+            Scope = scope?.Split("|");
+            MaxInactivitySeconds = maxInactivitySeconds;
+            MaxRecoveryTime = statefulRecoveryWindowInMinutes;
+        }
+
+        internal void SetDisabled(bool disabled)
+        {
+            IsDisabled = disabled;
+        }
+
+        internal void SetProducerDown(bool down)
+        {
+            IsProducerDown = down;
+        }
+
+        internal void SetLastTimestampBeforeDisconnect(DateTime timestamp)
+        {
+            LastTimestampBeforeDisconnect = timestamp;
         }
     }
 }

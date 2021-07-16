@@ -24,11 +24,15 @@ using Oddin.OddinSdk.SDK.Sessions.Abstractions;
 using Oddin.OddinSdk.SDK.Sessions;
 using Oddin.OddinSdk.Common.Exceptions;
 using Oddin.OddinSdk.Common;
+using Oddin.OddinSdk.SDK.Dispatch.EventArguments;
+using Oddin.OddinSdk.SDK.Managers.Recovery;
 
 namespace Oddin.OddinSdk.SDK
 {
     public class Feed : DispatcherBase, IOddsFeed
     {
+        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(Feed));
+
         private readonly IUnityContainer _unityContainer;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IFeedConfiguration _config;
@@ -36,6 +40,17 @@ namespace Oddin.OddinSdk.SDK
         private readonly object _isOpenedLock = new object();
         private readonly IList<IOpenable> Sessions = new List<IOpenable>();
         private bool _isDisposed;
+
+        private IFeedRecoveryManager _feedRecoveryManager
+            => _unityContainer.Resolve<IFeedRecoveryManager>();
+
+        /// <summary>
+        /// Gets a <see cref="IEventRecoveryRequestIssuer"/> instance used to issue recovery requests to the feed
+        /// </summary>
+        public IEventRecoveryRequestIssuer EventRecoveryRequestIssuer
+        {
+            get => _unityContainer.Resolve<IEventRecoveryRequestIssuer>();
+        }
 
         /// <summary>
         /// Gets a <see cref="IProducerManager" /> instance used to retrieve producer related data
@@ -57,9 +72,7 @@ namespace Oddin.OddinSdk.SDK
                 {
                     return _unityContainer.Resolve<IApiClient>().GetBookmakerDetails();
                 }
-                catch (Exception e)
-                when (e is CommunicationException
-                    || e is MappingException)
+                catch (SdkException e)
                 {
                     e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
                 }
@@ -72,14 +85,18 @@ namespace Oddin.OddinSdk.SDK
         {
             // INFO: registration order matters!
 
-            // register existing logger factory
-            _unityContainer.RegisterInstance(typeof(ILoggerFactory), _loggerFactory);
+            // register ApiModelMapper
+            _unityContainer.RegisterType<IApiModelMapper, ApiModelMapper>(
+                new InjectionConstructor(
+                    _config
+                    )
+                );
             
             // register ApiClient as singleton
             _unityContainer.RegisterSingleton<IApiClient, ApiClient>(
                 new InjectionConstructor(
-                    _config,
-                    _unityContainer.Resolve<ILoggerFactory>()
+                    _unityContainer.Resolve<IApiModelMapper>(),
+                    _config
                     )
                 );
             
@@ -87,8 +104,7 @@ namespace Oddin.OddinSdk.SDK
             _unityContainer.RegisterSingleton<IProducerManager, ProducerManager>(
                 new InjectionConstructor(
                     _unityContainer.Resolve<IApiClient>(),
-                    _config.ExceptionHandlingStrategy,
-                    _unityContainer.Resolve<ILoggerFactory>()
+                    _config.ExceptionHandlingStrategy
                     )
                 );
 
@@ -97,19 +113,41 @@ namespace Oddin.OddinSdk.SDK
                 new InjectionConstructor(
                     _unityContainer.Resolve<IApiClient>(),
                     _unityContainer.Resolve<IProducerManager>(),
-                    _config.ExceptionHandlingStrategy,
-                    _unityContainer.Resolve<ILoggerFactory>()
+                    _config.ExceptionHandlingStrategy
                     )
                 );
 
-            // register Amqp client as singleton
+            // register AmqpClient as singleton
             _unityContainer.RegisterSingleton<IAmqpClient, AmqpClient>(
                 new InjectionConstructor(
                     _config,
                     BookmakerDetails.VirtualHost,
                     (EventHandler<CallbackExceptionEventArgs>)OnAmqpCallbackException,
-                    (EventHandler<ShutdownEventArgs>)OnConnectionShutdown,
-                    _unityContainer.Resolve<ILoggerFactory>()
+                    (EventHandler<ShutdownEventArgs>)OnConnectionShutdown
+                    )
+                );
+
+            // register RequestIdFactory as singleton
+            _unityContainer.RegisterSingleton<IRequestIdFactory, RequestIdFactory>(
+                new InjectionConstructor());
+
+            // register EventRecoveryRequestIssuer as singleton
+            _unityContainer.RegisterSingleton<IEventRecoveryRequestIssuer, EventRecoveryRequestIssuer>(
+                new InjectionConstructor(
+                    _unityContainer.Resolve<IApiClient>(),
+                    _unityContainer.Resolve<IRequestIdFactory>(),
+                    _unityContainer.Resolve<IAmqpClient>(),
+                    _config
+                    )
+                );
+
+            // register FeedRecoveryManager as singleton
+            _unityContainer.RegisterSingleton<IFeedRecoveryManager, FeedRecoveryManager>(
+                new InjectionConstructor(
+                    _unityContainer.Resolve<IProducerManager>(),
+                    _unityContainer.Resolve<IApiClient>(),
+                    _unityContainer.Resolve<IRequestIdFactory>(),
+                    _unityContainer.Resolve<IAmqpClient>()
                     )
                 );
         }
@@ -120,13 +158,14 @@ namespace Oddin.OddinSdk.SDK
         /// <param name="config">Feed configuration</param>
         /// <param name="loggerFactory">Logger factory</param>
         /// <exception cref="ArgumentNullException"/>
-        public Feed(IFeedConfiguration config, ILoggerFactory loggerFactory = null) : base(loggerFactory)
+        public Feed(IFeedConfiguration config, ILoggerFactory loggerFactory = null)
         {
             if (config is null)
-                throw new ArgumentNullException($"{nameof(config)}");
+                throw new ArgumentNullException(nameof(config));
 
             _config = config;
             _loggerFactory = loggerFactory;
+            SdkLoggerFactory.Initialize(_loggerFactory);
 
             _unityContainer = new UnityContainer();
             RegisterObjectsToUnityContainer();
@@ -193,6 +232,41 @@ namespace Oddin.OddinSdk.SDK
                 .OrderBy(c => c.Name);
         }
 
+        private void OnEventRecoveryCompleted(object sender, EventRecoveryCompletedEventArgs eventArgs)
+        {
+            Dispatch(EventRecoveryCompleted, eventArgs, nameof(EventRecoveryCompleted));
+        }
+
+        private void OnClosed(object sender, FeedCloseEventArgs eventArgs)
+        {
+            Dispatch(Closed, eventArgs, nameof(Closed));
+        }
+
+        private void OnProducerDown(object sender, ProducerStatusChangeEventArgs eventArgs)
+        {
+            Dispatch(ProducerDown, eventArgs, nameof(ProducerDown));
+        }
+
+        private void OnProducerUp(object sender, ProducerStatusChangeEventArgs eventArgs)
+        {
+            Dispatch(ProducerUp, eventArgs, nameof(ProducerUp));
+        }
+
+        private void AttachToEvents()
+        {
+            ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).EventRecoveryCompleted += OnEventRecoveryCompleted;
+            ((FeedRecoveryManager)_feedRecoveryManager).Closed += OnClosed;
+            ((FeedRecoveryManager)_feedRecoveryManager).ProducerDown += OnProducerDown;
+            ((FeedRecoveryManager)_feedRecoveryManager).ProducerUp += OnProducerUp;
+        }
+
+        private void DetachFromEvents()
+        {
+            ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).EventRecoveryCompleted -= OnEventRecoveryCompleted;
+            ((FeedRecoveryManager)_feedRecoveryManager).Closed -= OnClosed;
+            ((FeedRecoveryManager)_feedRecoveryManager).ProducerDown -= OnProducerDown;
+            ((FeedRecoveryManager)_feedRecoveryManager).ProducerUp -= OnProducerUp;
+        }
 
         /// <summary>
         /// Opens connection to the feed
@@ -204,6 +278,9 @@ namespace Oddin.OddinSdk.SDK
 
             if (TrySetAsOpened() == false)
                 throw new InvalidOperationException($"{nameof(Open)} cannot be called when the feed is already opened!");
+
+            AttachToEvents();
+            ProducerManager.Lock();
 
             try
             {
@@ -218,6 +295,9 @@ namespace Oddin.OddinSdk.SDK
                 SetAsClosed();
                 throw;
             }
+
+            _feedRecoveryManager.Open();
+            ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).Open();
         }
 
         public void Close()
@@ -226,6 +306,11 @@ namespace Oddin.OddinSdk.SDK
 
             foreach (var session in Sessions)
                 session.Close();
+
+            _feedRecoveryManager.Close();
+            ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).Close();
+
+            DetachFromEvents();
 
             SetAsClosed();
         }
@@ -267,6 +352,8 @@ namespace Oddin.OddinSdk.SDK
         {
             _log.LogWarning($"The AMQP connection was shut down. Cause: {shutdownEventArgs.Cause}");
             
+            // INFO: this method is called when Rabbit library informs that the connection has been shut down
+
             // TODO: handle feed recovery
 
             Dispatch(Disconnected, new EventArgs(), nameof(Disconnected));
@@ -282,16 +369,37 @@ namespace Oddin.OddinSdk.SDK
         /// </summary>
         public event EventHandler<EventArgs> Disconnected;
 
+        /// <summary>
+        /// Occurs when feed is closed
+        /// </summary>
+        public event EventHandler<FeedCloseEventArgs> Closed;
+
+        /// <summary>
+        /// Occurs when a requested event recovery completes
+        /// </summary>
+        public event EventHandler<EventRecoveryCompletedEventArgs> EventRecoveryCompleted;
+
+        /// <summary>
+        /// Raised when the current <see cref="IOddsFeed" /> instance determines that the <see cref="IProducer" /> associated with
+        /// the odds feed went down
+        /// </summary>
+        public event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
+
+        /// <summary>
+        /// Raised when the current <see cref="IOddsFeed" /> instance determines that the <see cref="IProducer" /> associated with
+        /// the odds feed went up (back online)
+        /// </summary>
+        public event EventHandler<ProducerStatusChangeEventArgs> ProducerUp;
+
         internal IOddsFeedSession CreateSession(MessageInterest messageInterest)
         {
             if (messageInterest is null)
-                throw new ArgumentNullException($"{nameof(messageInterest)}");
+                throw new ArgumentNullException(nameof(messageInterest));
 
             if (IsOpened())
                 throw new InvalidOperationException($"Cannot create a session in an already opened feed!");
 
             var session = new OddsFeedSession(
-                _loggerFactory,
                 _unityContainer.Resolve<IAmqpClient>(),
                 _unityContainer.Resolve<IFeedMessageMapper>(),
                 messageInterest,

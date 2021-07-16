@@ -66,5 +66,7 @@ namespace Oddin.OddinSdk.SDK.Managers.Abstractions
         /// <param name="id">An id of the <see cref="IProducer"/> for which to remove the timestamp</param>
         /// <exception cref="ArgumentOutOfRangeException">The id of the producer is not found</exception>
         void RemoveTimestampBeforeDisconnect(int id);
+
+        internal void Lock();
     }
 }
