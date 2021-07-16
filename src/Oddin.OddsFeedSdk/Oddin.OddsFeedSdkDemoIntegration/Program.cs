@@ -15,7 +15,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task Main(string[] _)
         {
             var loggerFactory = CreateLoggerFactory();
 
@@ -23,7 +23,6 @@ namespace Oddin.OddsFeedSdkDemoIntegration
                 .GetConfigurationBuilder()
                 .SetAccessToken("1a0c5a30-74ed-416d-b120-8c05f92e382f")
                 .SelectIntegration()
-                .LoadFromConfigFile()
                 .Build();
 
             var feed = new Feed(config, loggerFactory);
