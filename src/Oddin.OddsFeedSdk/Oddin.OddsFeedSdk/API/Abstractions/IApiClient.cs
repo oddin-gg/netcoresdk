@@ -1,5 +1,4 @@
-﻿using Oddin.OddsFeedSdk.AMQP;
-using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+﻿using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 using System;
 using System.Collections.Generic;

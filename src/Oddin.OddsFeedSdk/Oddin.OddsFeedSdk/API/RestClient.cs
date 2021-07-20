@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Exceptions;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal class RestClient
+    internal class RestClient : IRestClient
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(RestClient));
 

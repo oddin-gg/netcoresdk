@@ -8,29 +8,55 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Oddin.OddsFeedSdk.API
 {
+    internal interface IApiCacheManager 
+    {
+        MemoryCache Cache { get; }
+    }
+
+    internal class ApiCacheManager : IApiCacheManager
+    {
+        public MemoryCache Cache => _cache;
+
+        private readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
+
+        // TODO: Subscribe to tournament (maybe even match and match status) events and change cache accoringly
+    }
+
     internal class ApiClient : IApiClient
     {
         private readonly IApiModelMapper _apiModelMapper;
-        private readonly RestClient _restClient;
+        private readonly IApiCacheManager _cacheManager;
+        private readonly IRestClient _restClient;
         private readonly CultureInfo _defaultCulture;
 
-        public ApiClient(IApiModelMapper apiModelMapper, IFeedConfiguration config)
+        public ApiClient(IApiModelMapper apiModelMapper, IFeedConfiguration config, IApiCacheManager cache, IRestClient restClient)
         {
             if (apiModelMapper is null)
                 throw new ArgumentNullException(nameof(apiModelMapper));
 
             _apiModelMapper = apiModelMapper;
-            _restClient = new RestClient(config);
+            _cacheManager = cache;
+            _restClient = restClient;
             _defaultCulture = config.DefaultLocale;
         }
 
         public IEnumerable<IProducer> GetProducers()
         {
-            var response = _restClient.SendRequest<ProducersModel>("v1/descriptions/producers", HttpMethod.Get);
-            return _apiModelMapper.MapProducersList(response.Data);
+            var route = "v1/descriptions/producers";
+
+            // Cache for 1 day
+            var data = _cacheManager.Cache.GetOrCreate(route, item =>
+            {
+                item.SetSlidingExpiration(TimeSpan.FromDays(1));
+
+                var response = _restClient.SendRequest<ProducersModel>(route, HttpMethod.Get);
+                return response.Data;
+            });
+            return _apiModelMapper.MapProducersList(data);
         }
 
         public IBookmakerDetails GetBookmakerDetails()
@@ -43,16 +69,32 @@ namespace Oddin.OddsFeedSdk.API
         {
             var culture = desiredCulture is null ? _defaultCulture : desiredCulture;
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sport_events/{sportEventId}/summary";
-            var response = await _restClient.SendRequestAsync<MatchSummaryModel>(route, HttpMethod.Get);
-            return _apiModelMapper.MapMatchSummary(response.Data);
+
+            // Cache for 1 second
+            var data = await _cacheManager.Cache.GetOrCreateAsync(route, async item =>
+            {
+                item.SetSlidingExpiration(TimeSpan.FromSeconds(1));
+
+                var response = await _restClient.SendRequestAsync<MatchSummaryModel>(route, HttpMethod.Get);
+                return response.Data;
+            });
+            return _apiModelMapper.MapMatchSummary(data);
         }
 
         public async Task<IEnumerable<IMarketDescription>> GetMarketDescriptionsAsync(CultureInfo desiredCulture = null)
         {
             var culture = desiredCulture is null ? _defaultCulture : desiredCulture;
             var route = $"v1/descriptions/{culture.TwoLetterISOLanguageName}/markets";
-            var response = await _restClient.SendRequestAsync<MarketDescriptionsModel>(route, HttpMethod.Get);
-            return _apiModelMapper.MapMarketDescriptionsList(response.Data);
+
+            // Cache for 1 day
+            var data = await _cacheManager.Cache.GetOrCreateAsync(route, async item =>
+            {
+                item.SetSlidingExpiration(TimeSpan.FromDays(1));
+
+                var response = await _restClient.SendRequestAsync<MarketDescriptionsModel>(route, HttpMethod.Get);
+                return response.Data;
+            });
+            return _apiModelMapper.MapMarketDescriptionsList(data);
         }
 
         public async Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId)

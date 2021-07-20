@@ -55,7 +55,10 @@ namespace Oddin.OddsFeedSdk
     
         public IProducerManager ProducerManager
             => _services.GetService<IProducerManager>();
-        
+
+        public ISportDataProvider SportDataProvider 
+            => _services.GetService<ISportDataProvider>();
+
         public IBookmakerDetails BookmakerDetails
         {
             get
@@ -97,6 +100,9 @@ namespace Oddin.OddsFeedSdk
                 .AddSingleton<EventHandler<ShutdownEventArgs>>(OnConnectionShutdown)
                 .AddSingleton<IRequestIdFactory, RequestIdFactory>()
                 .AddSingleton<IEventRecoveryRequestIssuer, EventRecoveryRequestIssuer>()
+                .AddSingleton<IApiCacheManager, ApiCacheManager>()
+                .AddSingleton<IRestClient, RestClient>()
+                .AddSingleton<ISportDataProvider, SportDataProvider>()
                 .BuildServiceProvider();
 
         private bool IsOpened()
