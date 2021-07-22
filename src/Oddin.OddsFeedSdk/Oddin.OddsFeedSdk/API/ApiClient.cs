@@ -42,13 +42,13 @@ namespace Oddin.OddsFeedSdk.API
             _defaultCulture = config.DefaultLocale;
         }
 
-        public SportsModel GetSports(CultureInfo culture)
+        public async Task<SportsModel> GetSports(CultureInfo culture)
         {
             if (culture is null)
                 culture = _defaultCulture;
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sports";
-            var result = _restClient.SendRequest<SportsModel>(route, HttpMethod.Get);
+            var result = await _restClient.SendRequestAsync<SportsModel>(route, HttpMethod.Get);
             return result.Data;
         }
 

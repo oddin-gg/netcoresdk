@@ -9,6 +9,7 @@ using Oddin.OddsFeedSdk.Sessions;
 using Oddin.OddsFeedSdk.Sessions.Abstractions;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,21 +38,33 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             AttachEvents(session);
 
             feed.Open();
-            await DoStuff(feed);
+
+            var tasks = new List<Task>();
+            tasks.Add(WorkWithRecovery(feed));
+            tasks.Add(WorkWithSportDataProvider(feed));
+            await Task.WhenAll(tasks);
+
             feed.Close();
 
             DetachEvents(feed);
             DetachEvents(session);
         }
 
-        private async static Task DoStuff(Feed feed)
+        private async static Task WorkWithRecovery(Feed feed)
         {
-            Console.ReadLine();
+            //var producer = feed.ProducerManager.Get("live");
+            //var urn = new URN("od:match:35671");
+            //Console.WriteLine($"Event recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventMessagesAsync(producer, urn)}");
 
-            var producer = feed.ProducerManager.Get("live");
-            var urn = new URN("od:match:35671");
-            Console.WriteLine($"Event recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventMessagesAsync(producer, urn)}");
+            //Console.ReadLine();
+        }
+        
+        private async static Task WorkWithSportDataProvider(Feed feed)
+        {
+            var provider = feed.SportDataProvider;
 
+            var sports = await provider.GetSportsAsync();
+            Console.WriteLine($"{sports}");
             Console.ReadLine();
         }
 

@@ -16,7 +16,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
 
         Task<IMatchSummary> GetMatchSummaryAsync(URN sportEventId, CultureInfo culture = null);
 
-        SportsModel GetSports(CultureInfo culture = null);
+        Task<SportsModel> GetSports(CultureInfo culture = null);
 
         Task<IEnumerable<IMarketDescription>> GetMarketDescriptionsAsync(CultureInfo culture = null);
 
