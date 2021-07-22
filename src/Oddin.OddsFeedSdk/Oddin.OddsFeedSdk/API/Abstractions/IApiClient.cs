@@ -1,4 +1,5 @@
 ﻿using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,8 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         IBookmakerDetails GetBookmakerDetails();
 
         Task<IMatchSummary> GetMatchSummaryAsync(URN sportEventId, CultureInfo culture = null);
+
+        SportsModel GetSports(CultureInfo culture = null);
 
         Task<IEnumerable<IMarketDescription>> GetMarketDescriptionsAsync(CultureInfo culture = null);
 

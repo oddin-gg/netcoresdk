@@ -22,8 +22,6 @@ namespace Oddin.OddsFeedSdk.API
         public MemoryCache Cache => _cache;
 
         private readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
-
-        // TODO: Subscribe to tournament (maybe even match and match status) events and change cache accoringly
     }
 
     internal class ApiClient : IApiClient
@@ -42,6 +40,16 @@ namespace Oddin.OddsFeedSdk.API
             _cacheManager = cache;
             _restClient = restClient;
             _defaultCulture = config.DefaultLocale;
+        }
+
+        public SportsModel GetSports(CultureInfo culture)
+        {
+            if (culture is null)
+                culture = _defaultCulture;
+
+            var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sports";
+            var result = _restClient.SendRequest<SportsModel>(route, HttpMethod.Get);
+            return result.Data;
         }
 
         public IEnumerable<IProducer> GetProducers()

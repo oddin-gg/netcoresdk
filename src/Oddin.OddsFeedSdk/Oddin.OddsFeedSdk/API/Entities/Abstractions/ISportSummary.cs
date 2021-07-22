@@ -12,9 +12,4 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 
         IReadOnlyDictionary<CultureInfo, string> Names { get; }
     }
-
-    public interface ISport : ISportSummary
-    {
-        IEnumerable<ISportEvent> Tournaments { get; }
-    }
 }

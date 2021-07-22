@@ -51,5 +51,14 @@ namespace Oddin.OddsFeedSdk.Common
             type = urnSplit[1];
             return true;
         }
+
+        public override bool Equals(object obj)
+            => obj is URN uRN &&
+               Prefix == uRN.Prefix &&
+               Type == uRN.Type &&
+               Id == uRN.Id;
+
+        public override int GetHashCode()
+            => HashCode.Combine(Prefix, Type, Id);
     }
 }
