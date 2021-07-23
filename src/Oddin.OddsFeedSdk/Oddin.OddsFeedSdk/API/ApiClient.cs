@@ -17,6 +17,7 @@ namespace Oddin.OddsFeedSdk.API
         MemoryCache Cache { get; }
     }
 
+    // TODO: Refactore whole api cache manager
     internal class ApiCacheManager : IApiCacheManager
     {
         public MemoryCache Cache => _cache;
@@ -40,6 +41,19 @@ namespace Oddin.OddsFeedSdk.API
             _cacheManager = cache;
             _restClient = restClient;
             _defaultCulture = config.DefaultLocale;
+        }
+
+        public TournamentsModel GetTournaments(URN sportId, CultureInfo culture = null)
+        {
+            if (sportId is null)
+                throw new ArgumentNullException(nameof(sportId));
+
+            if (culture is null)
+                culture = _defaultCulture;
+            
+            var route = $"v1/sports/${culture.TwoLetterISOLanguageName}/sports/{sportId}/tournaments";
+            var result = _restClient.SendRequest<TournamentsModel>(route, HttpMethod.Get);
+            return result.Data;
         }
 
         public async Task<SportsModel> GetSports(CultureInfo culture)

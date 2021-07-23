@@ -18,6 +18,8 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
 
         Task<SportsModel> GetSports(CultureInfo culture = null);
 
+        TournamentsModel GetTournaments(URN sportId, CultureInfo culture = null);
+
         Task<IEnumerable<IMarketDescription>> GetMarketDescriptionsAsync(CultureInfo culture = null);
 
         Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId);

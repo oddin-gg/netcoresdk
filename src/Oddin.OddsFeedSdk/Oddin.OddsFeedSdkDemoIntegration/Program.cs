@@ -10,6 +10,7 @@ using Oddin.OddsFeedSdk.Sessions.Abstractions;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -63,8 +64,10 @@ namespace Oddin.OddsFeedSdkDemoIntegration
         {
             var provider = feed.SportDataProvider;
 
-            var sports = await provider.GetSportsAsync();
-            Console.WriteLine($"{sports}");
+            var sportsEn = await provider.GetSportsAsync(CultureInfo.GetCultureInfoByIetfLanguageTag("en"));
+            var sportsRu = await provider.GetSportsAsync(CultureInfo.GetCultureInfoByIetfLanguageTag("ru"));
+            
+            Console.WriteLine($"{sportsEn} {sportsRu}");
             Console.ReadLine();
         }
 

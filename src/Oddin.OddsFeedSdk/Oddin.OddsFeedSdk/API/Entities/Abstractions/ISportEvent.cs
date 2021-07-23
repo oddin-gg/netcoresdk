@@ -1,11 +1,10 @@
-﻿using Oddin.OddsFeedSdk.AMQP;
-using Oddin.OddsFeedSdk.Common;
+﻿using Oddin.OddsFeedSdk.Common;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
 
 namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
-{ 
+{
     public interface ISportEvent
     {
         public URN Id { get; }
