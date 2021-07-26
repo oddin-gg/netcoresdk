@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
 using System;
@@ -27,5 +27,6 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId);
 
         Task PostRecoveryRequest(string producerName, long requestId, int nodeId, DateTime timestamp = default);
+        TournamentInfoModel GetTournament(URN id, CultureInfo culture = null);
     }
 }
