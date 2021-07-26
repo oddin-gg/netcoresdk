@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.API.Entities;
+using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.Common;
 using System.Collections.Generic;
 using System.Globalization;

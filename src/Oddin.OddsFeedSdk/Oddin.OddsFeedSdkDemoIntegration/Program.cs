@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk;
 using Oddin.OddsFeedSdk.AMQP;
 using Oddin.OddsFeedSdk.AMQP.EventArguments;
@@ -40,9 +40,11 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
             feed.Open();
 
-            var tasks = new List<Task>();
-            tasks.Add(WorkWithRecovery(feed));
-            tasks.Add(WorkWithSportDataProvider(feed));
+            var tasks = new List<Task>
+            {
+                WorkWithRecovery(feed),
+                WorkWithSportDataProvider(feed)
+            };
             await Task.WhenAll(tasks);
 
             feed.Close();

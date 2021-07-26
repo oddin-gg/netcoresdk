@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
@@ -43,6 +43,19 @@ namespace Oddin.OddsFeedSdk.API
             _defaultCulture = config.DefaultLocale;
         }
 
+        public TournamentInfoModel GetTournament(URN id, CultureInfo culture = null)
+        {
+            if (id is null)
+                throw new ArgumentNullException(nameof(id));
+
+            if (culture is null)
+                culture = _defaultCulture;
+            
+            var route = $"/sports/${culture.TwoLetterISOLanguageName}/tournaments/{id}/info";
+            var result = _restClient.SendRequest<TournamentInfoModel>(route, HttpMethod.Get);
+            return result.Data;
+        }
+        
         public TournamentsModel GetTournaments(URN sportId, CultureInfo culture = null)
         {
             if (sportId is null)

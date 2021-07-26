@@ -7,6 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Oddin.OddsFeedSdk", "Oddin.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Oddin.OddsFeedSdkDemoIntegration", "Oddin.OddsFeedSdkDemoIntegration\Oddin.OddsFeedSdkDemoIntegration.csproj", "{D82F279F-1979-4EE8-A47B-7B75739E22E5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AB348EA6-5EA4-4029-AE0C-E4382D7A53C1}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

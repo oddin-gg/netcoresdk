@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,6 +14,12 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
 
         IEnumerable<ITournament> GetActiveTournaments(CultureInfo culture);
 
-        IEnumerable<ITournament> GetActiveTournaments(string name, CultureInfo culture = null);
+        IEnumerable<ITournament> GetActiveTournaments(string name);
+        
+        IEnumerable<ITournament> GetActiveTournaments(string name, CultureInfo culture);
+        IEnumerable<ITournament> GetActiveTournaments();
+        IEnumerable<ITournament> GetAvailableTournaments(URN sportId);
+        IEnumerable<ITournament> GetAvailableTournaments(URN sportId, CultureInfo culture);
+        void ClearTournament(URN id);
     }
 }

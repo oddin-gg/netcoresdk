@@ -1,4 +1,3 @@
-﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
@@ -8,12 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal class SportDataCache : ISportDataCache
+    internal class SportDataCache : ISportDataCache, IDisposable
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(SportDataCache));
 
@@ -22,41 +22,42 @@ namespace Oddin.OddsFeedSdk.API
         private readonly IList<CultureInfo> _loadedLocales = new List<CultureInfo>();
 
         private readonly SemaphoreSlim _loadAndCacheItemSemaphore = new SemaphoreSlim(1, 1);
-        private readonly SemaphoreSlim _getSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         public SportDataCache(IApiClient apiClient)
         {
             _apiClient = apiClient;
-            _cache = new MemoryCache(new MemoryCacheOptions());
+            
+            _cache = MemoryCache.Default;
         }
 
         public async Task<IEnumerable<URN>> GetSports(IEnumerable<CultureInfo> cultures)
         {
-            await _getSemaphore.WaitAsync();
+            await _semaphore.WaitAsync();
             try
             {
                 var culturesToLoad = cultures.Except(_loadedLocales);
                 if(culturesToLoad.Any())
                     await LoadAndCacheItem(culturesToLoad);
 
-                return _cache.GetKeys<URN>().Select(key =>
+                return _cache.Select(item =>
                 {
-                    var sport = _cache.Get<LocalizedSport>(key);
+                    var sport = item.Value as LocalizedSport;
                     return sport.Id;
                 });
             }
             finally
             {
-                _getSemaphore.Release();
+                _semaphore.Release();
             }
         }
 
         public async Task<LocalizedSport> GetSport(URN id, IEnumerable<CultureInfo> cultures)
         {
-            await _getSemaphore.WaitAsync();
+            await _semaphore.WaitAsync();
             try
             {
-                var localizedSport = _cache.Get<LocalizedSport>(id);
+                var localizedSport = _cache.Get(id.ToString()) as LocalizedSport;
                 var sportCultures = localizedSport?.LoadedLocals ?? new List<CultureInfo>();
                 var toLoadCultures = cultures.Except(sportCultures);
                 if(toLoadCultures.Any())
@@ -64,17 +65,17 @@ namespace Oddin.OddsFeedSdk.API
                     await LoadAndCacheItem(toLoadCultures);
                 }
 
-                return _cache.Get<LocalizedSport>(id);
+                return _cache.Get(id.ToString()) as LocalizedSport;
             }
             finally
             {
-                _getSemaphore.Release();
+                _semaphore.Release();
             }
         }
 
         public IEnumerable<URN> GetSportTournaments(URN id, CultureInfo culture)
         {
-            _getSemaphore.Wait();
+            _semaphore.Wait();
             try
             {
                 TournamentsModel tournaments;
@@ -104,7 +105,7 @@ namespace Oddin.OddsFeedSdk.API
             }
             finally
             {
-                _getSemaphore.Release();
+                _semaphore.Release();
             }
         }
 
@@ -151,18 +152,27 @@ namespace Oddin.OddsFeedSdk.API
 
         private void RefreshOrInsertItem(URN id, CultureInfo culture, sportExtended sport = null, URN tournamentId = null)
         {
-            var isInCache = _cache.TryGetValue<LocalizedSport>(id, out var localizedSport);
+            var localizedSportItem = _cache.Get(id.ToString());
 
-            if (isInCache == false)
+            LocalizedSport localizedSport;
+            if (localizedSportItem is null)
                 localizedSport = new LocalizedSport(id);
+            else
+                localizedSport = localizedSportItem as LocalizedSport;
 
             if (sport != null)
                 localizedSport.Name[culture] = sport.name;
         
             if(tournamentId != null)
                 localizedSport.TournamentIds ??= new List<URN>();
-           
-            _cache.Set(id, localizedSport, TimeSpan.FromDays(1));
+
+            var policy = new CacheItemPolicy()
+            {
+                SlidingExpiration = TimeSpan.FromDays(1)
+            };
+            _cache.Set(id.ToString(), localizedSport, policy);
         }
+
+        public void Dispose() => throw new NotImplementedException();
     }
 }

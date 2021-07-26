@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.API;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.Dispatch;
@@ -37,7 +37,7 @@ namespace Oddin.OddsFeedSdk
         private readonly IFeedConfiguration _config;
         private bool _isOpened;
         private readonly object _isOpenedLock = new object();
-        private readonly IList<IOpenable> Sessions = new List<IOpenable>();
+        private readonly IList<IOpenable> _sessions = new List<IOpenable>();
         private bool _isDisposed;
 
         public event EventHandler<ConnectionExceptionEventArgs> ConnectionException;
@@ -100,11 +100,14 @@ namespace Oddin.OddsFeedSdk
                 .AddSingleton<EventHandler<ShutdownEventArgs>>(OnConnectionShutdown)
                 .AddSingleton<IRequestIdFactory, RequestIdFactory>()
                 .AddSingleton<IEventRecoveryRequestIssuer, EventRecoveryRequestIssuer>()
-                .AddSingleton<IApiCacheManager, ApiCacheManager>()
                 .AddSingleton<IRestClient, RestClient>()
                 .AddSingleton<ISportDataProvider, SportDataProvider>()
                 .AddSingleton<ISportDataBuilder, SportDataBuilder>()
+                .AddSingleton<IExceptionWrapper, ExceptionWrapper>()
+                .AddSingleton<IApiCacheManager, ApiCacheManager>()
                 .AddSingleton<ISportDataCache, SportDataCache>()
+                .AddSingleton<ICacheManager, CacheManager>()
+                .AddSingleton<ITournamentsCache, TournamentsCache>()
                 .BuildServiceProvider();
 
         private bool IsOpened()
@@ -196,12 +199,12 @@ namespace Oddin.OddsFeedSdk
 
             try
             {
-                foreach (var session in Sessions)
+                foreach (var session in _sessions)
                     session.Open();
             }
             catch (Exception)
             {
-                foreach (var openSession in Sessions.Where(s => s.IsOpened()))
+                foreach (var openSession in _sessions.Where(s => s.IsOpened()))
                     openSession.Close();
 
                 SetAsClosed();
@@ -216,7 +219,7 @@ namespace Oddin.OddsFeedSdk
         {
             _log.LogInformation($"Closing {typeof(Feed)}...");
 
-            foreach (var session in Sessions)
+            foreach (var session in _sessions)
                 session.Close();
 
             _feedRecoveryManager.Close();
@@ -286,7 +289,7 @@ namespace Oddin.OddsFeedSdk
                 messageInterest,
                 _config.ExceptionHandlingStrategy);
 
-            Sessions.Add(session);
+            _sessions.Add(session);
             return session;
         }
 

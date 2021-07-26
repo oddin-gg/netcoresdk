@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.API.Abstractions;
+using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
@@ -59,7 +59,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
             else if (tournamentIds == null)
                 return null;
             else
-                return _builder.BuildTournamets(tournamentIds, Id, _cultures).ConfigureAwait(false).GetAwaiter().GetResult();
+                return _builder.BuildTournamets(tournamentIds, Id, _cultures);
         }
     }
 }

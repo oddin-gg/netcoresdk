@@ -1,5 +1,6 @@
-﻿using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,7 +12,12 @@ namespace Oddin.OddsFeedSdk.API.Entities
     // TOOD: Implement
     internal class Tournament : ITournament
     {
-        public URN Id => throw new NotImplementedException();
+        private readonly URN _sportId;
+        private readonly ITournamentsCache _tournamentsCache;
+        private readonly IFeedConfiguration _configuration;
+        private readonly IEnumerable<CultureInfo> _cultures;
+
+        public URN Id { get; }
 
         public Task<string> GetNameAsync(CultureInfo culture)
         {
@@ -33,8 +39,13 @@ namespace Oddin.OddsFeedSdk.API.Entities
             throw new NotImplementedException();
         }
 
-        public Tournament()
+        public Tournament(URN id, URN sportId, ITournamentsCache tournamentsCache, IFeedConfiguration configuration, IEnumerable<CultureInfo> cultures)
         {
+            Id = id;
+            _sportId = sportId;
+            _tournamentsCache = tournamentsCache;
+            _configuration = configuration;
+            _cultures = cultures;
         }
     }
 }

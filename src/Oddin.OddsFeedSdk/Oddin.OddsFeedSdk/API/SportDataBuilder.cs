@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.API.Abstractions;
+using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
@@ -13,11 +13,13 @@ namespace Oddin.OddsFeedSdk.API
     internal class SportDataBuilder : ISportDataBuilder
     {
         private readonly ISportDataCache _sportDataCache;
+        private readonly ITournamentsCache _tournamentsCache;
         private readonly IFeedConfiguration _configuration;
 
-        public SportDataBuilder(ISportDataCache sportDataCache, IFeedConfiguration configuration)
+        public SportDataBuilder(ISportDataCache sportDataCache, ITournamentsCache tournamentsCache, IFeedConfiguration configuration)
         {
             _sportDataCache = sportDataCache;
+            _tournamentsCache = tournamentsCache;
             _configuration = configuration;
         }
 
@@ -45,17 +47,26 @@ namespace Oddin.OddsFeedSdk.API
                     _configuration.ExceptionHandlingStrategy));
         }
 
-
-        public async Task<IEnumerable<ITournament>> BuildTournamets(IEnumerable<URN> ids, URN sportId, IEnumerable<CultureInfo> locales)
+        public IEnumerable<ITournament> BuildTournamets(IEnumerable<URN> ids, URN sportId, IEnumerable<CultureInfo> locales)
         {
-            // TOOD: Implement
-            return new[] { new Tournament() };
+            return ids.Select(t =>             
+                new Tournament(
+                    t,
+                    sportId,
+                    _tournamentsCache,
+                    _configuration,
+                    locales)
+            );
         }
 
-        public async Task<ITournament> BuildTournamet(URN id, URN sportId, IEnumerable<CultureInfo> locales)
+        public ITournament BuildTournamet(URN id, URN sportId, IEnumerable<CultureInfo> locales)
         {
-            // TOOD: Implement
-            return new Tournament();
+            return new Tournament(
+                id, 
+                sportId, 
+                _tournamentsCache, 
+                _configuration, 
+                locales);
         }
     }
 }

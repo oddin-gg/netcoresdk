@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,8 +10,8 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
     {
         Task<IEnumerable<ISport>> BuildSports(IEnumerable<CultureInfo> locales);
 
-        Task<IEnumerable<ITournament>> BuildTournamets(IEnumerable<URN> ids, URN sportId, IEnumerable<CultureInfo> locales);
+        IEnumerable<ITournament> BuildTournamets(IEnumerable<URN> ids, URN sportId, IEnumerable<CultureInfo> locales);
 
-        Task<ITournament> BuildTournamet(URN id, URN sportId, IEnumerable<CultureInfo> locales);
+        ITournament BuildTournamet(URN id, URN sportId, IEnumerable<CultureInfo> locales);
     }
 }
