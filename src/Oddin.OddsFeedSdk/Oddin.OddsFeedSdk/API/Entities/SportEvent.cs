@@ -1,6 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.Common;
-using Oddin.OddsFeedSdk.AMQP;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;

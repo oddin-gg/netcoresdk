@@ -173,6 +173,6 @@ namespace Oddin.OddsFeedSdk.API
             _cache.Set(id.ToString(), localizedSport, policy);
         }
 
-        public void Dispose() => throw new NotImplementedException();
+        public void Dispose() => throw new NotImplementedException(); // Dispose subscribtion
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -36,7 +36,7 @@ namespace Oddin.OddsFeedSdk.API
             _cache = MemoryCache.Default;
         }
 
-        // TODO: Subscribe
+        // TODO: Subscribe + dispose to events from api
 
         public LocalizedTournament GetTournament(URN id, IEnumerable<CultureInfo> cultures)
         {

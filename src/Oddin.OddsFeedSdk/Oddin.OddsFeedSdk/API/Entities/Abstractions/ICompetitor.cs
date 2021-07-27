@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
-using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 {
@@ -22,14 +21,5 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
         Task<ISport> GetSportAsync() => Task.FromResult<ISport>(null);
 
         string ShortName => null;
-    }
-
-    public interface IPlayer
-    {
-        URN Id { get; }
-
-        IReadOnlyDictionary<CultureInfo, string> Names { get; }
-
-        string GetName(CultureInfo culture);
     }
 }

@@ -1,26 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Caching;
-using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
-using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal interface ICompetitorCache
-    {
-        LocalizedCompetitor GetCompetitor(URN id, IEnumerable<CultureInfo> cultures);
-
-        void ClearCacheItem(URN id);
-    }
-
     internal class CompetitorCache : ICompetitorCache
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(CompetitorCache));
