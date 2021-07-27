@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -19,6 +19,14 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public URN Id { get; }
 
         public IReadOnlyDictionary<CultureInfo, string> Names => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Name);
+
+        public IReadOnlyDictionary<CultureInfo, string> Countries => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Country);
+
+        public IReadOnlyDictionary<CultureInfo, string> Abbreviations => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Abbreviation);
+
+        public bool? IsVirtual => FetchCompetitor(_cultures)?.IsVirtual;
+
+        public string CountryCode => FetchCompetitor(_cultures)?.CountryCode;
 
         public Competitor(URN id, ICompetitorCache competitorCache, ExceptionHandlingStrategy exceptionHandling, IEnumerable<CultureInfo> cultures)
         {
@@ -41,6 +49,16 @@ namespace Oddin.OddsFeedSdk.API.Entities
                 throw new ItemNotFoundException(Id.ToString(), $"Competitor {Id} not found");
             else
                 return item;
+        }
+
+        public string GetCountry(CultureInfo culture)
+        {
+            return FetchCompetitor(new[] { culture })?.Country?[culture];
+        }
+
+        public string GetAbbreviation(CultureInfo culture)
+        {
+            return FetchCompetitor(new[] { culture })?.Abbreviation?[culture];
         }
     }
 }
