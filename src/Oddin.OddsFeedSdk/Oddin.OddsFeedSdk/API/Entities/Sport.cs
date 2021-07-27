@@ -59,7 +59,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
             else if (tournamentIds == null)
                 return null;
             else
-                return _builder.BuildTournamets(tournamentIds, Id, _cultures);
+                return _builder.BuildTournaments(tournamentIds, Id, _cultures);
         }
     }
 }

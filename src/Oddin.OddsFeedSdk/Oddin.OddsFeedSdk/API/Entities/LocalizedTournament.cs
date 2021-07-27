@@ -14,16 +14,21 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public IEnumerable<CultureInfo> LoadedLocals => Name.Keys;
     
-        public DateTime StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
         
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
         
         public URN SportId { get; set; }
         
-        public DateTime ScheduledTime { get; set; }
+        public DateTime? ScheduledTime { get; set; }
         
-        public URN ScheduledEndTime { get; set; }
+        public DateTime? ScheduledEndTime { get; set; }
 
         public IEnumerable<URN> CompetitorIds { get; set; } = null;
+        
+        public LocalizedTournament(URN id)
+        {
+            Id = id;
+        }
     }
 }

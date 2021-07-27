@@ -43,6 +43,20 @@ namespace Oddin.OddsFeedSdk.API
             _defaultCulture = config.DefaultLocale;
         }
 
+        public teamExtended GetCompetitorProfile(URN id, CultureInfo culture)
+        {
+            if (id is null)
+                throw new ArgumentNullException(nameof(id));
+
+            if (culture is null)
+                culture = _defaultCulture;
+
+            var route = $"/sports/{culture.TwoLetterISOLanguageName}/competitors/{id}/profile";
+            var result = _restClient.SendRequest<competitorProfileEndpoint>(route, HttpMethod.Get);
+            return result.Data.competitor;
+
+        }
+
         public TournamentInfoModel GetTournament(URN id, CultureInfo culture = null)
         {
             if (id is null)
@@ -51,7 +65,7 @@ namespace Oddin.OddsFeedSdk.API
             if (culture is null)
                 culture = _defaultCulture;
             
-            var route = $"/sports/${culture.TwoLetterISOLanguageName}/tournaments/{id}/info";
+            var route = $"/sports/{culture.TwoLetterISOLanguageName}/tournaments/{id}/info";
             var result = _restClient.SendRequest<TournamentInfoModel>(route, HttpMethod.Get);
             return result.Data;
         }
@@ -64,7 +78,7 @@ namespace Oddin.OddsFeedSdk.API
             if (culture is null)
                 culture = _defaultCulture;
             
-            var route = $"v1/sports/${culture.TwoLetterISOLanguageName}/sports/{sportId}/tournaments";
+            var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sports/{sportId}/tournaments";
             var result = _restClient.SendRequest<TournamentsModel>(route, HttpMethod.Get);
             return result.Data;
         }

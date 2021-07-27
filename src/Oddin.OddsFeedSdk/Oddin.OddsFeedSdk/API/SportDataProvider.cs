@@ -76,7 +76,7 @@ namespace Oddin.OddsFeedSdk.API
             var result = _exceptionWrapper.Wrap(() => _apiClient.GetTournaments(sportId, culture));
 
             return result.tournament.Select(
-                t => _builder.BuildTournamet(new URN(t.id), sportId, new[] { culture }));
+                t => _builder.BuildTournament(new URN(t.id), sportId, new[] { culture }));
         }
 
         public void ClearTournament(URN id)

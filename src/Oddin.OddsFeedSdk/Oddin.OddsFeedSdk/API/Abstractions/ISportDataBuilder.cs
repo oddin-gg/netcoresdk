@@ -10,8 +10,12 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
     {
         Task<IEnumerable<ISport>> BuildSports(IEnumerable<CultureInfo> locales);
 
-        IEnumerable<ITournament> BuildTournamets(IEnumerable<URN> ids, URN sportId, IEnumerable<CultureInfo> locales);
+        IEnumerable<ITournament> BuildTournaments(IEnumerable<URN> ids, URN sportId, IEnumerable<CultureInfo> locales);
 
-        ITournament BuildTournamet(URN id, URN sportId, IEnumerable<CultureInfo> locales);
+        ITournament BuildTournament(URN id, URN sportId, IEnumerable<CultureInfo> locales);
+
+        ISport BuildSport(URN id, IEnumerable<CultureInfo> locales);
+
+        IEnumerable<ICompetitor> BuildCompetitors(IEnumerable<URN> ids, IEnumerable<CultureInfo> cultures);
     }
 }

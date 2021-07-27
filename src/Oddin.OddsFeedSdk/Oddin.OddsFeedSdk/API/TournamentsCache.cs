@@ -14,8 +14,11 @@ namespace Oddin.OddsFeedSdk.API
 {
     internal interface ITournamentsCache
     {
-        void ClearCacheItem(URN id);
         LocalizedTournament GetTournament(URN id, IEnumerable<CultureInfo> cultures);
+
+        IEnumerable<URN> GetTournamentCompetitors(URN id, CultureInfo culture);
+        
+        void ClearCacheItem(URN id);
     }
 
     internal class TournamentsCache : ITournamentsCache
@@ -55,6 +58,20 @@ namespace Oddin.OddsFeedSdk.API
             }
         }
 
+        public IEnumerable<URN> GetTournamentCompetitors(URN id, CultureInfo culture)
+        {
+            _semaphore.Wait();
+            try
+            {
+                LoadAndCacheItem(id, new[] { culture });
+                var tournament = _cache.Get(id.ToString()) as LocalizedTournament;
+                return tournament?.CompetitorIds;
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
 
         internal void LoadAndCacheItem(URN id, IEnumerable<CultureInfo> cultures)
         {
@@ -72,7 +89,7 @@ namespace Oddin.OddsFeedSdk.API
                 }
                 try
                 {
-                    RefreshOrInsertItem(id, culture, tournamentData);
+                    RefreshOrInsertItem(id, culture, tournamentData.tournament);
                 }
                 catch(Exception e)
                 {
@@ -81,9 +98,42 @@ namespace Oddin.OddsFeedSdk.API
             }
         }
 
-        internal void RefreshOrInsertItem(URN id, CultureInfo culture, TournamentInfoModel model)
+        internal void RefreshOrInsertItem(URN id, CultureInfo culture, tournamentExtended model)
         {
-            // TODO: Implement
+            if (_cache.Get(id.ToString()) is LocalizedTournament item)
+            {
+                item.StartDate = model?.tournament_length?.start_date;
+                item.EndDate = model?.tournament_length?.end_date;
+                item.SportId = new URN(model.sport.id);
+                item.ScheduledTime = model?.scheduled;
+                item.ScheduledEndTime = model?.scheduled_end;
+            }
+            else
+            {
+                item = new LocalizedTournament(id)
+                {
+                    StartDate = model?.tournament_length?.start_date,
+                    EndDate = model?.tournament_length?.end_date,
+                    SportId = new URN(model.sport.id),
+                    ScheduledTime = model?.scheduled,
+                    ScheduledEndTime = model?.scheduled_end
+                };
+            }
+
+            item.Name[culture] = model.name;
+
+            if(model.competitors != null && model.competitors.Any())
+            {
+                var ids = model.competitors.Select(c => new URN(c.id));
+                var alreadyExistingIds = item.CompetitorIds.ToHashSet();
+                
+                foreach(var competitorId in ids)
+                    alreadyExistingIds.Add(competitorId);
+
+                item.CompetitorIds = alreadyExistingIds.ToList();
+            }
+
+            _cache.Set(id.ToString(), item, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromHours(12) });
         }
 
         public void ClearCacheItem(URN id)
