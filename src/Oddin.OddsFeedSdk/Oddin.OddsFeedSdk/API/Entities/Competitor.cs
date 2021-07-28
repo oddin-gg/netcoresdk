@@ -42,7 +42,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         private LocalizedCompetitor FetchCompetitor(IEnumerable<CultureInfo> cultures)
         {
-            var item = _competitorCache.GetCompetitor(Id, _cultures);
+            var item = _competitorCache.GetCompetitor(Id, cultures);
 
             if (item == null && _exceptionHandling == ExceptionHandlingStrategy.THROW)
                 throw new ItemNotFoundException(Id.ToString(), $"Competitor {Id} not found");

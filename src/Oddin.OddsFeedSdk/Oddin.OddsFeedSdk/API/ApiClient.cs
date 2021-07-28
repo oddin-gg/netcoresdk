@@ -119,15 +119,17 @@ namespace Oddin.OddsFeedSdk.API
             var culture = desiredCulture is null ? _defaultCulture : desiredCulture;
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sport_events/{sportEventId}/summary";
 
-            // Cache for 1 second
-            var data = await _cacheManager.Cache.GetOrCreateAsync(route, async item =>
-            {
-                item.SetSlidingExpiration(TimeSpan.FromSeconds(1));
+            var response = await _restClient.SendRequestAsync<MatchSummaryModel>(route, HttpMethod.Get);
+            return _apiModelMapper.MapMatchSummary(response.Data);
+        }
 
-                var response = await _restClient.SendRequestAsync<MatchSummaryModel>(route, HttpMethod.Get);
-                return response.Data;
-            });
-            return _apiModelMapper.MapMatchSummary(data);
+        public MatchSummaryModel GetMatchSummary(URN sportEventId, CultureInfo desiredCulture)
+        {
+            var culture = desiredCulture ?? _defaultCulture;
+            var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sport_events/{sportEventId}/summary";
+
+            var response = _restClient.SendRequest<MatchSummaryModel>(route, HttpMethod.Get);
+            return response.Data;
         }
 
         public async Task<IEnumerable<IMarketDescription>> GetMarketDescriptionsAsync(CultureInfo desiredCulture = null)

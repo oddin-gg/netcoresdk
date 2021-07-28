@@ -80,14 +80,14 @@ namespace Oddin.OddsFeedSdk.API
         {
             if (_cache.Get(id.ToString()) is LocalizedCompetitor item)
             {
-                item.IsVirtual = data.virtualSpecified ? data.@virtual : default;
+                item.IsVirtual = data.virtualSpecified ? data.@virtual : default(bool?);
                 item.CountryCode = data.country_code;
             }
             else
             {
                 item = new LocalizedCompetitor(id)
                 {
-                    IsVirtual = data.virtualSpecified ? data.@virtual : default,
+                    IsVirtual = data.virtualSpecified ? data.@virtual : default(bool?),
                     CountryCode = data.country_code
                 };
             }

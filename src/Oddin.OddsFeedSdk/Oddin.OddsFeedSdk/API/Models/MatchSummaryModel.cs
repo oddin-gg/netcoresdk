@@ -22,7 +22,6 @@ namespace Oddin.OddsFeedSdk.API.Models
     [System.Xml.Serialization.XmlRootAttribute("match_summary", IsNullable = false)]
     public class MatchSummaryModel
     {
-
         private sportEvent sport_eventField;
 
         private sportEventStatus sport_event_statusField;

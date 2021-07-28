@@ -1,4 +1,4 @@
-﻿namespace Oddin.OddsFeedSdk.AMQP.Enums
+namespace Oddin.OddsFeedSdk.AMQP.Enums
 {
     public enum VoidFactor
     {

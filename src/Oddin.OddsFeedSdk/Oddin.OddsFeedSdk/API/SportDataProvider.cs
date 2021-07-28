@@ -3,6 +3,7 @@ using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -40,7 +41,7 @@ namespace Oddin.OddsFeedSdk.API
             var sports = await GetSportsAsync(culture);
             return sports.FirstOrDefault(s => s.Id == id);
         }
-        
+
         public IEnumerable<ITournament> GetActiveTournaments()
         {
             return GetActiveTournaments(_feedConfiguration.DefaultLocale);
@@ -70,7 +71,7 @@ namespace Oddin.OddsFeedSdk.API
         {
             return GetAvailableTournaments(sportId, _feedConfiguration.DefaultLocale);
         }
-        
+
         public IEnumerable<ITournament> GetAvailableTournaments(URN sportId, CultureInfo culture)
         {
             var result = _exceptionWrapper.Wrap(() => _apiClient.GetTournaments(sportId, culture));
@@ -87,6 +88,11 @@ namespace Oddin.OddsFeedSdk.API
         public void ClearMatch(URN id)
         {
             // TODO: Implement
+        }
+
+        public IEnumerable<IMatch> GetMatchesFor(DateTimeOffset dateTime)
+        {
+            throw new NotImplementedException();
         }
 
         internal class TournamentIdComparer : IEqualityComparer<ITournament>
