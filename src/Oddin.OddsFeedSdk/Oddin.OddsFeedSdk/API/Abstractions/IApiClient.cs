@@ -29,7 +29,10 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         Task PostRecoveryRequest(string producerName, long requestId, int nodeId, DateTime timestamp = default);
 
         TournamentInfoModel GetTournament(URN id, CultureInfo culture = null);
+
         teamExtended GetCompetitorProfile(URN id, CultureInfo culture);
+
         MatchSummaryModel GetMatchSummary(URN sportEventId, CultureInfo desiredCulture);
+        FixturesEndpointModel GetFixture(URN id, CultureInfo culture);
     }
 }

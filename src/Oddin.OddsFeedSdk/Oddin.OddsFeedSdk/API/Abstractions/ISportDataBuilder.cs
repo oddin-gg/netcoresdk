@@ -17,5 +17,13 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         ISport BuildSport(URN id, IEnumerable<CultureInfo> locales);
 
         IEnumerable<ICompetitor> BuildCompetitors(IEnumerable<URN> ids, IEnumerable<CultureInfo> cultures);
+
+        IEnumerable<IMatch> BuildMatches(IEnumerable<URN> ids, IEnumerable<CultureInfo> cultures);
+
+        IMatch BuildMatch(URN id, URN sportId, IEnumerable<CultureInfo> cultures);
+
+        ICompetitor BuildCompetitor(URN id, IEnumerable<CultureInfo> cultures);
+
+        IFixture BuildFixture(URN id, IEnumerable<CultureInfo> cultures);
     }
 }

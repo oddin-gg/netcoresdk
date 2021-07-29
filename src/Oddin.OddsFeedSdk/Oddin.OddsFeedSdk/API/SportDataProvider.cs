@@ -19,7 +19,12 @@ namespace Oddin.OddsFeedSdk.API
         private readonly IExceptionWrapper _exceptionWrapper;
         private readonly IApiClient _apiClient;
 
-        public SportDataProvider(ICacheManager cacheManager, IFeedConfiguration feedConfiguration, ISportDataBuilder builder, IExceptionWrapper exceptionWrapper, IApiClient apiClient)
+        public SportDataProvider(
+            ICacheManager cacheManager,
+            IFeedConfiguration feedConfiguration,
+            ISportDataBuilder builder,
+            IExceptionWrapper exceptionWrapper,
+            IApiClient apiClient)
         {
             _cacheManager = cacheManager;
             _feedConfiguration = feedConfiguration;
@@ -87,7 +92,7 @@ namespace Oddin.OddsFeedSdk.API
 
         public void ClearMatch(URN id)
         {
-            // TODO: Implement
+            _cacheManager.MatchCache.ClearCacheItem(id);
         }
 
         public IEnumerable<IMatch> GetMatchesFor(DateTimeOffset dateTime)

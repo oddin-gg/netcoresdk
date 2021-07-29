@@ -7,5 +7,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         ITournamentsCache TournamentsCache { get; }
 
         ICompetitorCache CompetitorCache { get; }
+
+        IMatchCache MatchCache { get; }
     }
 }

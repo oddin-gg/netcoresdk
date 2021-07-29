@@ -22,4 +22,9 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 
         string ShortName => null;
     }
+
+    public interface ITeamCompetitor : ICompetitor
+    {
+        string Qualifier { get; }
+    }
 }

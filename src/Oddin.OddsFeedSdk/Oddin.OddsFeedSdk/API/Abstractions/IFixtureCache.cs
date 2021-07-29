@@ -1,13 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API.Abstractions
 {
-    internal interface IMatchCache
+    internal interface IFixtureCache
     {
-        void ClearCacheItem(URN id);
-        LocalizedMatch GetMatch(URN id, IEnumerable<CultureInfo> cultures);
+        LocalizedFixture GetFixture(URN id, CultureInfo culture);
     }
 }

@@ -28,7 +28,7 @@ namespace Oddin.OddsFeedSdk.API
         private readonly IApiClient _apiClient;
         private readonly MemoryCache _cache;
 
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private readonly Semaphore _semaphore = new Semaphore(1, 1);
 
         public TournamentsCache(IApiClient apiClient)
         {
@@ -40,7 +40,7 @@ namespace Oddin.OddsFeedSdk.API
 
         public LocalizedTournament GetTournament(URN id, IEnumerable<CultureInfo> cultures)
         {
-            _semaphore.Wait();
+            _semaphore.WaitOne();
             try
             {
                 var localizedTournament = _cache.Get(id.ToString()) as LocalizedTournament;
@@ -60,7 +60,7 @@ namespace Oddin.OddsFeedSdk.API
 
         public IEnumerable<URN> GetTournamentCompetitors(URN id, CultureInfo culture)
         {
-            _semaphore.Wait();
+            _semaphore.WaitOne();
             try
             {
                 LoadAndCacheItem(id, new[] { culture });

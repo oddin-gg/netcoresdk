@@ -43,6 +43,19 @@ namespace Oddin.OddsFeedSdk.API
             _defaultCulture = config.DefaultLocale;
         }
 
+        public FixturesEndpointModel GetFixture(URN id, CultureInfo culture)
+        {
+            if (id is null)
+                throw new ArgumentNullException(nameof(id));
+
+            if (culture is null)
+                culture = _defaultCulture;
+
+            var route = $"/sports/{culture.TwoLetterISOLanguageName}/sport_events/{id}/fixture";
+            var result = _restClient.SendRequest<FixturesEndpointModel>(route, HttpMethod.Get);
+            return result.Data;
+        }
+
         public teamExtended GetCompetitorProfile(URN id, CultureInfo culture)
         {
             if (id is null)

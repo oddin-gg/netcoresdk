@@ -16,13 +16,23 @@ namespace Oddin.OddsFeedSdk.API
         private readonly ISportDataCache _sportDataCache;
         private readonly ITournamentsCache _tournamentsCache;
         private readonly ICompetitorCache _competitorCache;
+        private readonly IMatchCache _matchCache;
+        private readonly IFixtureCache _fixtureCache;
         private readonly IFeedConfiguration _configuration;
 
-        public SportDataBuilder(ISportDataCache sportDataCache, ITournamentsCache tournamentsCache, ICompetitorCache competitorCache, IFeedConfiguration configuration)
+        public SportDataBuilder(
+            ISportDataCache sportDataCache,
+            ITournamentsCache tournamentsCache,
+            ICompetitorCache competitorCache,
+            IMatchCache matchCache,
+            IFixtureCache fixtureCache,
+            IFeedConfiguration configuration)
         {
             _sportDataCache = sportDataCache;
             _tournamentsCache = tournamentsCache;
             _competitorCache = competitorCache;
+            _matchCache = matchCache;
+            _fixtureCache = fixtureCache;
             _configuration = configuration;
         }
 
@@ -81,6 +91,47 @@ namespace Oddin.OddsFeedSdk.API
                     _competitorCache,
                     _configuration.ExceptionHandlingStrategy,
                     cultures));
+        }
+
+        public ICompetitor BuildCompetitor(URN id, IEnumerable<CultureInfo> cultures)
+        {
+            return new Competitor(
+                id,
+                _competitorCache,
+                _configuration.ExceptionHandlingStrategy,
+                cultures);
+        }
+
+        public IEnumerable<IMatch> BuildMatches(IEnumerable<URN> ids, IEnumerable<CultureInfo> cultures)
+        {
+            return ids.Select(id =>
+                new Match(
+                    id,
+                    null,
+                    _matchCache,
+                    this,
+                    _configuration.ExceptionHandlingStrategy,
+                    cultures));
+        }
+
+        public IMatch BuildMatch(URN id, URN sportId, IEnumerable<CultureInfo> cultures)
+        {
+            return new Match(
+                id,
+                sportId,
+                _matchCache,
+                this,
+                _configuration.ExceptionHandlingStrategy,
+                cultures);
+        }
+
+        public IFixture BuildFixture(URN id, IEnumerable<CultureInfo> cultures)
+        {
+            return new Fixture(
+                id,
+                _fixtureCache,
+                _configuration.ExceptionHandlingStrategy,
+                cultures);
         }
     }
 }

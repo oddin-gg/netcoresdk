@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Caching;
-using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.AMQP.Enums;
@@ -16,10 +15,10 @@ namespace Oddin.OddsFeedSdk.API
 {
     internal class MatchCache : IMatchCache
     {
-        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(TournamentsCache));
+        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(MatchCache));
 
         private readonly IApiClient _apiClient;
-        private MemoryCache _cache = MemoryCache.Default;
+        private readonly MemoryCache _cache = MemoryCache.Default;
 
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
 

@@ -21,8 +21,8 @@ namespace Oddin.OddsFeedSdk.API
         private readonly MemoryCache _cache;
         private readonly IList<CultureInfo> _loadedLocales = new List<CultureInfo>();
 
-        private readonly SemaphoreSlim _loadAndCacheItemSemaphore = new SemaphoreSlim(1, 1);
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private readonly Semaphore _loadAndCacheItemSemaphore = new Semaphore(1, 1);
+        private readonly Semaphore _semaphore = new Semaphore(1, 1);
 
         public SportDataCache(IApiClient apiClient)
         {
@@ -33,7 +33,7 @@ namespace Oddin.OddsFeedSdk.API
 
         public async Task<IEnumerable<URN>> GetSports(IEnumerable<CultureInfo> cultures)
         {
-            await _semaphore.WaitAsync();
+            _semaphore.WaitOne();
             try
             {
                 var culturesToLoad = cultures.Except(_loadedLocales);
@@ -54,7 +54,7 @@ namespace Oddin.OddsFeedSdk.API
 
         public async Task<LocalizedSport> GetSport(URN id, IEnumerable<CultureInfo> cultures)
         {
-            await _semaphore.WaitAsync();
+            _semaphore.WaitOne();
             try
             {
                 var localizedSport = _cache.Get(id.ToString()) as LocalizedSport;
@@ -75,7 +75,7 @@ namespace Oddin.OddsFeedSdk.API
 
         public IEnumerable<URN> GetSportTournaments(URN id, CultureInfo culture)
         {
-            _semaphore.Wait();
+            _semaphore.WaitOne();
             try
             {
                 TournamentsModel tournaments;
@@ -113,7 +113,7 @@ namespace Oddin.OddsFeedSdk.API
 
         private async Task LoadAndCacheItem(IEnumerable<CultureInfo> cultures)
         {
-            _loadAndCacheItemSemaphore.Wait();
+            _loadAndCacheItemSemaphore.WaitOne();
             try
             {
                 foreach (var culture in cultures)

@@ -10,11 +10,14 @@ namespace Oddin.OddsFeedSdk.API
 
         public ICompetitorCache CompetitorCache { get; }
 
-        public CacheManager(ISportDataCache sportDataCache, ITournamentsCache tournamentsCache, ICompetitorCache competitorCache)
+        public IMatchCache MatchCache { get; }
+
+        public CacheManager(ISportDataCache sportDataCache, ITournamentsCache tournamentsCache, ICompetitorCache competitorCache, IMatchCache matchCache)
         {
             SportDataCache = sportDataCache;
             TournamentsCache = tournamentsCache;
             CompetitorCache = competitorCache;
+            MatchCache = matchCache;
         }
     }
 }

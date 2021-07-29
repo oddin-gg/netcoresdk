@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Common;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;

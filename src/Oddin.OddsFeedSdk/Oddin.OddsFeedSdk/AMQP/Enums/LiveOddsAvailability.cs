@@ -2,7 +2,6 @@ namespace Oddin.OddsFeedSdk.AMQP.Enums
 {
     public enum LiveOddsAvailability
     {
-        UNKNOWN,
         NOT_AVAILABLE,
         AVAILABLE
     }
@@ -13,8 +12,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Enums
             => source switch
             {
                 "not_available" => LiveOddsAvailability.NOT_AVAILABLE,
-                "available" => LiveOddsAvailability.AVAILABLE,
-                _ => LiveOddsAvailability.UNKNOWN
+                _ => LiveOddsAvailability.AVAILABLE
             };
     }
 }

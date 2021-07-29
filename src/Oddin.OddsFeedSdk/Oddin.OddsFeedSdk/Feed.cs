@@ -105,10 +105,11 @@ namespace Oddin.OddsFeedSdk
                 .AddSingleton<ISportDataBuilder, SportDataBuilder>()
                 .AddSingleton<IExceptionWrapper, ExceptionWrapper>()
                 .AddSingleton<IApiCacheManager, ApiCacheManager>()
-                .AddSingleton<ISportDataCache, SportDataCache>()
                 .AddSingleton<ICacheManager, CacheManager>()
+                .AddSingleton<ISportDataCache, SportDataCache>()
                 .AddSingleton<ITournamentsCache, TournamentsCache>()
                 .AddSingleton<ICompetitorCache, CompetitorCache>()
+                .AddSingleton<IMatchCache, MatchCache>()
                 .BuildServiceProvider();
 
         private bool IsOpened()
