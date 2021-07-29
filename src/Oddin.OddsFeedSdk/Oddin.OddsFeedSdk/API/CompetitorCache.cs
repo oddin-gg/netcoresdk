@@ -18,8 +18,8 @@ namespace Oddin.OddsFeedSdk.API
 
         private readonly IApiClient _apiClient;
 
-        private readonly MemoryCache _cache = MemoryCache.Default;
-        private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly MemoryCache _cache = new MemoryCache(nameof(CompetitorCache));
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         public CompetitorCache(IApiClient apiClient)
         {
@@ -30,7 +30,7 @@ namespace Oddin.OddsFeedSdk.API
 
         public LocalizedCompetitor GetCompetitor(URN id, IEnumerable<CultureInfo> cultures)
         {
-            _semaphore.WaitOne();
+            _semaphore.Wait();
             try
             {
                 var alreadyExisting = _cache.Get(id.ToString()) as LocalizedCompetitor;

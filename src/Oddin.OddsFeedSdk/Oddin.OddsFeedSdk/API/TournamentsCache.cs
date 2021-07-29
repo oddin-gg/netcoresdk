@@ -26,14 +26,13 @@ namespace Oddin.OddsFeedSdk.API
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(TournamentsCache));
 
         private readonly IApiClient _apiClient;
-        private readonly MemoryCache _cache;
+        private readonly MemoryCache _cache = new MemoryCache(nameof(TournamentsCache));
 
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
 
         public TournamentsCache(IApiClient apiClient)
         {
             _apiClient = apiClient;
-            _cache = MemoryCache.Default;
         }
 
         // TODO: Subscribe + dispose to events from api

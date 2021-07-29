@@ -18,7 +18,7 @@ namespace Oddin.OddsFeedSdk.API
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(SportDataCache));
 
         private readonly IApiClient _apiClient;
-        private readonly MemoryCache _cache;
+        private readonly MemoryCache _cache = new MemoryCache(nameof(SportDataCache));
         private readonly IList<CultureInfo> _loadedLocales = new List<CultureInfo>();
 
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
@@ -26,8 +26,6 @@ namespace Oddin.OddsFeedSdk.API
         public SportDataCache(IApiClient apiClient)
         {
             _apiClient = apiClient;
-            
-            _cache = MemoryCache.Default;
         }
 
         public async Task<IEnumerable<URN>> GetSports(IEnumerable<CultureInfo> cultures)
