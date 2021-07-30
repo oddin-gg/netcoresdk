@@ -1,4 +1,5 @@
-﻿using Oddin.OddsFeedSdk.API.Abstractions;
+using Oddin.OddsFeedSdk.API.Abstractions;
+using System;
 using System.Net;
 
 namespace Oddin.OddsFeedSdk.API
@@ -6,15 +7,20 @@ namespace Oddin.OddsFeedSdk.API
     internal class RequestResult<TData> : IRequestResult<TData>
         where TData : class
     {
-        public TData Data { get; set; }
+        private TData _data;
+        public TData Data
+        {
+            get => Successful ? _data : throw new InvalidOperationException("Unable to get data from failed result");
+            init => _data = Data;
+        }
 
-        public bool Successful { get; set; }
+        public bool Successful { get; init; }
 
-        public string Message { get; set; }
+        public string Message { get; init; }
 
-        public HttpStatusCode ResponseCode { get; set; }
+        public HttpStatusCode ResponseCode { get; init; }
 
-        public string RawData { get; set; }
+        public string RawData { get; init; }
 
         public static RequestResult<TData> Success(TData data, HttpStatusCode responseCode, string rawData, string successMessage = "")
             => new RequestResult<TData>()
@@ -26,10 +32,9 @@ namespace Oddin.OddsFeedSdk.API
                 RawData = rawData
             };
 
-        public static RequestResult<TData> Failure(HttpStatusCode responseCode = default, string rawData = "", string failureMessage = "", TData data = default)
+        public static RequestResult<TData> Failure(HttpStatusCode responseCode = default, string rawData = "", string failureMessage = "")
             => new RequestResult<TData>()
             {
-                Data = data,
                 Successful = false,
                 Message = failureMessage,
                 ResponseCode = responseCode,

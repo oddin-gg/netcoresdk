@@ -5,6 +5,7 @@
     <AssemblyName>Oddin.OddsFeedSdk</AssemblyName>
     <RootNamespace>Oddin.OddsFeedSdk</RootNamespace>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
