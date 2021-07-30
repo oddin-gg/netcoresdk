@@ -33,6 +33,9 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         teamExtended GetCompetitorProfile(URN id, CultureInfo culture);
 
         MatchSummaryModel GetMatchSummary(URN sportEventId, CultureInfo desiredCulture);
+
         FixturesEndpointModel GetFixture(URN id, CultureInfo culture);
+
+        MatchStatusModel GetMatchStatusDescriptions(CultureInfo culture);
     }
 }

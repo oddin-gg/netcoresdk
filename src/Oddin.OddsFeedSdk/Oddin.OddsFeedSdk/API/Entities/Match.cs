@@ -28,7 +28,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public ITournament Tournament => FetchTournament();
 
-        // TODO: public IMatchStatus Status { get; }
+        public IMatchStatus Status
+            => _sportDataBuilder.BuildMatchStatus(Id, _cultures);
 
         public IFixture Fixture
             => _sportDataBuilder.BuildFixture(Id, _cultures);
@@ -111,9 +112,11 @@ namespace Oddin.OddsFeedSdk.API.Entities
             _cultures = cultures;
         }
 
+        // TODO: Subscribe and dispose to data  from feed and api
+
         private LocalizedMatch FetchMatch(IEnumerable<CultureInfo> cultures)
         {
-            var item = _matchCache.GetMatch(Id, _cultures);
+            var item = _matchCache.GetMatch(Id, cultures);
 
             if (item is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
                 throw new ItemNotFoundException(Id.ToString(), "Unable to fetch competitor");

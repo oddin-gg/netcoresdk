@@ -35,7 +35,7 @@ namespace Oddin.OddsFeedSdk.API
             {
                 var alreadyExisting = _cache.Get(id.ToString()) as LocalizedCompetitor;
                 var localesExisting = alreadyExisting?.LoadedLocals ?? new List<CultureInfo>();
-                var toFetch = localesExisting.Except(cultures);
+                var toFetch = cultures.Except(localesExisting);
 
                 if(toFetch.Any())
                 {

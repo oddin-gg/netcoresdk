@@ -43,6 +43,16 @@ namespace Oddin.OddsFeedSdk.API
             _defaultCulture = config.DefaultLocale;
         }
 
+        public MatchStatusModel GetMatchStatusDescriptions(CultureInfo culture)
+        {
+            if (culture is null)
+                culture = _defaultCulture;
+
+            var route = $"/descriptions/${culture.TwoLetterISOLanguageName}/match_status";
+            var result = _restClient.SendRequest<MatchStatusModel>(route, HttpMethod.Get);
+            return result.Data;
+        }
+
         public FixturesEndpointModel GetFixture(URN id, CultureInfo culture)
         {
             if (id is null)

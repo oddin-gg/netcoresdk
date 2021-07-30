@@ -10,6 +10,8 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 
         LiveOddsAvailability? LiveOddsAvailability { get; }
 
+        IMatchStatus Status { get; }
+
         IEnumerable<ITeamCompetitor> Competitors { get; }
 
         ITeamCompetitor HomeCompetitor { get; }

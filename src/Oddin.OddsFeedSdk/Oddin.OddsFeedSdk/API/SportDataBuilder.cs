@@ -17,6 +17,8 @@ namespace Oddin.OddsFeedSdk.API
         private readonly ITournamentsCache _tournamentsCache;
         private readonly ICompetitorCache _competitorCache;
         private readonly IMatchCache _matchCache;
+        private readonly IMatchStatusCache _matchStatusCache;
+        private readonly ILocalizedStaticDataCache _localizedStaticDataCache;
         private readonly IFixtureCache _fixtureCache;
         private readonly IFeedConfiguration _configuration;
 
@@ -25,6 +27,8 @@ namespace Oddin.OddsFeedSdk.API
             ITournamentsCache tournamentsCache,
             ICompetitorCache competitorCache,
             IMatchCache matchCache,
+            IMatchStatusCache matchStatusCache,
+            ILocalizedStaticDataCache localizedStaticDataCache,
             IFixtureCache fixtureCache,
             IFeedConfiguration configuration)
         {
@@ -32,6 +36,8 @@ namespace Oddin.OddsFeedSdk.API
             _tournamentsCache = tournamentsCache;
             _competitorCache = competitorCache;
             _matchCache = matchCache;
+            _matchStatusCache = matchStatusCache;
+            _localizedStaticDataCache = localizedStaticDataCache;
             _fixtureCache = fixtureCache;
             _configuration = configuration;
         }
@@ -121,6 +127,16 @@ namespace Oddin.OddsFeedSdk.API
                 sportId,
                 _matchCache,
                 this,
+                _configuration.ExceptionHandlingStrategy,
+                cultures);
+        }
+
+        public IMatchStatus BuildMatchStatus(URN id, IEnumerable<CultureInfo> cultures)
+        {
+            return new MatchStatus(
+                id,
+                _matchStatusCache,
+                _localizedStaticDataCache,
                 _configuration.ExceptionHandlingStrategy,
                 cultures);
         }

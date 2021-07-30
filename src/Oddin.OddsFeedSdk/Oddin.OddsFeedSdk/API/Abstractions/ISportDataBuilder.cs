@@ -25,5 +25,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         ICompetitor BuildCompetitor(URN id, IEnumerable<CultureInfo> cultures);
 
         IFixture BuildFixture(URN id, IEnumerable<CultureInfo> cultures);
+
+        IMatchStatus BuildMatchStatus(URN id, IEnumerable<CultureInfo> cultures);
     }
 }
