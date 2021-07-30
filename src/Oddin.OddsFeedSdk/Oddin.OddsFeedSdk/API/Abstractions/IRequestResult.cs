@@ -1,8 +1,9 @@
-﻿using System.Net;
+using System.Globalization;
+using System.Net;
 
 namespace Oddin.OddsFeedSdk.API.Abstractions
 {
-    public interface IRequestResult<TData>
+    public interface IRequestResult<out TData>
         where TData : class
     {
         TData Data { get; }
@@ -14,5 +15,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         HttpStatusCode ResponseCode { get; }
 
         string RawData { get; }
+
+        CultureInfo Culture { get; }
     }
 }

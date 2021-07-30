@@ -1,17 +1,20 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Exceptions;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal class RestClient : IRestClient
+    internal class RestClient : IRestClient, IDisposable
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(RestClient));
 
@@ -19,6 +22,7 @@ namespace Oddin.OddsFeedSdk.API
         private readonly bool _useSsl;
         private readonly int _timeoutSeconds;
         private readonly HttpClient _httpClient = new HttpClient();
+        private readonly Subject<IRequestResult<object>> _publisher = new ();
 
         public RestClient(IFeedConfiguration config)
         {
@@ -32,7 +36,8 @@ namespace Oddin.OddsFeedSdk.API
 
         public async Task<RequestResult<TData>> SendRequestAsync<TData>(
             string route, 
-            HttpMethod method, 
+            HttpMethod method,
+            CultureInfo culture = null,
             object objectToBeSent = null, 
             (string key, object value)[] parameters = default,
             bool deserializeResponse = true,
@@ -40,7 +45,9 @@ namespace Oddin.OddsFeedSdk.API
             )
             where TData : class
         {
-            var result = await SendRequestGetResult<TData>(route, method, objectToBeSent, parameters, deserializeResponse, ignoreUnsuccessfulStatusCode);
+            var result = await SendRequestGetResult<TData>(route, method, culture, objectToBeSent, parameters, deserializeResponse, ignoreUnsuccessfulStatusCode);
+
+            //todo: missing try-catch from SendRequest
 
             if (result.Successful == false)
             {
@@ -54,12 +61,15 @@ namespace Oddin.OddsFeedSdk.API
                     response: result.RawData);
             }
 
+            _publisher.OnNext(result);
+
             return result;
         }
 
         public RequestResult<TData> SendRequest<TData>(
             string route, 
-            HttpMethod method, 
+            HttpMethod method,
+            CultureInfo culture = null,
             object objectToBeSent = null, 
             (string key, object value)[] parameters = default,
             bool deserializeResponse = true,
@@ -70,7 +80,7 @@ namespace Oddin.OddsFeedSdk.API
             RequestResult<TData> result;
             try
             {
-                result = SendRequestGetResult<TData>(route, method, objectToBeSent, parameters, deserializeResponse, ignoreUnsuccessfulStatusCode)
+                result = SendRequestGetResult<TData>(route, method, culture, objectToBeSent, parameters, deserializeResponse, ignoreUnsuccessfulStatusCode)
                     .GetAwaiter()
                     .GetResult();
             }
@@ -98,12 +108,15 @@ namespace Oddin.OddsFeedSdk.API
                     response: result.RawData);
             }
 
+            _publisher.OnNext(result);
+
             return result;
         }
 
         private async Task<RequestResult<TData>> SendRequestGetResult<TData>(
             string route, 
-            HttpMethod method, 
+            HttpMethod method,
+            CultureInfo culture,
             object objectToBeSent = null, 
             (string key, object value)[] parameters = default,
             bool deserializeResponse = true,
@@ -144,7 +157,8 @@ namespace Oddin.OddsFeedSdk.API
                     return RequestResult<TData>.Success(
                         data: default,
                         responseCode: httpResponse.StatusCode,
-                        rawData: requestResultString);
+                        rawData: requestResultString,
+                        culture: culture);
                 else
                     return RequestResult<TData>.Failure(
                         failureMessage: $"Received failure http status code: {httpResponse?.StatusCode} {httpResponse?.ReasonPhrase}",
@@ -155,7 +169,8 @@ namespace Oddin.OddsFeedSdk.API
                 return RequestResult<TData>.Success(
                     data: default,
                     responseCode: httpResponse.StatusCode,
-                    rawData: requestResultString);
+                    rawData: requestResultString,
+                    culture: culture);
 
             if (XmlHelper.TryDeserialize<TData>(requestResultString, out var responseDto) == false)
                 return RequestResult<TData>.Failure(
@@ -172,7 +187,8 @@ namespace Oddin.OddsFeedSdk.API
             return RequestResult<TData>.Success(
                 data: responseDto,
                 responseCode: httpResponse.StatusCode,
-                rawData: requestResultString);
+                rawData: requestResultString,
+                culture: culture);
         }
 
 
@@ -218,5 +234,9 @@ namespace Oddin.OddsFeedSdk.API
 
             return Flurl.Url.Combine($"http{https}://{_apiHost}/", route);
         }
+
+        public IObservable<T> SubscribeForClass<T>() => _publisher.OfType<T>();
+
+        public void Dispose() => _publisher.OnCompleted();
     }
 }

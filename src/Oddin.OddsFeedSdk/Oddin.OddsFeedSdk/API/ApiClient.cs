@@ -8,6 +8,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using System.Reactive.Subjects;
+using System.Reactive.Linq;
 
 namespace Oddin.OddsFeedSdk.API
 {
@@ -16,6 +19,7 @@ namespace Oddin.OddsFeedSdk.API
         private readonly IApiModelMapper _apiModelMapper;
         private readonly IRestClient _restClient;
         private readonly CultureInfo _defaultCulture;
+        private readonly Subject<object> _publisher = new Subject<object>();
 
         public ApiClient(IApiModelMapper apiModelMapper, IFeedConfiguration config, IRestClient restClient)
         {
@@ -100,7 +104,7 @@ namespace Oddin.OddsFeedSdk.API
                 culture = _defaultCulture;
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/competitors/{id}/profile";
-            var result = _restClient.SendRequest<competitorProfileEndpoint>(route, HttpMethod.Get);
+            var result = _restClient.SendRequest<competitorProfileEndpoint>(route, HttpMethod.Get, culture);
             return result.Data.competitor;
 
         }
@@ -114,7 +118,7 @@ namespace Oddin.OddsFeedSdk.API
                 culture = _defaultCulture;
             
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/tournaments/{id}/info";
-            var result = _restClient.SendRequest<TournamentInfoModel>(route, HttpMethod.Get);
+            var result = _restClient.SendRequest<TournamentInfoModel>(route, HttpMethod.Get, culture);
             return result.Data;
         }
         
@@ -127,7 +131,7 @@ namespace Oddin.OddsFeedSdk.API
                 culture = _defaultCulture;
             
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sports/{sportId}/tournaments";
-            var result = _restClient.SendRequest<TournamentsModel>(route, HttpMethod.Get);
+            var result = _restClient.SendRequest<TournamentsModel>(route, HttpMethod.Get, culture);
             return result.Data;
         }
 
@@ -137,7 +141,7 @@ namespace Oddin.OddsFeedSdk.API
                 culture = _defaultCulture;
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sports";
-            var result = await _restClient.SendRequestAsync<SportsModel>(route, HttpMethod.Get);
+            var result = await _restClient.SendRequestAsync<SportsModel>(route, HttpMethod.Get, culture);
             return result.Data;
         }
 
@@ -159,7 +163,7 @@ namespace Oddin.OddsFeedSdk.API
             var culture = desiredCulture is null ? _defaultCulture : desiredCulture;
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sport_events/{sportEventId}/summary";
 
-            var response = await _restClient.SendRequestAsync<MatchSummaryModel>(route, HttpMethod.Get);
+            var response = await _restClient.SendRequestAsync<MatchSummaryModel>(route, HttpMethod.Get, culture);
             return _apiModelMapper.MapMatchSummary(response.Data);
         }
 
@@ -168,7 +172,7 @@ namespace Oddin.OddsFeedSdk.API
             var culture = desiredCulture ?? _defaultCulture;
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sport_events/{sportEventId}/summary";
 
-            var response = _restClient.SendRequest<MatchSummaryModel>(route, HttpMethod.Get);
+            var response = _restClient.SendRequest<MatchSummaryModel>(route, HttpMethod.Get, culture);
             return response.Data;
         }
 
@@ -225,5 +229,7 @@ namespace Oddin.OddsFeedSdk.API
 
             await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters, deserializeResponse: false);
         }
+
+        public IObservable<T> SubscribeForClass<T>() => _restClient.SubscribeForClass<T>();
     }
 }

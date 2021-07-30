@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Runtime.Caching;
 using System.Threading;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,7 @@ using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal class MatchCache : IMatchCache
+    internal class MatchCache : IMatchCache, IDisposable
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(MatchCache));
 
@@ -21,10 +22,39 @@ namespace Oddin.OddsFeedSdk.API
         private readonly MemoryCache _cache = new MemoryCache(nameof(MatchCache));
 
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly IDisposable _subscription;
 
         public MatchCache(IApiClient apiClient)
         {
             _apiClient = apiClient;
+
+            _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
+                .Subscribe(response =>
+                {
+                    if (response.Culture is null || response.Data is null)
+                        return;
+
+                    var tournaments = response.Data switch
+                    {
+                        FixturesEndpointModel f => new List<sportEvent> { f.fixture },
+                        ScheduleEndpointModel s => s.sport_event.ToList(),
+                        TournamentScheduleModel t => t.sport_events.SelectMany(s => s).ToList(),
+                        _ => new List<sportEvent>(),
+                    };
+
+                    if (tournaments.Any())
+                    {
+                        _semaphore.WaitOne();
+                        try
+                        {
+                            HandleMatchData(response.Culture, tournaments);
+                        }
+                        finally
+                        {
+                            _semaphore.Release();
+                        }
+                    }
+                });
         }
 
         // TODO: Subscribe + dispose to events from api
@@ -114,9 +144,20 @@ namespace Oddin.OddsFeedSdk.API
             _cache.Set(id.ToString(), item, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromHours(12) });
         }
 
+        private void HandleMatchData(CultureInfo culture, List<sportEvent> tournaments)
+        {
+            foreach(var tournament in tournaments)
+            {
+                var id = new URN(tournament.id);
+                RefreshOrInsertItem(id, culture, tournament);
+            }
+        }
+
         public void ClearCacheItem(URN id)
         {
             _cache.Remove(id.ToString());
         }
+
+        public void Dispose() => _subscription.Dispose();
     }
 }

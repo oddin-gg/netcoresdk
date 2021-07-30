@@ -1,5 +1,6 @@
 using Oddin.OddsFeedSdk.API.Abstractions;
 using System;
+using System.Globalization;
 using System.Net;
 
 namespace Oddin.OddsFeedSdk.API
@@ -22,14 +23,17 @@ namespace Oddin.OddsFeedSdk.API
 
         public string RawData { get; init; }
 
-        public static RequestResult<TData> Success(TData data, HttpStatusCode responseCode, string rawData, string successMessage = "")
+        public CultureInfo Culture { get; init; }
+
+        public static RequestResult<TData> Success(TData data, HttpStatusCode responseCode, string rawData, string successMessage = "", CultureInfo culture = default)
             => new RequestResult<TData>()
             {
                 Data = data,
                 Successful = true,
                 Message = successMessage,
                 ResponseCode = responseCode,
-                RawData = rawData
+                RawData = rawData,
+                Culture = culture,
             };
 
         public static RequestResult<TData> Failure(HttpStatusCode responseCode = default, string rawData = "", string failureMessage = "")
