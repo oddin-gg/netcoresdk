@@ -143,7 +143,7 @@ namespace Oddin.OddsFeedSdk.API
 
         public IEnumerable<IMatch> GetListOfMatches(int startIndex, int limit, CultureInfo culture = null)
         {
-            if (startIndex < 0)
+            if (startIndex < 0) 
                 throw new ArgumentException("Requires startIndex >= 0", nameof(startIndex));
 
             if (limit > 1000 || limit < 1)
