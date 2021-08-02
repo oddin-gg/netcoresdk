@@ -20,7 +20,6 @@ namespace Oddin.OddsFeedSdk.API
 
         private readonly IApiClient _apiClient;
         private readonly MemoryCache _cache = new MemoryCache(nameof(MatchCache));
-
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
         private readonly IDisposable _subscription;
 
@@ -56,8 +55,6 @@ namespace Oddin.OddsFeedSdk.API
                     }
                 });
         }
-
-        // TODO: Subscribe + dispose to events from api
 
         public LocalizedMatch GetMatch(URN id, IEnumerable<CultureInfo> cultures)
         {

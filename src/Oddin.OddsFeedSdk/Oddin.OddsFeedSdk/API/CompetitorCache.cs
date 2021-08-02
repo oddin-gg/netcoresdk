@@ -12,25 +12,53 @@ using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal class CompetitorCache : ICompetitorCache
+    internal class CompetitorCache : ICompetitorCache, IDisposable
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(CompetitorCache));
 
         private readonly IApiClient _apiClient;
-
         private readonly MemoryCache _cache = new MemoryCache(nameof(CompetitorCache));
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly IDisposable _subscription;
 
         public CompetitorCache(IApiClient apiClient)
         {
             _apiClient = apiClient;
-        }
 
-        // TODO: Subscribe
+            _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
+                .Subscribe(response =>
+                {
+                    if (response.Culture is null || response.Data is null)
+                        return;
+
+                    var competitors = response.Data switch
+                    {
+                        FixturesEndpointModel f => f.fixture.competitors.ToArray(),
+                        MatchSummaryModel m => m.sport_event.competitors.ToArray(),
+                        ScheduleEndpointModel s => s.sport_event.SelectMany(e => e.competitors).ToArray(),
+                        TournamentScheduleModel t => t.tournament.SelectMany(e => e.competitors).ToArray(),
+                        TournamentInfoModel t => t.competitors.ToArray(),
+                        _ => new team[0]
+                    };
+
+                    if (competitors.Any())
+                    {
+                        _semaphore.WaitOne();
+                        try
+                        {
+                            HandleTeamData(response.Culture, competitors);
+                        }
+                        finally
+                        {
+                            _semaphore.Release();
+                        }
+                    }
+                });
+        }
 
         public LocalizedCompetitor GetCompetitor(URN id, IEnumerable<CultureInfo> cultures)
         {
-            _semaphore.Wait();
+            _semaphore.WaitOne();
             try
             {
                 var alreadyExisting = _cache.Get(id.ToString()) as LocalizedCompetitor;
@@ -76,7 +104,7 @@ namespace Oddin.OddsFeedSdk.API
             }
         }
 
-        private void RefreshOrInsertItem(URN id, CultureInfo culture, teamExtended data)
+        private void RefreshOrInsertItem(URN id, CultureInfo culture, team data)
         {
             if (_cache.Get(id.ToString()) is LocalizedCompetitor item)
             {
@@ -110,5 +138,16 @@ namespace Oddin.OddsFeedSdk.API
         {
             _cache.Remove(id.ToString());
         }
+
+        private void HandleTeamData(CultureInfo culture, team[] teams)
+        {
+            foreach(var team in teams)
+            {
+                var id = new URN(team.id);
+                RefreshOrInsertItem(id, culture, team);
+            }
+        }
+
+        public void Dispose() => _subscription.Dispose();
     }
 }

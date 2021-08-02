@@ -22,10 +22,55 @@ namespace Oddin.OddsFeedSdk.API
         private readonly IList<CultureInfo> _loadedLocales = new List<CultureInfo>();
 
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly IDisposable _subscription;
 
         public SportDataCache(IApiClient apiClient)
         {
             _apiClient = apiClient;
+            _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
+                .Subscribe(response =>
+                {
+                    if (response.Culture is null || response.Data is null)
+                        return;
+
+                    var tournamentData = response.Data switch
+                    {
+                        TournamentScheduleModel t => t.tournament.ToDictionary(t => t.id, t => t.sport),
+                        TournamentInfoModel t => new Dictionary<string, sport> { { t.tournament.id, t.tournament.sport } },
+                        _ => new Dictionary<string, sport>()
+                    };
+
+                    if (tournamentData.Any())
+                    {
+                        _semaphore.WaitOne();
+                        try
+                        {
+                            HandleTournamentData(response.Culture, tournamentData);
+                        }
+                        finally
+                        {
+                            _semaphore.Release();
+                        }
+                    }
+                });
+        }
+
+        private void HandleTournamentData(CultureInfo culture, Dictionary<string, sport> tournamentData)
+        {
+            foreach (var tournament in tournamentData)
+            {
+                var tournamentId = new URN(tournament.Key);
+                var sportId = new URN(tournament.Key);
+
+                RefreshOrInsertItem(sportId, culture, tournament.Value);
+                var sport = _cache.Get(sportId.ToString()) as LocalizedSport;
+                if (sport is not null)
+                {
+                    var sportTournaments = sport.TournamentIds.ToList();
+                    sportTournaments.Add(tournamentId);
+                    sport.TournamentIds = sportTournaments;
+                }
+            }
         }
 
         public async Task<IEnumerable<URN>> GetSports(IEnumerable<CultureInfo> cultures)
@@ -106,8 +151,6 @@ namespace Oddin.OddsFeedSdk.API
             }
         }
 
-        // TODO: handle tournament data from events
-
         private async Task LoadAndCacheItem(IEnumerable<CultureInfo> cultures)
         {
             foreach (var culture in cultures)
@@ -139,7 +182,7 @@ namespace Oddin.OddsFeedSdk.API
             }
         }
 
-        private void RefreshOrInsertItem(URN id, CultureInfo culture, sportExtended sport = null, URN tournamentId = null)
+        private void RefreshOrInsertItem(URN id, CultureInfo culture, sport sport = null, URN tournamentId = null)
         {
             var localizedSportItem = _cache.Get(id.ToString());
 
@@ -162,6 +205,6 @@ namespace Oddin.OddsFeedSdk.API
             _cache.Set(id.ToString(), localizedSport, policy);
         }
 
-        public void Dispose() => throw new NotImplementedException(); // Dispose subscribtion
+        public void Dispose() => _subscription.Dispose();
     }
 }

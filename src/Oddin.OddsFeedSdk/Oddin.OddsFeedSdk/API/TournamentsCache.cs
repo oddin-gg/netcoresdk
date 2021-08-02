@@ -21,7 +21,7 @@ namespace Oddin.OddsFeedSdk.API
         void ClearCacheItem(URN id);
     }
 
-    internal class TournamentsCache : ITournamentsCache
+    internal class TournamentsCache : ITournamentsCache, IDisposable
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(TournamentsCache));
 
@@ -29,13 +29,61 @@ namespace Oddin.OddsFeedSdk.API
         private readonly MemoryCache _cache = new MemoryCache(nameof(TournamentsCache));
 
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly IDisposable _subscription;
 
         public TournamentsCache(IApiClient apiClient)
         {
             _apiClient = apiClient;
+
+            _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
+                .Subscribe(response =>
+                {
+                    if (response.Culture is null || response.Data is null)
+                        return;
+
+                    var tournaments = response.Data switch
+                    {
+                        FixturesEndpointModel f => new tournament[] { f.fixture.tournament },
+                        TournamentsModel t => t.tournament.ToArray(),
+                        MatchSummaryModel m => new tournament[] { m.sport_event.tournament },
+                        ScheduleEndpointModel s => s.sport_event.Select(t => t.tournament).ToArray(),
+                        TournamentScheduleModel t => t.tournament.ToArray(),
+                        SportTournamentsModel s => s.tournaments?.ToArray() ?? new tournament[0],
+                        _ => new tournament[0]
+                    };
+
+                    if (tournaments.Any())
+                    {
+                        _semaphore.WaitOne();
+                        try
+                        {
+                            HandleTournamentsData(response.Culture, tournaments);
+                        }
+                        finally
+                        {
+                            _semaphore.Release();
+                        }
+                    }
+
+                });
         }
 
-        // TODO: Subscribe + dispose to events from api
+        private void HandleTournamentsData(CultureInfo culture, tournament[] tournaments)
+        {
+            foreach(var tournament in tournaments)
+            {
+                var id = new URN(tournament.id);
+
+                try
+                {
+                    RefreshOrInsertItem(id, culture, tournament);
+                }
+                catch (Exception ex)
+                {
+                    _log.LogError(ex, "Failed to refresh or load tournament");
+                }
+            }
+        }
 
         public LocalizedTournament GetTournament(URN id, IEnumerable<CultureInfo> cultures)
         {
@@ -97,7 +145,7 @@ namespace Oddin.OddsFeedSdk.API
             }
         }
 
-        internal void RefreshOrInsertItem(URN id, CultureInfo culture, tournamentExtended model)
+        internal void RefreshOrInsertItem(URN id, CultureInfo culture, tournament model)
         {
             if (_cache.Get(id.ToString()) is LocalizedTournament item)
             {
@@ -121,9 +169,10 @@ namespace Oddin.OddsFeedSdk.API
 
             item.Name[culture] = model.name;
 
-            if(model.competitors != null && model.competitors.Any())
+
+            if (model is tournamentExtended modelExtended && modelExtended.competitors.Any())
             {
-                var ids = model.competitors.Select(c => new URN(c.id));
+                var ids = modelExtended.competitors.Select(c => new URN(c.id));
                 var alreadyExistingIds = item.CompetitorIds.ToHashSet();
                 
                 foreach(var competitorId in ids)
@@ -139,5 +188,7 @@ namespace Oddin.OddsFeedSdk.API
         {
             _cache.Remove(id.ToString());
         }
+
+        public void Dispose() => _subscription.Dispose();
     }
 }
