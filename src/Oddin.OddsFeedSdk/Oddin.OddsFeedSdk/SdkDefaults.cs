@@ -1,4 +1,4 @@
-﻿namespace Oddin.OddsFeedSdk
+namespace Oddin.OddsFeedSdk
 {
     internal class SdkDefaults
     {
@@ -9,6 +9,10 @@
         internal const string IntegrationApiHost = "api-mq.integration.oddin.gg";
         
         internal const int DefaultPort = 5672;
+
+        internal const int UnknownProducerId = 99;
+
+        internal const int StatefulRecoveryWindowInMinutes = 4320;
 
         internal const int MinInactivitySeconds = 10;
         internal const int MaxInactivitySeconds = 20;
