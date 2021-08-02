@@ -9,5 +9,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         ICompetitorCache CompetitorCache { get; }
 
         IMatchCache MatchCache { get; }
+
+        ILocalizedStaticDataCache LocalizedStaticDataCache { get; }
     }
 }

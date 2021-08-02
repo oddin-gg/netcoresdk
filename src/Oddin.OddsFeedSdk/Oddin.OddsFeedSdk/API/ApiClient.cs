@@ -43,12 +43,53 @@ namespace Oddin.OddsFeedSdk.API
             _defaultCulture = config.DefaultLocale;
         }
 
+        public fixtureChangesEndpoint GetFixtureChanges(CultureInfo culture)
+        {
+            if (culture is null)
+                culture = _defaultCulture;
+
+            var route = $"v1/sports/${culture.TwoLetterISOLanguageName}/fixtures/changes";
+            var result = _restClient.SendRequest<fixtureChangesEndpoint>(route, HttpMethod.Get);
+            return result.Data;
+        }
+
+        public scheduleEndpoint GetSchedule(int startIndex, int limit, CultureInfo culture)
+        {
+            if (culture is null)
+                culture = _defaultCulture;
+
+            var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/schedules/pre/schedule?start={startIndex}&limit={limit}";
+            var result = _restClient.SendRequest<scheduleEndpoint>(route, HttpMethod.Get);
+            return result.Data;
+        }
+
+        public scheduleEndpoint GetLiveMatches(CultureInfo culture)
+        {
+            if (culture is null)
+                culture = _defaultCulture;
+
+            var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/schedules/live/schedule";
+            var result = _restClient.SendRequest<scheduleEndpoint>(route, HttpMethod.Get);
+            return result.Data;
+        }
+
+        public scheduleEndpoint GetMatches(DateTime dateToGet, CultureInfo culture)
+        {
+            if (culture is null)
+                culture = _defaultCulture;
+
+            var dateRoute = dateToGet.ToUniversalTime().ToString("yyyy-MM-dd");
+            var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/schedules/{dateRoute}/schedule";
+            var result = _restClient.SendRequest<scheduleEndpoint>(route, HttpMethod.Get);
+            return result.Data;
+        }
+
         public MatchStatusModel GetMatchStatusDescriptions(CultureInfo culture)
         {
             if (culture is null)
                 culture = _defaultCulture;
 
-            var route = $"/descriptions/${culture.TwoLetterISOLanguageName}/match_status";
+            var route = $"v1/descriptions/{culture.TwoLetterISOLanguageName}/match_status";
             var result = _restClient.SendRequest<MatchStatusModel>(route, HttpMethod.Get);
             return result.Data;
         }
@@ -61,7 +102,7 @@ namespace Oddin.OddsFeedSdk.API
             if (culture is null)
                 culture = _defaultCulture;
 
-            var route = $"/sports/{culture.TwoLetterISOLanguageName}/sport_events/{id}/fixture";
+            var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sport_events/{id}/fixture";
             var result = _restClient.SendRequest<FixturesEndpointModel>(route, HttpMethod.Get);
             return result.Data;
         }
@@ -74,7 +115,7 @@ namespace Oddin.OddsFeedSdk.API
             if (culture is null)
                 culture = _defaultCulture;
 
-            var route = $"/sports/{culture.TwoLetterISOLanguageName}/competitors/{id}/profile";
+            var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/competitors/{id}/profile";
             var result = _restClient.SendRequest<competitorProfileEndpoint>(route, HttpMethod.Get);
             return result.Data.competitor;
 
@@ -88,7 +129,7 @@ namespace Oddin.OddsFeedSdk.API
             if (culture is null)
                 culture = _defaultCulture;
             
-            var route = $"/sports/{culture.TwoLetterISOLanguageName}/tournaments/{id}/info";
+            var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/tournaments/{id}/info";
             var result = _restClient.SendRequest<TournamentInfoModel>(route, HttpMethod.Get);
             return result.Data;
         }

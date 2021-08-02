@@ -20,7 +20,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
 
         IEnumerable<IMatch> BuildMatches(IEnumerable<URN> ids, IEnumerable<CultureInfo> cultures);
 
-        IMatch BuildMatch(URN id, URN sportId, IEnumerable<CultureInfo> cultures);
+        IMatch BuildMatch(URN id, IEnumerable<CultureInfo> cultures, URN sportId = null);
 
         ICompetitor BuildCompetitor(URN id, IEnumerable<CultureInfo> cultures);
 

@@ -120,7 +120,7 @@ namespace Oddin.OddsFeedSdk.API
                     cultures));
         }
 
-        public IMatch BuildMatch(URN id, URN sportId, IEnumerable<CultureInfo> cultures)
+        public IMatch BuildMatch(URN id, IEnumerable<CultureInfo> cultures, URN sportId = null)
         {
             return new Match(
                 id,
