@@ -1,8 +1,9 @@
+using System;
 using Oddin.OddsFeedSdk.API.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal class CacheManager : ICacheManager
+    internal class CacheManager : ICacheManager, IDisposable
     {
         public ILocalizedStaticDataCache LocalizedStaticDataCache { get; }
 
@@ -16,6 +17,8 @@ namespace Oddin.OddsFeedSdk.API
 
         public IMatchCache MatchCache { get; }
 
+        public IMatchStatusCache MatchStatusCache { get; }
+
         public CacheManager(
             ISportDataCache sportDataCache,
             ITournamentsCache tournamentsCache,
@@ -23,6 +26,7 @@ namespace Oddin.OddsFeedSdk.API
             IMatchCache matchCache,
             ILocalizedStaticDataCache localizedStaticDataCache,
             IFixtureCache fixtureCache,
+            IMatchStatusCache matchStatusCache,
             IMarketDescriptionCache marketDescriptionCache)
         {
             SportDataCache = sportDataCache;
@@ -31,7 +35,17 @@ namespace Oddin.OddsFeedSdk.API
             MatchCache = matchCache;
             LocalizedStaticDataCache = localizedStaticDataCache;
             FixtureCache = fixtureCache;
+            MatchStatusCache = matchStatusCache;
             MarketDescriptionCache = marketDescriptionCache;
+        }
+
+        public void Dispose()
+        {
+            CompetitorCache.Dispose();
+            MatchCache.Dispose();
+            TournamentsCache.Dispose();
+            SportDataCache.Dispose();
+            MatchStatusCache.Dispose();
         }
     }
 }

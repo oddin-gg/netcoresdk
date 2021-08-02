@@ -14,7 +14,7 @@ using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal class MatchCache : IMatchCache, IDisposable
+    internal class MatchCache : IMatchCache
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(MatchCache));
 

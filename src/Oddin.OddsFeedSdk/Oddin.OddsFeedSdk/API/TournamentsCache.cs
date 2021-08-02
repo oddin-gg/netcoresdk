@@ -12,7 +12,7 @@ using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal interface ITournamentsCache
+    internal interface ITournamentsCache : IDisposable
     {
         LocalizedTournament GetTournament(URN id, IEnumerable<CultureInfo> cultures);
 
@@ -21,7 +21,7 @@ namespace Oddin.OddsFeedSdk.API
         void ClearCacheItem(URN id);
     }
 
-    internal class TournamentsCache : ITournamentsCache, IDisposable
+    internal class TournamentsCache : ITournamentsCache
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(TournamentsCache));
 

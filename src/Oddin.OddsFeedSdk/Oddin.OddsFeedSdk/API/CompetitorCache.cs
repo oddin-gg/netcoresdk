@@ -12,7 +12,7 @@ using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal class CompetitorCache : ICompetitorCache, IDisposable
+    internal class CompetitorCache : ICompetitorCache
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(CompetitorCache));
 

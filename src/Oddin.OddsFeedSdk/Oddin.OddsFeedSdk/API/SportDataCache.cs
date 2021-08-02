@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal class SportDataCache : ISportDataCache, IDisposable
+    internal class SportDataCache : ISportDataCache
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(SportDataCache));
 
