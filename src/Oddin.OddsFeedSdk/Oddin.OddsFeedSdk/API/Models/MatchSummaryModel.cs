@@ -417,6 +417,18 @@ namespace Oddin.OddsFeedSdk.API.Models
                 this.match_status_codeField = value;
             }
         }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int home_won_rounds { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int away_won_rounds { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int home_kills { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int away_kills { get; set; }
     }
 
     /// <remarks/>
@@ -790,5 +802,10 @@ namespace Oddin.OddsFeedSdk.API.Models
                 this.match_status_codeFieldSpecified = value;
             }
         }
+
+        [System.Xml.Serialization.XmlAttribute()]
+        public bool scoreboard_available { get; set; }
+
+        public ScoreboardModel scoreboard { get; set; }
     }
 }
