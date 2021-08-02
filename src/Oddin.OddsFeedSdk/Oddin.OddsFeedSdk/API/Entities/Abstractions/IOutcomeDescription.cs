@@ -1,9 +1,15 @@
-﻿namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
+using System.Globalization;
+
+namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 {
     public interface IOutcomeDescription
     {
-        public string Id { get; }
+        long Id { get; }
 
-        public string Name { get; }
+        long? RefId { get; }
+
+        string GetName(CultureInfo culture);
+
+        string GetDescription(CultureInfo culture);
     }
 }

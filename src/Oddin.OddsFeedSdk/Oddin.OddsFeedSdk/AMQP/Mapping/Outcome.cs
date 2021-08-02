@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -21,10 +21,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         {
             var marketDescriptions = await _apiClient.GetMarketDescriptionsAsync(culture);
 
-            foreach (var marketDescription in marketDescriptions)
-                foreach (var outcomeDescription in marketDescription.Outcomes)
-                    if (outcomeDescription.Id == Id)
-                        return outcomeDescription.Name;
+            foreach (var marketDescription in marketDescriptions.market)
+                foreach (var outcomeDescription in marketDescription.outcomes)
+                    if (outcomeDescription.id == Id)
+                        return outcomeDescription.name;
 
             return null;
         }

@@ -173,20 +173,12 @@ namespace Oddin.OddsFeedSdk.API
             return response.Data;
         }
 
-        public async Task<IEnumerable<IMarketDescription>> GetMarketDescriptionsAsync(CultureInfo desiredCulture = null)
+        public async Task<MarketDescriptionsModel> GetMarketDescriptionsAsync(CultureInfo desiredCulture = null)
         {
             var culture = desiredCulture is null ? _defaultCulture : desiredCulture;
             var route = $"v1/descriptions/{culture.TwoLetterISOLanguageName}/markets";
-
-            // Cache for 1 day
-            var data = await _cacheManager.Cache.GetOrCreateAsync(route, async item =>
-            {
-                item.SetSlidingExpiration(TimeSpan.FromDays(1));
-
-                var response = await _restClient.SendRequestAsync<MarketDescriptionsModel>(route, HttpMethod.Get);
-                return response.Data;
-            });
-            return _apiModelMapper.MapMarketDescriptionsList(data);
+            var response = await _restClient.SendRequestAsync<MarketDescriptionsModel>(route, HttpMethod.Get);
+            return response.Data;
         }
 
         public async Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId)

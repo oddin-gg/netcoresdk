@@ -1,13 +1,25 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 {
     public interface IMarketDescription
     {
-        public int Id { get; }
+        int Id { get; }
 
-        public string Name { get; }
+        int? RefId { get; }
 
-        public IReadOnlyCollection<IOutcomeDescription> Outcomes { get; }
+        IEnumerable<IOutcomeDescription> Outcomes { get; }
+
+        IEnumerable<ISpecifier> Specifiers { get; }
+
+        /// <summary>
+        /// Variant
+        /// </summary>
+        string OutcomeType { get; }
+
+        IEnumerable<string> Groups { get; }
+
+        string GetName(CultureInfo culture);
     }
 }

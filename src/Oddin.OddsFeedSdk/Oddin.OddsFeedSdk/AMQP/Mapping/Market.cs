@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
@@ -46,10 +46,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             try
             {
                 var marketDescriptions = await _apiClient.GetMarketDescriptionsAsync(culture);
-                return marketDescriptions
-                    .Where(m => m.Id == Id)
+                return marketDescriptions.market
+                    .Where(m => m.id == Id)
                     .First()
-                    .Name;
+                    .name;
             }
             catch (SdkException e)
             {

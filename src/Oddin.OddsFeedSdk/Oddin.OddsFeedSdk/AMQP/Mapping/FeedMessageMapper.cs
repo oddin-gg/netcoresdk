@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.AMQP.Messages;
@@ -221,18 +221,18 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 outcomes: GetOutcomeSettlements(message.Items),
                 apiClient: _apiClient,
                 exceptionHandlingStrategy: _exceptionHandlingStrategy,
-                voidReason: message.void_reasonSpecified ? message.void_reason : default);
+                voidReason: message.void_reasonSpecified ? message.void_reason : default(int?));
         }
 
         private IEnumerable<IOutcomeSettlement> GetOutcomeSettlements(betSettlementMarketOutcome[] betSettlementMarkets)
         {
             return betSettlementMarkets.Select(b =>
                 new OutcomeSettlement(
-                    b.dead_heat_factorSpecified ? b.dead_heat_factor : default,
+                    b.dead_heat_factorSpecified ? b.dead_heat_factor : default(double?),
                     b.id,
                     _apiClient,
                     b.result,
-                    b.void_factorSpecified ? b.void_factor : default));
+                    b.void_factorSpecified ? b.void_factor : default(double?)));
         }
 
         public IBetCancel<T> MapBetCancel<T>(bet_cancel message, byte[] rawMessage)

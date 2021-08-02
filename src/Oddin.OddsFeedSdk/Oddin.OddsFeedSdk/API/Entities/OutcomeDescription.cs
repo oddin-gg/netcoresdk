@@ -1,17 +1,24 @@
-﻿using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using System.Globalization;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API.Entities
 {
     internal class OutcomeDescription : IOutcomeDescription
     {
-        public string Id { get; }
+        private readonly LocalizedOutcomeDescription _localizedOutcomeDescription;
 
-        public string Name { get; }
+        public long Id { get; }
 
-        public OutcomeDescription(string id, string name)
+        public long? RefId => _localizedOutcomeDescription?.RefId;
+
+        public string GetName(CultureInfo culture) => _localizedOutcomeDescription?.Name[culture];
+
+        public string GetDescription(CultureInfo culture) => _localizedOutcomeDescription?.Description[culture];
+
+        public OutcomeDescription(long id, LocalizedOutcomeDescription localizedOutcomeDescription)
         {
             Id = id;
-            Name = name;
+            _localizedOutcomeDescription = localizedOutcomeDescription;
         }
     }
 }

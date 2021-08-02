@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.API.Abstractions;
+using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
@@ -35,53 +35,6 @@ namespace Oddin.OddsFeedSdk.API
             catch (Exception e)
             {
                 throw new MappingException($"An exception was thrown while mapping an object of type {model.GetType().Name} to object of type {typeof(IBookmakerDetails).Name}!", e);
-            }
-        }
-
-        private IOutcomeDescription MapOutcomeDescription(outcome_descriptionOutcome model)
-        {
-            if (model is null)
-                throw new ArgumentNullException($"{typeof(outcome_descriptionOutcome).Name} argument cannot be null!");
-
-            return new OutcomeDescription(
-                model.id,
-                model.name);
-        }
-
-        private IMarketDescription MapMarketDescription(market_description model)
-        {
-            if (model is null)
-                throw new ArgumentNullException($"{typeof(market_description).Name} argument cannot be null!");
-
-            var outcomes = new List<IOutcomeDescription>();
-            if (model.outcomes is null == false)
-                foreach (var outcome in model.outcomes)
-                    outcomes.Add(MapOutcomeDescription(outcome));
-
-            return new MarketDescription(
-                model.id,
-                model.name,
-                outcomes);
-        }
-
-        public IEnumerable<IMarketDescription> MapMarketDescriptionsList(MarketDescriptionsModel model)
-        {
-            try
-            {
-                if (model is null)
-                    throw new ArgumentNullException($"{typeof(MarketDescriptionsModel).Name} argument cannot be null!");
-
-                if (model?.market is null)
-                    throw new ArgumentException($"{typeof(MarketDescriptionsModel).Name}.{nameof(model.market)} cannot be null!");
-
-                var result = new List<IMarketDescription>();
-                foreach (var marketDescription in model.market)
-                    result.Add(MapMarketDescription(marketDescription));
-                return result;
-            }
-            catch (Exception e)
-            {
-                throw new MappingException($"An exception was thrown while mapping an object of type {model.GetType().Name} to object of type {typeof(List<IMarketDescription>).Name}!", e);
             }
         }
 
