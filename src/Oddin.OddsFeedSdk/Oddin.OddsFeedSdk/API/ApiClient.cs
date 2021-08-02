@@ -12,33 +12,18 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal interface IApiCacheManager 
-    {
-        MemoryCache Cache { get; }
-    }
-
-    // TODO: Refactore whole api cache manager
-    internal class ApiCacheManager : IApiCacheManager
-    {
-        public MemoryCache Cache => _cache;
-
-        private readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
-    }
-
     internal class ApiClient : IApiClient
     {
         private readonly IApiModelMapper _apiModelMapper;
-        private readonly IApiCacheManager _cacheManager;
         private readonly IRestClient _restClient;
         private readonly CultureInfo _defaultCulture;
 
-        public ApiClient(IApiModelMapper apiModelMapper, IFeedConfiguration config, IApiCacheManager cache, IRestClient restClient)
+        public ApiClient(IApiModelMapper apiModelMapper, IFeedConfiguration config, IRestClient restClient)
         {
             if (apiModelMapper is null)
                 throw new ArgumentNullException(nameof(apiModelMapper));
 
             _apiModelMapper = apiModelMapper;
-            _cacheManager = cache;
             _restClient = restClient;
             _defaultCulture = config.DefaultLocale;
         }
@@ -160,16 +145,8 @@ namespace Oddin.OddsFeedSdk.API
         public IEnumerable<IProducer> GetProducers()
         {
             var route = "v1/descriptions/producers";
-
-            // Cache for 1 day
-            var data = _cacheManager.Cache.GetOrCreate(route, item =>
-            {
-                item.SetSlidingExpiration(TimeSpan.FromDays(1));
-
-                var response = _restClient.SendRequest<ProducersModel>(route, HttpMethod.Get);
-                return response.Data;
-            });
-            return _apiModelMapper.MapProducersList(data);
+            var response = _restClient.SendRequest<ProducersModel>(route, HttpMethod.Get);
+            return _apiModelMapper.MapProducersList(response.Data);
         }
 
         public IBookmakerDetails GetBookmakerDetails()

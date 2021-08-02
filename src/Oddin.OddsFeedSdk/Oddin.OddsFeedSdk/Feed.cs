@@ -104,7 +104,6 @@ namespace Oddin.OddsFeedSdk
                 .AddSingleton<ISportDataProvider, SportDataProvider>()
                 .AddSingleton<ISportDataBuilder, SportDataBuilder>()
                 .AddSingleton<IExceptionWrapper, ExceptionWrapper>()
-                .AddSingleton<IApiCacheManager, ApiCacheManager>()
                 .AddSingleton<ICacheManager, CacheManager>()
                 .AddSingleton<ISportDataCache, SportDataCache>()
                 .AddSingleton<ITournamentsCache, TournamentsCache>()

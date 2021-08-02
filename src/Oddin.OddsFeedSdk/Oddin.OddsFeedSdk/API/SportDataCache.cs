@@ -21,7 +21,6 @@ namespace Oddin.OddsFeedSdk.API
         private readonly MemoryCache _cache;
         private readonly IList<CultureInfo> _loadedLocales = new List<CultureInfo>();
 
-        private readonly Semaphore _loadAndCacheItemSemaphore = new Semaphore(1, 1);
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
 
         public SportDataCache(IApiClient apiClient)
@@ -113,40 +112,32 @@ namespace Oddin.OddsFeedSdk.API
 
         private async Task LoadAndCacheItem(IEnumerable<CultureInfo> cultures)
         {
-            _loadAndCacheItemSemaphore.WaitOne();
-            try
+            foreach (var culture in cultures)
             {
-                foreach (var culture in cultures)
+                SportsModel sports;
+                try
                 {
-                    SportsModel sports;
+                    sports = await _apiClient.GetSports(culture);
+                }
+                catch (Exception e)
+                {
+                    _log.LogError($"Error while fetching sports {culture.TwoLetterISOLanguageName}: {e}");
+                    continue;
+                }
+
+                foreach(var sport in sports.sport)
+                {
+                    var id = new URN(sport.id);
                     try
                     {
-                        sports = await _apiClient.GetSports(culture);
+                        RefreshOrInsertItem(id, culture, sport);
                     }
                     catch (Exception e)
                     {
-                        _log.LogError($"Error while fetching sports {culture.TwoLetterISOLanguageName}: {e}");
-                        continue;
+                        _log.LogError($"Failed to insert or refresh sport: {e}");
                     }
-
-                    foreach(var sport in sports.sport)
-                    {
-                        var id = new URN(sport.id);
-                        try
-                        {
-                            RefreshOrInsertItem(id, culture, sport);
-                        }
-                        catch (Exception e)
-                        {
-                            _log.LogError($"Failed to insert or refresh sport: {e}");
-                        }
-                    }
-                    _loadedLocales.Add(culture);
                 }
-            }
-            finally
-            {
-                _loadAndCacheItemSemaphore.Release();
+                _loadedLocales.Add(culture);
             }
         }
 
