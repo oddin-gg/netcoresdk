@@ -216,10 +216,6 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             var maxInactivityPeriod = TimeSpan.FromSeconds(_producer.MaxInactivitySeconds);
             var inactivityPeriod = receivedTimestamp.Subtract(_producer.LastTimestampBeforeDisconnect);
 
-#if DEBUG
-            Console.WriteLine(inactivityPeriod.TotalMilliseconds);
-#endif
-
             return inactivityPeriod > maxInactivityPeriod;
         }
 
