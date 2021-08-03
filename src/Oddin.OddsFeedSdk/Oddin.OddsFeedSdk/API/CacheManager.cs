@@ -8,7 +8,9 @@ namespace Oddin.OddsFeedSdk.API
         public ILocalizedStaticDataCache LocalizedStaticDataCache { get; }
 
         public IFixtureCache FixtureCache { get; }
+
         public IMarketDescriptionCache MarketDescriptionCache { get; }
+
         public ISportDataCache SportDataCache { get; }
 
         public ITournamentsCache TournamentsCache { get; }

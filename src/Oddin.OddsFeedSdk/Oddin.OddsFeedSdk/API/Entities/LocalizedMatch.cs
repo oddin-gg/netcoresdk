@@ -10,6 +10,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
     internal class LocalizedMatch : ILocalizedItem
     {
         internal URN Id { get; }
+        internal URN RefId { get; set; }
 
         internal DateTime? ScheduledTime { get; set; }
         internal DateTime? ScheduledEndTime { get; set; }

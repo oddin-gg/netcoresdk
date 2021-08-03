@@ -21,6 +21,9 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public URN Id { get; }
 
+        public URN RefId
+            => FetchTournament(_cultures)?.RefId;
+
         public string GetName(CultureInfo culture) 
             => FetchTournament(new[] { culture })?.Name?.FirstOrDefault(d => d.Key == culture).Value;
 

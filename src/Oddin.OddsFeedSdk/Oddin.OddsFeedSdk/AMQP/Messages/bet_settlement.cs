@@ -38,6 +38,20 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
 
         private int certaintyField;
 
+        private string event_refidField;
+
+        [System.Xml.Serialization.XmlElement(ElementName = "event_ref_id", IsNullable = true)]
+        public string event_refid
+        {
+            get
+            {
+                return this.event_refidField;
+            }
+            set
+            {
+                this.event_refidField = value;
+            }
+        }
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("market", IsNullable = false)]
         public betSettlementMarket[] outcomes

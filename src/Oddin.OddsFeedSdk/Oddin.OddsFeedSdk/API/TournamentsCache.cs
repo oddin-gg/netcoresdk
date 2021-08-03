@@ -14,15 +14,6 @@ using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal interface ITournamentsCache : IDisposable
-    {
-        LocalizedTournament GetTournament(URN id, IEnumerable<CultureInfo> cultures);
-
-        IEnumerable<URN> GetTournamentCompetitors(URN id, CultureInfo culture);
-        
-        void ClearCacheItem(URN id);
-    }
-
     internal class TournamentsCache : ITournamentsCache
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(TournamentsCache));

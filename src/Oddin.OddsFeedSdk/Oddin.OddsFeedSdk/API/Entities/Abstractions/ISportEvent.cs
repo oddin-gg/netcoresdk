@@ -9,6 +9,8 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
     {
         public URN Id { get; }
 
+        public URN RefId { get; }
+
         public Task<string> GetNameAsync(CultureInfo culture);
 
         public Task<URN> GetSportIdAsync();

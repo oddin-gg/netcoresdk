@@ -153,7 +153,11 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 throw new ArgumentNullException(nameof(message));
 
             var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
+            ISportEvent sportEvent = new SportEvent(
+                new URN(message.event_id),
+                string.IsNullOrEmpty(message.event_refid) ? null : new URN(message.event_refid),
+                _apiClient,
+                _exceptionHandlingStrategy);
 
             return new OddsChange<T>(
                 _producerManager.Get(message.product),
@@ -173,7 +177,12 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 throw new ArgumentNullException(nameof(message));
 
             var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
+            ISportEvent sportEvent = new SportEvent(
+                new URN(message.event_id),
+                string.IsNullOrEmpty(message.event_refid) ? null : new URN(message.event_refid),
+                _apiClient,
+                _exceptionHandlingStrategy);
+
             var marketStatus = message.market_statusSpecified
                     ? EnumParsingHelper.GetEnumFromInt<MarketStatus>(message.market_status)
                     : DEFAULT_MARKET_STATUS;
@@ -195,7 +204,11 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 throw new ArgumentNullException($"{nameof(message)}");
 
             var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
+            ISportEvent sportEvent = new SportEvent(
+                new URN(message.event_id),
+                string.IsNullOrEmpty(message.event_refid) ? null : new URN(message.event_refid),
+                _apiClient,
+                _exceptionHandlingStrategy);
 
             return new BetSettlement<T>(
                 messageTimestamp,
@@ -244,7 +257,11 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 throw new ArgumentNullException($"{nameof(message)}");
 
             var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
+            ISportEvent sportEvent = new SportEvent(
+                new URN(message.event_id),
+                string.IsNullOrEmpty(message.event_refid) ? null : new URN(message.event_refid),
+                _apiClient,
+                _exceptionHandlingStrategy);
 
             return new BetCancel<T>(
                 timestamp: messageTimestamp,
@@ -278,7 +295,11 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 throw new ArgumentNullException(nameof(message));
 
             var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            ISportEvent sportEvent = new SportEvent(new URN(message.event_id), _apiClient, _exceptionHandlingStrategy);
+            ISportEvent sportEvent = new SportEvent(
+                new URN(message.event_id),
+                string.IsNullOrEmpty(message.event_refid) ? null : new URN(message.event_refid),
+                _apiClient,
+                _exceptionHandlingStrategy);
 
             return new FixtureChange<T>(
                 timestamp: messageTimestamp,
