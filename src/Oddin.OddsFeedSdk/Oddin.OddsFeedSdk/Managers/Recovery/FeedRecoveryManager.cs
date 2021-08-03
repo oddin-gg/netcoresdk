@@ -23,6 +23,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         private readonly IRequestIdFactory _requestIdFactory;
         private readonly IAmqpClient _amqpClient;
         private IEnumerable<ProducerRecoveryManager> _producerRecoveryManagers;
+        private EventHandler<SimpleMessageEventArgs<alive>> _onAliveReceivedDelegate;
 
         public event EventHandler<FeedCloseEventArgs> Closed;
         public event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
@@ -50,19 +51,27 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             _apiClient = apiClient;
             _requestIdFactory = requestIdFactory;
             _amqpClient = amqpClient;
+
+            _onAliveReceivedDelegate = async (sender, eventArgs) => await OnAliveReceived(sender, eventArgs);
         }
 
         private void GenerateProducerRecoveryManagers()
         {
-            _producerRecoveryManagers = _producerManager.Producers
-                .Where(p => p.IsAvailable)
-                .Where(p => p.IsDisabled == false)
-                .Select(p => new ProducerRecoveryManager(_config, p, _apiClient, _requestIdFactory));
+            var result = new List<ProducerRecoveryManager>();
+            foreach (var p in _producerManager.Producers)
+            {
+                if (p.IsAvailable == false
+                    || p.IsDisabled)
+                    continue;
+
+                result.Add(new ProducerRecoveryManager(_config, p, _apiClient, _requestIdFactory));
+            }
+            _producerRecoveryManagers = result;
         }
 
         private void AttachToEvents()
         {
-            _amqpClient.AliveMessageReceived += async (sender, eventArgs) => await OnAliveReceived(sender, eventArgs);
+            _amqpClient.AliveMessageReceived += _onAliveReceivedDelegate;
             _amqpClient.SnapshotCompleteMessageReceived += OnSnapshotCompleteReceived;
 
             foreach (var prm in _producerRecoveryManagers)
@@ -75,7 +84,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private void DetachFromEvents()
         {
-            _amqpClient.AliveMessageReceived -= async (sender, eventArgs) => await OnAliveReceived(sender, eventArgs);
+            _amqpClient.AliveMessageReceived -= _onAliveReceivedDelegate;
             _amqpClient.SnapshotCompleteMessageReceived -= OnSnapshotCompleteReceived;
 
             foreach (var prm in _producerRecoveryManagers)
