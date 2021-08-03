@@ -336,6 +336,21 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         private bool scheduled_endFieldSpecified;
 
+        private string refidField;
+
+        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+        public string refid
+        {
+            get
+            {
+                return this.refidField;
+            }
+            set
+            {
+                this.refidField = value;
+            }
+        }
+
         /// <remarks/>
         public tournamentLength tournament_length
         {
