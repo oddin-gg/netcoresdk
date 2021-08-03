@@ -1,32 +1,39 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.AMQP.Abstractions;
 using Oddin.OddsFeedSdk.AMQP.EventArguments;
 using Oddin.OddsFeedSdk.AMQP.Messages;
 using Oddin.OddsFeedSdk.API.Abstractions;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Dispatch;
 using Oddin.OddsFeedSdk.Dispatch.EventArguments;
 using Oddin.OddsFeedSdk.Managers.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Oddin.OddsFeedSdk.Managers.Recovery
 {
     internal class FeedRecoveryManager : DispatcherBase, IFeedRecoveryManager
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(FeedRecoveryManager));
+        private readonly IFeedConfiguration _config;
         private readonly IProducerManager _producerManager;
         private readonly IApiClient _apiClient;
         private readonly IRequestIdFactory _requestIdFactory;
         private readonly IAmqpClient _amqpClient;
         private IEnumerable<ProducerRecoveryManager> _producerRecoveryManagers;
+        private EventHandler<SimpleMessageEventArgs<alive>> _onAliveReceivedDelegate;
 
         public event EventHandler<FeedCloseEventArgs> Closed;
         public event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
         public event EventHandler<ProducerStatusChangeEventArgs> ProducerUp;
 
-        public FeedRecoveryManager(IProducerManager producerManager, IApiClient apiClient, IRequestIdFactory requestIdFactory, IAmqpClient amqpClient)
+        public FeedRecoveryManager(IFeedConfiguration config, IProducerManager producerManager, IApiClient apiClient, IRequestIdFactory requestIdFactory, IAmqpClient amqpClient)
         {
+            if (config is null)
+                throw new ArgumentNullException(nameof(config));
+
             if (producerManager is null)
                 throw new ArgumentNullException(nameof(producerManager));
 
@@ -39,22 +46,32 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             if (amqpClient is null)
                 throw new ArgumentNullException(nameof(amqpClient));
 
+            _config = config;
             _producerManager = producerManager;
             _apiClient = apiClient;
             _requestIdFactory = requestIdFactory;
             _amqpClient = amqpClient;
+
+            _onAliveReceivedDelegate = async (sender, eventArgs) => await OnAliveReceived(sender, eventArgs);
         }
 
         private void GenerateProducerRecoveryManagers()
         {
-            _producerRecoveryManagers = _producerManager.Producers
-                .Where(p => p.IsAvailable)
-                .Where(p => p.IsDisabled == false)
-                .Select(p => new ProducerRecoveryManager(p, _apiClient, _requestIdFactory));
+            var result = new List<ProducerRecoveryManager>();
+            foreach (var p in _producerManager.Producers)
+            {
+                if (p.IsAvailable == false
+                    || p.IsDisabled)
+                    continue;
+
+                result.Add(new ProducerRecoveryManager(_config, p, _apiClient, _requestIdFactory));
+            }
+            _producerRecoveryManagers = result;
         }
 
         private void AttachToEvents()
         {
+            _amqpClient.AliveMessageReceived += _onAliveReceivedDelegate;
             _amqpClient.SnapshotCompleteMessageReceived += OnSnapshotCompleteReceived;
 
             foreach (var prm in _producerRecoveryManagers)
@@ -67,6 +84,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private void DetachFromEvents()
         {
+            _amqpClient.AliveMessageReceived -= _onAliveReceivedDelegate;
             _amqpClient.SnapshotCompleteMessageReceived -= OnSnapshotCompleteReceived;
 
             foreach (var prm in _producerRecoveryManagers)
@@ -123,7 +141,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             prm.HandleSnapshotCompletedReceived(eventArgs.FeedMessage);
         }
 
-        private void OnAliveReceived(object sender, SimpleMessageEventArgs<alive> eventArgs)
+        private async Task OnAliveReceived(object sender, SimpleMessageEventArgs<alive> eventArgs)
         {
             var producerId = eventArgs?.FeedMessage?.product;
             if (producerId.HasValue == false)
@@ -135,7 +153,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             if (TryGetProducerRecoveryManager(producerId.Value, out var prm) == false)
                 return;
 
-            prm.HandleAliveReceived(eventArgs.FeedMessage);
+            await prm.HandleAliveReceived(eventArgs.FeedMessage);
         }
 
         private void OnClosed(object sender, FeedCloseEventArgs eventArgs)

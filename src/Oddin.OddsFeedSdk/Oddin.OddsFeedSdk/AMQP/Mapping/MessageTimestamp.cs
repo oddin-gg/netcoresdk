@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping
 {
@@ -15,6 +15,14 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             Sent = sent;
             Received = received;
             Dispatched = dispatched;
+        }
+
+        public MessageTimestamp(long timestamp)
+        {
+            Created = timestamp;
+            Sent = timestamp;
+            Received = timestamp;
+            Dispatched = timestamp;
         }
     }
 }

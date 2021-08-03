@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
@@ -14,10 +14,6 @@ namespace Oddin.OddsFeedSdk.Managers
 {
     internal class ProducerManager : IProducerManager
     {
-        public const int UNKNOWN_PRODUCER_ID = 99;
-        public const int MAX_INACTIVITY_SECONDS = 10;
-        public const int STATEFUL_RECOVERY_WINDOW_MINUTES = 60;
-
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(ProducerManager));
 
         private readonly IApiClient _apiClient;
@@ -154,12 +150,12 @@ namespace Oddin.OddsFeedSdk.Managers
 
         private Producer CreateUnknownProducer()
             => new Producer(
-                UNKNOWN_PRODUCER_ID,
+                SdkDefaults.UnknownProducerId,
                 "Unknown",
                 "Unknown producer",
                 false,
                 "live|prematch",
-                MAX_INACTIVITY_SECONDS,
-                STATEFUL_RECOVERY_WINDOW_MINUTES);
+                SdkDefaults.MaxInactivitySeconds,
+                SdkDefaults.StatefulRecoveryWindowInMinutes);
     }
 }
