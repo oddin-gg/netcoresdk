@@ -12,7 +12,7 @@ namespace Oddin.OddsFeedSdk.API
         public TData Data
         {
             get => Successful ? _data : throw new InvalidOperationException("Unable to get data from failed result");
-            init => _data = Data;
+            init => _data = value;
         }
 
         public bool Successful { get; init; }

@@ -28,10 +28,9 @@ namespace Oddin.OddsFeedSdk.API
             _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
                 .Subscribe(response =>
                 {
-                    if (response.Data is null)
+                    if (response.Data is not MatchSummaryModel summary)
                         return;
 
-                    var summary = response.Data as MatchSummaryModel;
                     var id = new URN(summary.sport_event.id);
 
                     _semaphore.WaitOne();
