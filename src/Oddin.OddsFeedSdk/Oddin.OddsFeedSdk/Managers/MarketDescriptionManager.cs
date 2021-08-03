@@ -4,8 +4,9 @@ using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Exceptions;
+using Oddin.OddsFeedSdk.Managers.Abstractions;
 
-namespace Oddin.OddsFeedSdk.API
+namespace Oddin.OddsFeedSdk.Managers
 {
     internal class MarketDescriptionManager : IMarketDescriptionManager
     {
