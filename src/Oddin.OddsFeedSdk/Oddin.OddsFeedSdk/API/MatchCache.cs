@@ -6,9 +6,13 @@ using System.Reactive.Linq;
 using System.Runtime.Caching;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Oddin.OddsFeedSdk.AMQP.Abstractions;
 using Oddin.OddsFeedSdk.AMQP.Enums;
+using Oddin.OddsFeedSdk.AMQP.EventArguments;
+using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
 
@@ -19,13 +23,15 @@ namespace Oddin.OddsFeedSdk.API
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(MatchCache));
 
         private readonly IApiClient _apiClient;
+        private readonly IAmqpClient _amqpClient;
         private readonly MemoryCache _cache = new MemoryCache(nameof(MatchCache));
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
         private readonly IDisposable _subscription;
 
-        public MatchCache(IApiClient apiClient)
+        public MatchCache(IApiClient apiClient, IAmqpClient amqpClient)
         {
             _apiClient = apiClient;
+            _amqpClient = amqpClient;
 
             _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
                 .Subscribe(response =>
@@ -54,6 +60,16 @@ namespace Oddin.OddsFeedSdk.API
                         }
                     }
                 });
+
+            amqpClient.FixtureChangeMessageReceived += MatchFixtureChangeInvalidatesCache;
+        }
+
+        private void MatchFixtureChangeInvalidatesCache(object sender, SimpleMessageEventArgs<fixture_change> e)
+        {
+            var id = new URN(e.FeedMessage.event_id);
+
+            if (id.Type == "match")
+                _cache.Remove(id.ToString());
         }
 
         public LocalizedMatch GetMatch(URN id, IEnumerable<CultureInfo> cultures)
