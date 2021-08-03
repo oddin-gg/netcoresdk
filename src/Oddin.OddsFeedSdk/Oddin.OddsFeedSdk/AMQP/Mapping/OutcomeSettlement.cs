@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.AMQP.Enums;
+using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
 
@@ -14,11 +14,12 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
         internal OutcomeSettlement(
             double? deadHeatFactor,
-            string id,
+            long id,
+            long? refId,
             IApiClient client,
             int result,
             double? voidFactor)
-            : base(id, client)
+            : base(id, refId, client)
         {
             DeadHeatFactor = deadHeatFactor;
 

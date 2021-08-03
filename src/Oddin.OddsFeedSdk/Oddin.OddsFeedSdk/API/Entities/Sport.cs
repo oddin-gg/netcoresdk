@@ -37,7 +37,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public string GetName(CultureInfo culture)
         {
             var sport = FetchSport();
-            return sport.Name[culture];
+            return sport.Name?.FirstOrDefault(d => d.Key == culture).Value;
         }
 
         private LocalizedSport FetchSport()

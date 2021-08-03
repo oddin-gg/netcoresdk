@@ -18,6 +18,9 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 {
     class Program
     {
+        private static CultureInfo CultureEn = CultureInfo.GetCultureInfoByIetfLanguageTag("en");
+        private static CultureInfo CultureRu = CultureInfo.GetCultureInfoByIetfLanguageTag("ru");
+
         static async Task Main(string[] _)
         {
             var loggerFactory = CreateLoggerFactory();
@@ -43,7 +46,8 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var tasks = new List<Task>
             {
                 WorkWithRecovery(feed),
-                WorkWithSportDataProvider(feed)
+                WorkWithSportDataProvider(feed),
+                WorkWithMarketDesctiptionManager(feed)
             };
             await Task.WhenAll(tasks);
 
@@ -66,11 +70,39 @@ namespace Oddin.OddsFeedSdkDemoIntegration
         {
             var provider = feed.SportDataProvider;
 
-            var sportsEn = await provider.GetSportsAsync(CultureInfo.GetCultureInfoByIetfLanguageTag("en"));
-            var sportsRu = await provider.GetSportsAsync(CultureInfo.GetCultureInfoByIetfLanguageTag("ru"));
+            var sportsEn = await provider.GetSportsAsync(CultureEn);
+            var sportsRu = await provider.GetSportsAsync(CultureRu);
             
-            Console.WriteLine($"{sportsEn} {sportsRu}");
+            Console.WriteLine($"{sportsEn.FirstOrDefault()?.Id}");
+            Console.WriteLine($"{sportsRu.FirstOrDefault()?.Id}");
+
             Console.ReadLine();
+        }
+
+        private async static Task WorkWithMarketDesctiptionManager(Feed feed)
+        {
+            try
+            {
+                var manager = feed.MarketDescriptionManager;
+
+                var marketDescriptionsEn = manager.GetMarketDescriptions(CultureEn);
+                var marketDescriptionsRu = manager.GetMarketDescriptions(CultureRu);
+
+                var description = marketDescriptionsEn.First();
+                var specifiers = string.Join(", ", description.Specifiers.Select(s => $"Name:{s.Name} Type:{s.Type}"));
+                var outcomes = string.Join(", ", description.Outcomes.Select(o => $"Id:{o.Id}/{o.RefId} Name:{o.GetName(CultureEn)} Description:{o.GetDescription(CultureEn)}"));
+
+                Console.WriteLine($"Market Description - Id:{description.Id} RefId:{description.RefId} OutcomeType/Variant:{description.OutcomeType}");
+                Console.WriteLine($"Specifiers:{specifiers}");
+                Console.WriteLine($"Outcomes:{outcomes}");
+
+                await Task.Yield();
+                Console.ReadLine();
+            }
+            catch (Exception e)
+            {
+
+            }
         }
 
         private static ILoggerFactory CreateLoggerFactory()

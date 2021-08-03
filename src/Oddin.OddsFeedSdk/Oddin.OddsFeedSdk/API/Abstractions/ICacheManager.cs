@@ -11,6 +11,9 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         IMatchCache MatchCache { get; }
 
         ILocalizedStaticDataCache LocalizedStaticDataCache { get; }
+
         IFixtureCache FixtureCache { get; }
+
+        IMarketDescriptionCache MarketDescriptionCache { get; }
     }
 }

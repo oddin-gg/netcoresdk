@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.AMQP.Enums;
+using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
 
@@ -13,9 +13,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             bool? active,
             double? probabilities,
             IAdditionalProbabilities additionalProbabilities,
-            string outcomeId,
+            long outcomeId,
+            long? outcomeRefId,
             IApiClient apiClient)
-            : base(active, probabilities, additionalProbabilities, outcomeId, apiClient)
+            : base(active, probabilities, additionalProbabilities, outcomeId, outcomeRefId, apiClient)
         {
             _odds = odds;
         }

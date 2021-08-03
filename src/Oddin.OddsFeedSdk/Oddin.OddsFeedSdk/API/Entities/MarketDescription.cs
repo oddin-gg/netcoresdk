@@ -4,6 +4,7 @@ using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Exceptions;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace Oddin.OddsFeedSdk.API.Entities
 {
@@ -16,15 +17,16 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public int Id { get; }
 
-        public int? RefId { get; }
+        public int? RefId => FetchMarketDescription(_cultures)?.RefId;
 
-        public IEnumerable<IOutcomeDescription> Outcomes { get; }
+        public IEnumerable<IOutcomeDescription> Outcomes
+            => FetchMarketDescription(_cultures)?.Outcomes?
+                .Select(o => new OutcomeDescription(o.Key, o.Value))
+                ?? new List<OutcomeDescription>();
 
-        public IEnumerable<ISpecifier> Specifiers => throw new System.NotImplementedException(); // TODO: Implement
+        public IEnumerable<ISpecifier> Specifiers => FetchMarketDescription(_cultures)?.Specifiers;
 
-        public string OutcomeType => throw new System.NotImplementedException();
-
-        public IEnumerable<string> Groups => throw new System.NotImplementedException();
+        public string OutcomeType => _variant;
 
         public MarketDescription(
             int id,
@@ -40,9 +42,10 @@ namespace Oddin.OddsFeedSdk.API.Entities
             _cultures = cultures;
         }
 
-        public string GetName(CultureInfo culture) => throw new System.NotImplementedException();
+        public string GetName(CultureInfo culture)
+            => FetchMarketDescription(new[] { culture })?.Name?.FirstOrDefault(d => d.Key == culture).Value;
 
-        private LocalizedMarketDescription FetchMarketDescription( IEnumerable<CultureInfo> cultures)
+        private LocalizedMarketDescription FetchMarketDescription(IEnumerable<CultureInfo> cultures)
         {
             var item = _marketDescriptionCache.GetMarketDescription(Id, _variant, cultures);
 
@@ -50,7 +53,6 @@ namespace Oddin.OddsFeedSdk.API.Entities
                 throw new ItemNotFoundException(Id.ToString(), "Market description not found");
             else
                 return item;
-
         }
     }
 }

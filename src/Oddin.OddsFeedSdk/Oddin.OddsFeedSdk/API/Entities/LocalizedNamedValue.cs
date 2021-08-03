@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -22,6 +22,6 @@ namespace Oddin.OddsFeedSdk.API.Entities
             _descriptionMap = descriptionMap;
         }
 
-        public string GetDescription(CultureInfo culture) => _descriptionMap[culture];
+        public string GetDescription(CultureInfo culture) => _descriptionMap?.FirstOrDefault(d => d.Key == culture).Value;
     }
 }

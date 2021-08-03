@@ -101,6 +101,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 outcome.probabilitiesSpecified ? outcome.probabilities : default,
                 GetAdditionalProbabilities(outcome),
                 outcome.id,
+                outcome.refid,
                 _apiClient);
         }
 
@@ -230,6 +231,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 new OutcomeSettlement(
                     b.dead_heat_factorSpecified ? b.dead_heat_factor : default(double?),
                     b.id,
+                    b.refid,
                     _apiClient,
                     b.result,
                     b.void_factorSpecified ? b.void_factor : default(double?)));

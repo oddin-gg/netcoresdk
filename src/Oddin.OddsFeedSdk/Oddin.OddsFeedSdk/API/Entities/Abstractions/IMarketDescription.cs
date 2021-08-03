@@ -18,8 +18,6 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
         /// </summary>
         string OutcomeType { get; }
 
-        IEnumerable<string> Groups { get; }
-
         string GetName(CultureInfo culture);
     }
 }

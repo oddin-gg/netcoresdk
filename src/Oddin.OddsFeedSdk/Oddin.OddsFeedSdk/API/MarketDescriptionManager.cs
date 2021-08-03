@@ -1,20 +1,41 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
+using Oddin.OddsFeedSdk.Exceptions;
 
 namespace Oddin.OddsFeedSdk.API
 {
     internal class MarketDescriptionManager : IMarketDescriptionManager
     {
-        public MarketDescriptionManager()
+        private readonly IFeedConfiguration _feedConfiguration;
+        private readonly IMarketDescriptionFactory _marketDescriptionFactory;
+        private readonly ICacheManager _cacheManager;
+        private readonly IExceptionWrapper _exceptionWrapper;
+
+        public MarketDescriptionManager(
+            IFeedConfiguration feedConfiguration,
+            IMarketDescriptionFactory marketDescriptionFactory,
+            ICacheManager cacheManager,
+            IExceptionWrapper exceptionWrapper)
         {
+            _feedConfiguration = feedConfiguration;
+            _marketDescriptionFactory = marketDescriptionFactory;
+            _cacheManager = cacheManager;
+            _exceptionWrapper = exceptionWrapper;
         }
 
-        public IEnumerable<IMarketDescription> GetMarketDescriptions(CultureInfo culture = null) => throw new NotImplementedException();
+        public IEnumerable<IMarketDescription> GetMarketDescriptions(CultureInfo culture = null)
+        {
+            if (culture is null)
+                culture = _feedConfiguration.DefaultLocale;
 
-        public void DeleteVariantMarketDescriptionFromCache(int marketId, string variantValue) => throw new NotImplementedException();
+            return _exceptionWrapper.Wrap(()
+                => _marketDescriptionFactory.GetMarketDescriptions(culture));
+        }
+
+        public void DeleteVariantMarketDescriptionFromCache(int marketId, string variantValue)
+            => _cacheManager.MarketDescriptionCache.ClearCacheItem(marketId, variantValue);
     }
 }

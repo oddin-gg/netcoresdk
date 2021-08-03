@@ -7,7 +7,7 @@ namespace Oddin.OddsFeedSdk.API
         public ILocalizedStaticDataCache LocalizedStaticDataCache { get; }
 
         public IFixtureCache FixtureCache { get; }
-
+        public IMarketDescriptionCache MarketDescriptionCache { get; }
         public ISportDataCache SportDataCache { get; }
 
         public ITournamentsCache TournamentsCache { get; }
@@ -22,7 +22,8 @@ namespace Oddin.OddsFeedSdk.API
             ICompetitorCache competitorCache,
             IMatchCache matchCache,
             ILocalizedStaticDataCache localizedStaticDataCache,
-            IFixtureCache fixtureCache)
+            IFixtureCache fixtureCache,
+            IMarketDescriptionCache marketDescriptionCache)
         {
             SportDataCache = sportDataCache;
             TournamentsCache = tournamentsCache;
@@ -30,6 +31,7 @@ namespace Oddin.OddsFeedSdk.API
             MatchCache = matchCache;
             LocalizedStaticDataCache = localizedStaticDataCache;
             FixtureCache = fixtureCache;
+            MarketDescriptionCache = marketDescriptionCache;
         }
     }
 }

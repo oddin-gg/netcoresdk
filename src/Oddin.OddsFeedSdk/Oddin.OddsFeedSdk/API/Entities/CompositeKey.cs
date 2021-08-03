@@ -1,22 +1,40 @@
 using System;
+using System.Linq;
 
 namespace Oddin.OddsFeedSdk.API.Entities
 {
     internal class CompositeKey
     {
-        private readonly int _marketId;
-        private readonly string _variant;
+        public readonly int MarketId;
+        public readonly string Variant;
 
-        internal string Key => $"{_marketId}-{_variant ?? "*"}";
+        internal string Key => $"{MarketId}-{Variant ?? "*"}";
 
         public CompositeKey(int marketId, string variant)
         {
-            _marketId = marketId;
-            _variant = variant;
+            MarketId = marketId;
+            Variant = variant;
         }
 
         public override bool Equals(object obj) => obj is CompositeKey key && Key == key.Key;
 
         public override int GetHashCode() => HashCode.Combine(Key);
+
+        public override string ToString() => Key;
+
+        public static bool TryParse(string key, out CompositeKey compositeKey)
+        {
+            compositeKey = null;
+
+            var parts = key.Split('-');
+            if (parts.Count() != 2)
+                return false;
+
+            if (int.TryParse(parts[0], out var marketId) == false)
+                return false;
+
+            compositeKey = new CompositeKey(marketId, parts[1]);
+            return true;
+        }
     }
 }

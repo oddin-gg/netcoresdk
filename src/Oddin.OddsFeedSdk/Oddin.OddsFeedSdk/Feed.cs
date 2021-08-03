@@ -59,6 +59,9 @@ namespace Oddin.OddsFeedSdk
         public ISportDataProvider SportDataProvider 
             => _services.GetService<ISportDataProvider>();
 
+        public IMarketDescriptionManager MarketDescriptionManager
+            => _services.GetService<IMarketDescriptionManager>();
+
         public IBookmakerDetails BookmakerDetails
         {
             get
@@ -109,8 +112,12 @@ namespace Oddin.OddsFeedSdk
                 .AddSingleton<ITournamentsCache, TournamentsCache>()
                 .AddSingleton<ICompetitorCache, CompetitorCache>()
                 .AddSingleton<IMatchCache, MatchCache>()
+                .AddSingleton<IFixtureCache, FixtureCache>()
                 .AddSingleton<IMatchStatusCache, MatchStatusCache>()
                 .AddSingleton<ILocalizedStaticDataCache, LocalizedStaticDataOfMatchStatusCache>()
+                .AddSingleton<IMarketDescriptionManager, MarketDescriptionManager>()
+                .AddSingleton<IMarketDescriptionCache, MarketDescriptionCache>()
+                .AddSingleton<IMarketDescriptionFactory, MarketDescriptionFactory>()
                 .BuildServiceProvider();
 
         private bool IsOpened()

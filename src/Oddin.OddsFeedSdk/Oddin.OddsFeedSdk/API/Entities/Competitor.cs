@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
@@ -37,7 +38,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string GetName(CultureInfo culture)
         {
-            return FetchCompetitor(new[] { culture })?.Name?[culture];
+            return FetchCompetitor(new[] { culture })?.Name?.FirstOrDefault(d => d.Key == culture).Value;
         }
 
         private LocalizedCompetitor FetchCompetitor(IEnumerable<CultureInfo> cultures)
@@ -52,12 +53,12 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string GetCountry(CultureInfo culture)
         {
-            return FetchCompetitor(new[] { culture })?.Country?[culture];
+            return FetchCompetitor(new[] { culture })?.Country?.FirstOrDefault(d => d.Key == culture).Value;
         }
 
         public string GetAbbreviation(CultureInfo culture)
         {
-            return FetchCompetitor(new[] { culture })?.Abbreviation?[culture];
+            return FetchCompetitor(new[] { culture })?.Abbreviation?.FirstOrDefault(d => d.Key == culture).Value;
         }
     }
 

@@ -14,7 +14,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public IEnumerable<ISpecifier> Specifiers { get; set; }
 
-        public IDictionary<CultureInfo, string> Name { get; set; }
+        public IDictionary<CultureInfo, string> Name { get; } = new Dictionary<CultureInfo, string>();
 
         public LocalizedMarketDescription(int? refId, IDictionary<long, LocalizedOutcomeDescription> outcomes)
         {

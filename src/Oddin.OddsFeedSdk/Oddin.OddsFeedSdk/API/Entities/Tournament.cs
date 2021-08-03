@@ -22,7 +22,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public URN Id { get; }
 
         public string GetName(CultureInfo culture) 
-            => FetchTournament(new[] { culture })?.Name?[culture];
+            => FetchTournament(new[] { culture })?.Name?.FirstOrDefault(d => d.Key == culture).Value;
 
         public Task<string> GetNameAsync(CultureInfo culture) 
             => Task.FromResult(GetName(culture));
