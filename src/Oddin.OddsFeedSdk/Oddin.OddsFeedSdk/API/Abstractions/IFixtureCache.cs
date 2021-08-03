@@ -5,7 +5,7 @@ using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API.Abstractions
 {
-    internal interface IFixtureCache : IDisposable
+    internal interface IFixtureCache
     {
         void ClearCacheItem(URN id);
 
