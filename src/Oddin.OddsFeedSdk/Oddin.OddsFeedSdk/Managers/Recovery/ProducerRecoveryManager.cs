@@ -17,7 +17,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 {
     internal class ProducerRecoveryManager : DispatcherBase
     {
-        private const int COMMUNICATION_DELAY_SECONDS = 10;
+        private const int API_COMMUNICATION_DELAY_SECONDS = 10;
+        private const int FEED_COMMUNICATION_DELAY_MILLISECONDS = 250;
 
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(ProducerRecoveryManager));
         private readonly IFeedConfiguration _config;
@@ -29,6 +30,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         private long _requestId;
         private Timer _recoveryRequestTimer;
         private ElapsedEventHandler _recoveryRequestDelegate;
+        private Timer _aliveMessageReceivedTimer;
+        private ElapsedEventHandler _startRecoveryDelegate;
 
         public event EventHandler<FeedCloseEventArgs> Closed;
         public event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
@@ -56,6 +59,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             _requestId = -1;
 
             _recoveryRequestDelegate = async (sender, eventArgs) => await MakeRecoveryRequestToApi();
+            _startRecoveryDelegate = async (sender, eventArgs) => await StartRecovery();
         }
         
         public bool MatchesProducer(int producerId)
@@ -67,6 +71,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         {
             // INFO: _config.MaxRecoveryTime is maximum recovery execution time in seconds
             _recoveryRequestTimer = new Timer(_config.MaxRecoveryTime * 1000);
+            _recoveryRequestTimer.AutoReset = true;
             _recoveryRequestTimer.Elapsed += _recoveryRequestDelegate;
         }
 
@@ -85,16 +90,45 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             }
         }
 
+        private void AliveMessageReceivedTimerSetup()
+        {
+            _aliveMessageReceivedTimer = new Timer(_config.MaxInactivitySeconds * 1000 + FEED_COMMUNICATION_DELAY_MILLISECONDS);
+            _aliveMessageReceivedTimer.AutoReset = false;
+            _aliveMessageReceivedTimer.Elapsed += _startRecoveryDelegate;
+        }
+
+        private void AliveMessageReceivedTimerCleanup()
+        {
+            _aliveMessageReceivedTimer.Stop();
+            _aliveMessageReceivedTimer.Elapsed -= _startRecoveryDelegate;
+
+            try
+            {
+                _aliveMessageReceivedTimer.Dispose();
+            }
+            catch (Exception)
+            {
+                _log.LogWarning($"An exception was thrown when disposing {nameof(_aliveMessageReceivedTimer)} on {typeof(ProducerRecoveryManager).Name}!");
+            }
+        }
+
+        private void ResetAliveMessageReceivedTimer()
+        {
+            _aliveMessageReceivedTimer.Stop();
+            _aliveMessageReceivedTimer.Start();
+        }
+
         public void Open()
         {
-            // TODO: initialization (start timer etc.)
+            AliveMessageReceivedTimerSetup();
+            _aliveMessageReceivedTimer.Start();
 
             RecoveryRequestTimerSetup();
         }
 
         public void Close()
         {
-            // TODO: cleanup (according to Open())
+            AliveMessageReceivedTimerCleanup();
 
             RecoveryRequestTimerCleanup();
         }
@@ -109,7 +143,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         private DateTime GetRecoveryTimestamp(DateTime lastTimestampBeforeDisconnect)
         {
             // INFO: API would return an error if the timestamp was older than MaxRecoveryTime
-            var communicationDelay = TimeSpan.FromSeconds(COMMUNICATION_DELAY_SECONDS);
+            var communicationDelay = TimeSpan.FromSeconds(API_COMMUNICATION_DELAY_SECONDS);
 
             var maxRecoveryTime = TimeSpan.FromMinutes(_producer.MaxRecoveryTime);
             var oldestFeasibleTimestamp = DateTime.UtcNow.Subtract(maxRecoveryTime).Add(communicationDelay);
@@ -163,6 +197,9 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
                 return;
             }
 
+            var timestamp = message.timestamp.FromEpochTimeMilliseconds();
+            SetLastTimestampBeforeDisconnect(timestamp);
+
             CompleteRecovery();
         }
 
@@ -178,6 +215,11 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
             var maxInactivityPeriod = TimeSpan.FromSeconds(_producer.MaxInactivitySeconds);
             var inactivityPeriod = receivedTimestamp.Subtract(_producer.LastTimestampBeforeDisconnect);
+
+#if DEBUG
+            Console.WriteLine(inactivityPeriod.TotalMilliseconds);
+#endif
+
             return inactivityPeriod > maxInactivityPeriod;
         }
 
@@ -236,6 +278,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             {
                 return;
             }
+
+            ResetAliveMessageReceivedTimer();
 
             if (message.subscribed == 0
                 || AreGeneratedTimestampsTooDistant(message.timestamp.FromEpochTimeMilliseconds())
