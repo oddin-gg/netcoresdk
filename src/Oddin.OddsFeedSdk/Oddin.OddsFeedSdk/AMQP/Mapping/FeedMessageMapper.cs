@@ -116,6 +116,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
             return new MarketWithOdds(
                 oddsChangeMarket.id,
+                oddsChangeMarket.refid,
                 GetSpecifiers(oddsChangeMarket.specifiers),
                 oddsChangeMarket.extended_specifiers,
                 _apiClient,
@@ -230,6 +231,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             return new MarketWithSettlement(
                 marketStatus: marketStatus,
                 marketId: message.id,
+                refId: message.refid,
                 specifiers: GetSpecifiers(message.specifiers),
                 extentedSpecifiers: message.extended_specifiers,
                 outcomes: GetOutcomeSettlements(message.Items),
@@ -282,6 +284,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
             return new MarketCancel(
                 id: message.id,
+                refId: message.refid,
                 specifiers: GetSpecifiers(message.specifiers),
                 extentedSpecifiers: message.extended_specifiers,
                 client: _apiClient,

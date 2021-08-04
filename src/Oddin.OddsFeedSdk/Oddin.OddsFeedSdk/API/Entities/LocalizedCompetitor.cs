@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -10,6 +10,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
     internal class LocalizedCompetitor : ILocalizedItem
     {
         public URN Id { get; }
+
+        public URN RefId { get; set; }
 
         internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
 

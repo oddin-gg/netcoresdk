@@ -451,6 +451,21 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
 
         private bool cashout_statusFieldSpecified;
 
+        private int? refidField;
+
+        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+        public int? refid
+        {
+            get
+            {
+                return this.refidField;
+            }
+            set
+            {
+                this.refidField = value;
+            }
+        }
+
         /// <remarks/>
         public marketMetadata market_metadata
         {

@@ -8,9 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
 using System.Reactive.Subjects;
-using System.Reactive.Linq;
 
 namespace Oddin.OddsFeedSdk.API
 {
@@ -41,34 +39,34 @@ namespace Oddin.OddsFeedSdk.API
             return result.Data;
         }
 
-        public scheduleEndpoint GetSchedule(int startIndex, int limit, CultureInfo culture)
+        public ScheduleEndpointModel GetSchedule(int startIndex, int limit, CultureInfo culture)
         {
             if (culture is null)
                 culture = _defaultCulture;
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/schedules/pre/schedule?start={startIndex}&limit={limit}";
-            var result = _restClient.SendRequest<scheduleEndpoint>(route, HttpMethod.Get);
+            var result = _restClient.SendRequest<ScheduleEndpointModel>(route, HttpMethod.Get);
             return result.Data;
         }
 
-        public scheduleEndpoint GetLiveMatches(CultureInfo culture)
+        public ScheduleEndpointModel GetLiveMatches(CultureInfo culture)
         {
             if (culture is null)
                 culture = _defaultCulture;
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/schedules/live/schedule";
-            var result = _restClient.SendRequest<scheduleEndpoint>(route, HttpMethod.Get);
+            var result = _restClient.SendRequest<ScheduleEndpointModel>(route, HttpMethod.Get);
             return result.Data;
         }
 
-        public scheduleEndpoint GetMatches(DateTime dateToGet, CultureInfo culture)
+        public ScheduleEndpointModel GetMatches(DateTime dateToGet, CultureInfo culture)
         {
             if (culture is null)
                 culture = _defaultCulture;
 
             var dateRoute = dateToGet.ToUniversalTime().ToString("yyyy-MM-dd");
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/schedules/{dateRoute}/schedule";
-            var result = _restClient.SendRequest<scheduleEndpoint>(route, HttpMethod.Get);
+            var result = _restClient.SendRequest<ScheduleEndpointModel>(route, HttpMethod.Get);
             return result.Data;
         }
 

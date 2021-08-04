@@ -37,9 +37,13 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         FixturesEndpointModel GetFixture(URN id, CultureInfo culture);
 
         MatchStatusModel GetMatchStatusDescriptions(CultureInfo culture);
-        scheduleEndpoint GetLiveMatches(CultureInfo culture);
-        scheduleEndpoint GetMatches(DateTime dateToGet, CultureInfo culture);
-        scheduleEndpoint GetSchedule(int startIndex, int limit, CultureInfo culture);
+
+        ScheduleEndpointModel GetLiveMatches(CultureInfo culture);
+
+        ScheduleEndpointModel GetMatches(DateTime dateToGet, CultureInfo culture);
+
+        ScheduleEndpointModel GetSchedule(int startIndex, int limit, CultureInfo culture);
+
         fixtureChangesEndpoint GetFixtureChanges(CultureInfo culture);
         
         IObservable<T> SubscribeForClass<T>();

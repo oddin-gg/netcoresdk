@@ -119,6 +119,7 @@ namespace Oddin.OddsFeedSdk.API.Models
         private string liveoddsField;
 
         private string statusField;
+
         private string refidField;
 
         [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]

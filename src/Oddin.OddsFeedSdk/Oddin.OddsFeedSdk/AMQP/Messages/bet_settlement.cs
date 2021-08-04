@@ -158,7 +158,6 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class betSettlementMarket
     {
-
         private betSettlementMarketOutcome[] itemsField;
 
         private int idField;
@@ -172,6 +171,21 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         private bool void_reasonFieldSpecified;
 
         private int statusField;
+
+        private int? refidField;
+
+        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+        public int? refid
+        {
+            get
+            {
+                return this.refidField;
+            }
+            set
+            {
+                this.refidField = value;
+            }
+        }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("outcome")]

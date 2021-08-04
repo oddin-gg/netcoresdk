@@ -233,6 +233,21 @@ public partial class bet_cancel_market
 
     private bool void_reasonFieldSpecified;
 
+    private int? refidField;
+
+    [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+    public int? refid
+    {
+        get
+        {
+            return this.refidField;
+        }
+        set
+        {
+            this.refidField = value;
+        }
+    }
+
     /// <remarks/>
     [System.Xml.Serialization.XmlAttributeAttribute()]
     public int id

@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.AMQP.Enums;
+using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
@@ -17,13 +17,14 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         public MarketWithSettlement(
             MarketStatus marketStatus,
             int marketId,
+            int? refId,
             IDictionary<string, string> specifiers,
             string extentedSpecifiers,
             IEnumerable<IOutcomeSettlement> outcomes,
             IApiClient apiClient,
             ExceptionHandlingStrategy exceptionHandlingStrategy,
             int? voidReason)
-            : base(marketId, specifiers, extentedSpecifiers, apiClient, exceptionHandlingStrategy, voidReason)
+            : base(marketId, refId, specifiers, extentedSpecifiers, apiClient, exceptionHandlingStrategy, voidReason)
         {
             MarketStatus = marketStatus;
             OutcomeSettlements = outcomes.ToList().AsReadOnly();

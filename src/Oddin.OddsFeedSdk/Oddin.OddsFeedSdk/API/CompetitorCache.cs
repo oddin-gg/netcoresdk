@@ -109,6 +109,7 @@ namespace Oddin.OddsFeedSdk.API
         {
             if (_cache.Get(id.ToString()) is LocalizedCompetitor item)
             {
+                item.RefId = data.refid == null ? null : new URN(data.refid);
                 item.IsVirtual = data.virtualSpecified ? data.@virtual : default(bool?);
                 item.CountryCode = data.country_code;
             }
@@ -116,6 +117,7 @@ namespace Oddin.OddsFeedSdk.API
             {
                 item = new LocalizedCompetitor(id)
                 {
+                    RefId = data.refid == null ? null : new URN(data.refid),
                     IsVirtual = data.virtualSpecified ? data.@virtual : default(bool?),
                     CountryCode = data.country_code
                 };

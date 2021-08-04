@@ -62,7 +62,5 @@ namespace Oddin.OddsFeedSdk.Common
             => HashCode.Combine(Prefix, Type, Id);
 
         public static implicit operator string(URN urn) => urn.ToString();
-
-        public static explicit operator URN(string str) => new(str);
     }
 }
