@@ -182,24 +182,26 @@ namespace Oddin.OddsFeedSdk.API
             return response.Data;
         }
 
-        public async Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId)
+        public async Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId, int nodeId)
         {
             var route = $"v1/{producerName}/odds/events/{sportEventId}/initiate_request";
             var parameters = new (string key, object value)[]
             {
-                ("request_id", requestId)
+                ("request_id", requestId),
+                ("node_id", nodeId)
             };
 
             var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters, deserializeResponse: false, ignoreUnsuccessfulStatusCode: true);
             return (long)response.ResponseCode;
         }
 
-        public async Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId)
+        public async Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId, int nodeId)
         {
             var route = $"v1/{producerName}/stateful_messages/events/{sportEventId}/initiate_request";
             var parameters = new (string key, object value)[]
             {
-                ("request_id", requestId)
+                ("request_id", requestId),
+                ("node_id", nodeId)
             };
 
             var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters, deserializeResponse: false, ignoreUnsuccessfulStatusCode: true);

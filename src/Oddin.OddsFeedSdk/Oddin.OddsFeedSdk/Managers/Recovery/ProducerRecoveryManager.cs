@@ -207,7 +207,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         {
             if (message.request_id != _requestId)
             {
-                _log.LogInformation($"A SnapshotComplete message with incorrect request ID was received! Target producer: {_producer.Name}, received request ID: {message.request_id}, current request ID: {_requestId}");
+                // INFO: this is a valid possibility since EventRecoveryIssuer is public and allows issuing recovery requests from outside of the Sdk
                 return;
             }
 
@@ -265,8 +265,6 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
                 return _isRecoveryInProgress;
             }
         }
-
-
 
         public async Task HandleAliveReceived(alive message)
         {
