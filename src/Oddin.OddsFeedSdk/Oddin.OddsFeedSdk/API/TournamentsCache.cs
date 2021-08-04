@@ -33,6 +33,7 @@ namespace Oddin.OddsFeedSdk.API
 
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
         private readonly IDisposable _subscription;
+        private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(12);
 
         public TournamentsCache(IApiClient apiClient, IAmqpClient amqpClient)
         {
@@ -195,7 +196,7 @@ namespace Oddin.OddsFeedSdk.API
                 item.CompetitorIds = alreadyExistingIds.ToList();
             }
 
-            _cache.Set(id.ToString(), item, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromHours(12) });
+            _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
         }
 
         public void ClearCacheItem(URN id)

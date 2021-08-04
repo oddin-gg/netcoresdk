@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using System;
+using System.Runtime.Caching;
 
 namespace Oddin.OddsFeedSdk.Common
 {
@@ -22,5 +23,8 @@ namespace Oddin.OddsFeedSdk.Common
             if (exceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
                 throw exception;
         }
+
+        public static CacheItemPolicy AsCachePolicy(this TimeSpan cacheTTL)
+            => new CacheItemPolicy() { AbsoluteExpiration = DateTimeOffset.Now.Add(cacheTTL) };
     }
 }

@@ -27,6 +27,7 @@ namespace Oddin.OddsFeedSdk.API
         private readonly MemoryCache _cache = new MemoryCache(nameof(MatchStatusCache));
 
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly TimeSpan _cacheTTL = TimeSpan.FromMinutes(20);
         private readonly IDisposable _subscription;
 
         public MatchStatusCache(IApiClient apiClient, IAmqpClient ampqClient, IFeedMessageMapper feedMessageMapper)
@@ -107,7 +108,7 @@ namespace Oddin.OddsFeedSdk.API
                     item.Scoreboard = MakeFeedScoreboard(status.scoreboard);
             }
 
-            _cache.Set(id.ToString(), item, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(20) });
+            _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
         }
 
         private void RefreshOrInsertApiItem(URN id, Models.sportEventStatus summary)
@@ -142,7 +143,7 @@ namespace Oddin.OddsFeedSdk.API
                     item.Scoreboard = MakeApiScoreboard(summary.scoreboard);
             }
 
-            _cache.Set(id.ToString(), item, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromMinutes(20) });
+            _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
         }
 
         private Scoreboard MakeApiScoreboard(ScoreboardModel scoreboard)

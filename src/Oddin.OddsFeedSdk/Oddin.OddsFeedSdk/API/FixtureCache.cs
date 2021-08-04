@@ -18,6 +18,7 @@ namespace Oddin.OddsFeedSdk.API
 
         private readonly IApiClient _apiClient;
         private readonly MemoryCache _cache = new MemoryCache(nameof(FixtureCache));
+        private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(12);
 
         public FixtureCache(IApiClient apiClient)
         {
@@ -58,7 +59,7 @@ namespace Oddin.OddsFeedSdk.API
                     )
                 );
 
-            _cache.Set(id.ToString(), item, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromHours(12) });
+            _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
         }
 
         public void ClearCacheItem(URN id)

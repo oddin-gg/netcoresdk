@@ -19,6 +19,7 @@ namespace Oddin.OddsFeedSdk.API
         private readonly IApiClient _apiClient;
         private readonly MemoryCache _cache = new MemoryCache(nameof(CompetitorCache));
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(24);
         private readonly IDisposable _subscription;
 
         public CompetitorCache(IApiClient apiClient)
@@ -131,7 +132,7 @@ namespace Oddin.OddsFeedSdk.API
                 item.Country[culture] = data.country;
             }
 
-            _cache.Set(id.ToString(), item, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromHours(24) });
+            _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
         }
 
         public void ClearCacheItem(URN id)

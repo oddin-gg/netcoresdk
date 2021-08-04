@@ -26,6 +26,7 @@ namespace Oddin.OddsFeedSdk.API
         private readonly IAmqpClient _amqpClient;
         private readonly MemoryCache _cache = new MemoryCache(nameof(MatchCache));
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(12);
         private readonly IDisposable _subscription;
 
         public MatchCache(IApiClient apiClient, IAmqpClient amqpClient)
@@ -154,7 +155,7 @@ namespace Oddin.OddsFeedSdk.API
 
             item.Name[culture] = model.name;
 
-            _cache.Set(id.ToString(), item, new CacheItemPolicy() { SlidingExpiration = TimeSpan.FromHours(12) });
+            _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
         }
 
         private void HandleMatchData(CultureInfo culture, List<sportEvent> tournaments)

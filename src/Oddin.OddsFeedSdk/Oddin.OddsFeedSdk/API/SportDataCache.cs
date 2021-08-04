@@ -22,6 +22,8 @@ namespace Oddin.OddsFeedSdk.API
         private readonly IList<CultureInfo> _loadedLocales = new List<CultureInfo>();
 
         private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly TimeSpan _cacheTTL = TimeSpan.FromDays(1);
+
         private readonly IDisposable _subscription;
 
         public SportDataCache(IApiClient apiClient)
@@ -198,11 +200,7 @@ namespace Oddin.OddsFeedSdk.API
             if(tournamentId != null)
                 localizedSport.TournamentIds ??= new List<URN>();
 
-            var policy = new CacheItemPolicy()
-            {
-                SlidingExpiration = TimeSpan.FromDays(1)
-            };
-            _cache.Set(id.ToString(), localizedSport, policy);
+            _cache.Set(id.ToString(), localizedSport, _cacheTTL.AsCachePolicy());
         }
 
         public void Dispose() => _subscription.Dispose();
