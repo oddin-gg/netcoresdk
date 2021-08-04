@@ -48,11 +48,13 @@ namespace Oddin.OddsFeedSdk.API
                         _ => new tournament[0]
                     };
 
+
                     if (tournaments.Any())
                     {
                         _semaphore.WaitOne();
                         try
                         {
+                            _log.LogDebug($"Updating Tournament cache from API: {response.Data.GetType()}");
                             HandleTournamentsData(response.Culture, tournaments);
                         }
                         finally
@@ -70,8 +72,12 @@ namespace Oddin.OddsFeedSdk.API
         {
             var id = new URN(e.FeedMessage.event_id);
 
+
             if (id.Type == "match")
+            {
+                _log.LogDebug($"Invalidating Tournament cache from FEED for: {id}");
                 _cache.Remove(id.ToString());
+            }
         }
 
         private void HandleTournamentsData(CultureInfo culture, tournament[] tournaments)

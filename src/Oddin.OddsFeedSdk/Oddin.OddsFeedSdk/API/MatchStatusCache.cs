@@ -46,6 +46,7 @@ namespace Oddin.OddsFeedSdk.API
                     _semaphore.WaitOne();
                     try
                     {
+                        _log.LogDebug($"Updating Match Status cache from API: {response.Data.GetType()}");
                         RefreshOrInsertApiItem(id, summary.sport_event_status);
                     }
                     finally
@@ -61,6 +62,8 @@ namespace Oddin.OddsFeedSdk.API
         {
             if (e.FeedMessage.sport_event_status == null)
                 return;
+
+            _log.LogDebug($"Updating Match Status cache from FEED for: {e.FeedMessage.event_id}");
 
             _semaphore.WaitOne();
             try

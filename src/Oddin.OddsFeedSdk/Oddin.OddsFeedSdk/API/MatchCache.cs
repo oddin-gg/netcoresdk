@@ -48,11 +48,13 @@ namespace Oddin.OddsFeedSdk.API
                         _ => new List<sportEvent>(),
                     };
 
+
                     if (tournaments.Any())
                     {
                         _semaphore.WaitOne();
                         try
                         {
+                            _log.LogDebug($"Updating Match cache from API: {response.Data.GetType()}");
                             HandleMatchData(response.Culture, tournaments);
                         }
                         finally
@@ -70,7 +72,10 @@ namespace Oddin.OddsFeedSdk.API
             var id = new URN(e.FeedMessage.event_id);
 
             if (id.Type == "match")
+            {
+                _log.LogDebug($"Invalidating Tournament cache from FEED for: {id}");
                 _cache.Remove(id.ToString());
+            }
         }
 
         public LocalizedMatch GetMatch(URN id, IEnumerable<CultureInfo> cultures)

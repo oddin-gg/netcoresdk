@@ -47,6 +47,7 @@ namespace Oddin.OddsFeedSdk.API
                         _semaphore.WaitOne();
                         try
                         {
+                            _log.LogDebug($"Updating Competitor cache from API: {response.Data.GetType()}");
                             HandleTeamData(response.Culture, competitors);
                         }
                         finally

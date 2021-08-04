@@ -47,6 +47,7 @@ namespace Oddin.OddsFeedSdk.API
                         _semaphore.WaitOne();
                         try
                         {
+                            _log.LogDebug($"Updating SportData cache from API: {response.Data.GetType()}");
                             HandleTournamentData(response.Culture, tournamentData);
                         }
                         finally
