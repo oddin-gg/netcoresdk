@@ -1,3 +1,5 @@
+using Oddin.OddsFeedSdk.AMQP.Messages;
+
 namespace Oddin.OddsFeedSdk.AMQP.Enums
 {
     public enum EventStatus
@@ -33,5 +35,21 @@ namespace Oddin.OddsFeedSdk.AMQP.Enums
                 "interrupted" => EventStatus.Interrupted,
                 _ => EventStatus.Unknown
             };
-    }
+
+        internal static EventStatus GetEventStatusFromFeed(this eventStatus source)
+            => source switch
+            {
+                eventStatus.NotStarted => EventStatus.NotStarted,
+                eventStatus.Live => EventStatus.Live,
+                eventStatus.Suspended => EventStatus.Suspended,
+                eventStatus.Ended => EventStatus.Ended,
+                eventStatus.Closed => EventStatus.Finished,
+                eventStatus.Cancelled => EventStatus.Cancelled,
+                eventStatus.Delayed => EventStatus.Delayed,
+                eventStatus.Interrupted => EventStatus.Interrupted,
+                eventStatus.Postponed => EventStatus.Postponed,
+                eventStatus.Abandoned => EventStatus.Abandoned,
+                _ => EventStatus.Unknown
+            };
+	}
 }
