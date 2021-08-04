@@ -214,9 +214,32 @@ namespace Oddin.OddsFeedSdk
             ((FeedRecoveryManager)_feedRecoveryManager).ProducerUp -= OnProducerUp;
         }
 
+        private void ValidateMessageInterestsCombination()
+        {
+            if (_sessions.Count == 0)
+                throw new InvalidOperationException("Cannot open the feed when there are no sessions created!");
+
+            if (_sessions.Count == 1)
+                return;
+
+            var allMessageInterests = _sessions.Select(s => ((OddsFeedSession)s).MessageInterest.MessageInterestType);
+            if (allMessageInterests.Count() != allMessageInterests.Distinct().Count())
+                throw new InvalidOperationException("There are duplicate message interests across created sessions!");
+
+            if (allMessageInterests.Contains(MessageInterestType.All))
+                throw new InvalidOperationException("AllMessages interest can be used only if it's there is a single session created!");
+
+            var hasPriority = allMessageInterests.Any(mi => mi == MessageInterestType.HighPriority || mi == MessageInterestType.LowPriority);
+            var hasMessages = allMessageInterests.Any(mi => mi == MessageInterestType.Prematch || mi == MessageInterestType.Live);
+            if (hasPriority && hasMessages)
+                throw new InvalidOperationException("Cannot combine priority message interest (high priority / low priority) with other types (prematch / live)!");
+        }
+
         public void Open()
         {
             _log.LogInformation($"Opening {typeof(Feed).Name}...");
+
+            ValidateMessageInterestsCombination();
 
             if (TrySetAsOpened() == false)
                 throw new InvalidOperationException($"{nameof(Open)} cannot be called when the feed is already opened!");
@@ -234,6 +257,7 @@ namespace Oddin.OddsFeedSdk
                 foreach (var openSession in _sessions.Where(s => s.IsOpened()))
                     openSession.Close();
 
+                DetachFromEvents();
                 SetAsClosed();
                 throw;
             }
