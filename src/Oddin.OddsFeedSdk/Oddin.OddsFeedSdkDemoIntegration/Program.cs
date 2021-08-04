@@ -23,6 +23,9 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
         static async Task Main(string[] _)
         {
+            var ctrlCPressed = new TaskCompletionSource<bool>();
+            Console.CancelKeyPress += (s, e) => { e.Cancel = true; ctrlCPressed.TrySetResult(true); };
+
             var loggerFactory = CreateLoggerFactory();
 
             var config = Feed
@@ -47,10 +50,10 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             {
                 WorkWithRecovery(feed),
                 WorkWithSportDataProvider(feed),
-                WorkWithMarketDesctiptionManager(feed)
+                WorkWithMarketDesctiptionManager(feed),
+                ctrlCPressed.Task
             };
             await Task.WhenAll(tasks);
-
             feed.Close();
 
             DetachEvents(feed);
@@ -75,8 +78,6 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             
             Console.WriteLine($"{sportsEn.FirstOrDefault()?.Id}");
             Console.WriteLine($"{sportsRu.FirstOrDefault()?.Id}");
-
-            Console.ReadLine();
         }
 
         private async static Task WorkWithMarketDesctiptionManager(Feed feed)
@@ -95,9 +96,6 @@ namespace Oddin.OddsFeedSdkDemoIntegration
                 Console.WriteLine($"Market Description - Id:{description.Id} RefId:{description.RefId} OutcomeType/Variant:{description.OutcomeType}");
                 Console.WriteLine($"Specifiers:{specifiers}");
                 Console.WriteLine($"Outcomes:{outcomes}");
-
-                await Task.Yield();
-                Console.ReadLine();
             }
             catch (Exception e)
             {
