@@ -78,6 +78,9 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private void RecoveryRequestTimerCleanup()
         {
+            if (_recoveryRequestTimer is null)
+                return;
+
             _recoveryRequestTimer.Stop();
             _recoveryRequestTimer.Elapsed -= _recoveryRequestDelegate;
 
@@ -100,6 +103,9 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private void AliveMessageReceivedTimerCleanup()
         {
+            if (_aliveMessageReceivedTimer is null)
+                return;
+
             _aliveMessageReceivedTimer.Stop();
             _aliveMessageReceivedTimer.Elapsed -= _startRecoveryDelegate;
 
@@ -115,12 +121,18 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private void ResetAliveMessageReceivedTimer()
         {
+            if (_config.Environment == SdkEnvironment.Replay)
+                return;
+
             _aliveMessageReceivedTimer.Stop();
             _aliveMessageReceivedTimer.Start();
         }
 
         public void Open()
         {
+            if (_config.Environment == SdkEnvironment.Replay)
+                return;
+
             AliveMessageReceivedTimerSetup();
             _aliveMessageReceivedTimer.Start();
 
@@ -166,8 +178,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private async Task StartRecovery()
         {
-            // TODO: if (replayOnly) return;
-            if (TrySetIsRecoveryInProgress() == false)
+            if (_config.Environment == SdkEnvironment.Replay
+                || TrySetIsRecoveryInProgress() == false)
                 return;
 
             ((Producer)_producer).SetProducerDown(true);
