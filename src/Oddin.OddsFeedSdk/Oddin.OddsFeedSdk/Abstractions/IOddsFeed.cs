@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.API.Abstractions;
+using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Dispatch.EventArguments;
 using Oddin.OddsFeedSdk.Managers.Abstractions;
@@ -18,6 +18,8 @@ namespace Oddin.OddsFeedSdk.Abstractions
         IEventRecoveryRequestIssuer EventRecoveryRequestIssuer { get; }
 
         IBookmakerDetails BookmakerDetails { get; }
+
+        IMarketDescriptionManager MarketDescriptionManager { get; }
 
         IOddsFeedSessionBuilder CreateBuilder();
 
