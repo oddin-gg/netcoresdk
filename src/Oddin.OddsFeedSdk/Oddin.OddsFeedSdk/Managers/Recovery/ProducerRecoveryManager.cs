@@ -17,8 +17,9 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 {
     internal class ProducerRecoveryManager : DispatcherBase
     {
-        private const int API_COMMUNICATION_DELAY_SECONDS = 10;
-        private const int FEED_COMMUNICATION_DELAY_MILLISECONDS = 250;
+        private const int TOLERABLE_API_COMMUNICATION_DELAY_SECONDS = 5;
+        private const int TOLERABLE_FEED_COMMUNICATION_DELAY_MILLISECONDS = 50;
+        private const int TOLERABLE_MESSAGE_TIMESTAMP_DELAY_MILLISECONDS = 10;
 
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(ProducerRecoveryManager));
         private readonly IFeedConfiguration _config;
@@ -77,6 +78,9 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private void RecoveryRequestTimerCleanup()
         {
+            if (_recoveryRequestTimer is null)
+                return;
+
             _recoveryRequestTimer.Stop();
             _recoveryRequestTimer.Elapsed -= _recoveryRequestDelegate;
 
@@ -92,13 +96,16 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private void AliveMessageReceivedTimerSetup()
         {
-            _aliveMessageReceivedTimer = new Timer(_config.MaxInactivitySeconds * 1000 + FEED_COMMUNICATION_DELAY_MILLISECONDS);
+            _aliveMessageReceivedTimer = new Timer(_config.MaxInactivitySeconds * 1000 + TOLERABLE_FEED_COMMUNICATION_DELAY_MILLISECONDS);
             _aliveMessageReceivedTimer.AutoReset = false;
             _aliveMessageReceivedTimer.Elapsed += _startRecoveryDelegate;
         }
 
         private void AliveMessageReceivedTimerCleanup()
         {
+            if (_aliveMessageReceivedTimer is null)
+                return;
+
             _aliveMessageReceivedTimer.Stop();
             _aliveMessageReceivedTimer.Elapsed -= _startRecoveryDelegate;
 
@@ -114,12 +121,18 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private void ResetAliveMessageReceivedTimer()
         {
+            if (_config.Environment == SdkEnvironment.Replay)
+                return;
+
             _aliveMessageReceivedTimer.Stop();
             _aliveMessageReceivedTimer.Start();
         }
 
         public void Open()
         {
+            if (_config.Environment == SdkEnvironment.Replay)
+                return;
+
             AliveMessageReceivedTimerSetup();
             _aliveMessageReceivedTimer.Start();
 
@@ -143,10 +156,10 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         private DateTime GetRecoveryTimestamp(DateTime lastTimestampBeforeDisconnect)
         {
             // INFO: API would return an error if the timestamp was older than MaxRecoveryTime
-            var communicationDelay = TimeSpan.FromSeconds(API_COMMUNICATION_DELAY_SECONDS);
+            var tolerableCommunicationDelay = TimeSpan.FromSeconds(TOLERABLE_API_COMMUNICATION_DELAY_SECONDS);
 
             var maxRecoveryTime = TimeSpan.FromMinutes(_producer.MaxRecoveryTime);
-            var oldestFeasibleTimestamp = DateTime.UtcNow.Subtract(maxRecoveryTime).Add(communicationDelay);
+            var oldestFeasibleTimestamp = DateTime.UtcNow.Subtract(maxRecoveryTime).Add(tolerableCommunicationDelay);
             return lastTimestampBeforeDisconnect > oldestFeasibleTimestamp
                 ? lastTimestampBeforeDisconnect
                 : oldestFeasibleTimestamp;
@@ -165,7 +178,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private async Task StartRecovery()
         {
-            if (TrySetIsRecoveryInProgress() == false)
+            if (_config.Environment == SdkEnvironment.Replay
+                || TrySetIsRecoveryInProgress() == false)
                 return;
 
             ((Producer)_producer).SetProducerDown(true);
@@ -215,8 +229,9 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
             var maxInactivityPeriod = TimeSpan.FromSeconds(_producer.MaxInactivitySeconds);
             var inactivityPeriod = receivedTimestamp.Subtract(_producer.LastTimestampBeforeDisconnect);
+            var tolerableDelay = TimeSpan.FromMilliseconds(TOLERABLE_MESSAGE_TIMESTAMP_DELAY_MILLISECONDS);
 
-            return inactivityPeriod > maxInactivityPeriod;
+            return inactivityPeriod > (maxInactivityPeriod + tolerableDelay);
         }
 
         /// <summary>
@@ -255,20 +270,6 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         public async Task HandleAliveReceived(alive message)
         {
-            // INFO: there are 3 possible reasons to request recovery (if it hasn't been already requested), see documentation section 2.4.7
-            //  - message.subscribed == 0
-            //  - (message.timestamp - previous_message.timestamp) > 10 seconds
-            //  - real time between receptions of two consecutive alive messages > 10 seconds
-
-            // TODO:
-            //  - check if any of the 3 reasons above occured
-            //  - call
-            //      await _apiClient.PostRecoveryRequest(producer.Name, _requestIdFactory.GetNext(), nodeId, dateAfter); -- if timestamp of last received message is known (property isn't prepared)
-            //      or
-            //      await _apiClient.PostRecoveryRequest(producer.Name, _requestIdFactory.GetNext(), nodeId); -- otherwise
-            //  - mark recovery as started (set _producer.RecoveryInfo accordingly)
-            //  - invoke ProducerDown event (pass _producer to eventArgs
-
             if (_producer.IsAvailable == false
                 || _producer.IsDisabled == true)
             {
