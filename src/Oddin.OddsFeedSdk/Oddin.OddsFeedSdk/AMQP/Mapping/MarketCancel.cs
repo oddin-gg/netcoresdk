@@ -11,12 +11,13 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
         internal MarketCancel(
             int id,
+            int? refId,
             IDictionary<string, string> specifiers,
             string extentedSpecifiers,
             IApiClient client,
             ExceptionHandlingStrategy exceptionHandlingStrategy,
             int? voidReason)
-            : base(id, specifiers, extentedSpecifiers, client, exceptionHandlingStrategy)
+            : base(id, refId, specifiers, extentedSpecifiers, client, exceptionHandlingStrategy)
         {
             VoidReason = voidReason;
         }

@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.AMQP.Enums;
+using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
@@ -18,6 +18,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
         public MarketWithOdds(
             int marketId,
+            int? refId,
             IDictionary<string, string> specifiers,
             string extendedSpecifiers,
             IApiClient apiClient,
@@ -26,7 +27,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             bool isFavorite,
             IEnumerable<IOutcomeOdds> outcomeOdds,
             IMarketMetadata marketMetadata)
-            : base(marketId, specifiers, extendedSpecifiers, apiClient, exceptionHandlingStrategy)
+            : base(marketId, refId, specifiers, extendedSpecifiers, apiClient, exceptionHandlingStrategy)
         {
             Status = marketStatus;
             IsFavorite = isFavorite;

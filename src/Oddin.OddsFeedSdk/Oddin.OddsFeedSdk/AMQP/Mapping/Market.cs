@@ -21,11 +21,13 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
         public int Id { get; }
 
+        public int? RefId { get; }
+
         public IReadOnlyDictionary<string, string> Specifiers { get; }
 
         public string ExtendedSpecifiers { get; }
 
-        public Market(int id, IDictionary<string, string> specifiers, string extendedSpecifiers, IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy)
+        public Market(int id, int? refId, IDictionary<string, string> specifiers, string extendedSpecifiers, IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
             if (specifiers is null)
                 throw new ArgumentNullException(nameof(specifiers));
@@ -34,6 +36,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 throw new ArgumentNullException(nameof(apiClient));
 
             Id = id;
+            RefId = refId;
             Specifiers = specifiers as IReadOnlyDictionary<string, string>;
             ExtendedSpecifiers = extendedSpecifiers;
 

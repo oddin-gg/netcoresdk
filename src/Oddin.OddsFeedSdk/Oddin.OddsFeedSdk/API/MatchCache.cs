@@ -127,6 +127,7 @@ namespace Oddin.OddsFeedSdk.API
 
             if (_cache.Get(id.ToString()) is LocalizedMatch item)
             {
+                item.RefId = string.IsNullOrEmpty(model.refid) ? null : new URN(model.refid);
                 item.ScheduledTime = model.scheduledSpecified ? model.scheduled : default(DateTime?);
                 item.ScheduledEndTime = model.scheduled_endSpecified ? model.scheduled_end : default(DateTime?);
                 item.SportId = new URN(model.tournament.sport.id);
@@ -141,6 +142,7 @@ namespace Oddin.OddsFeedSdk.API
             {
                 item = new LocalizedMatch(id)
                 {
+                    RefId = string.IsNullOrEmpty(model.refid) ? null : new URN(model.refid),
                     ScheduledTime = model.scheduledSpecified ? model.scheduled : default(DateTime?),
                     ScheduledEndTime = model.scheduled_endSpecified ? model.scheduled_end : default(DateTime?),
                     SportId = new URN(model.tournament.sport.id),

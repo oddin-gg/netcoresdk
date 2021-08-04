@@ -47,6 +47,21 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         private int odds_change_reasonField;
     
         private bool odds_change_reasonFieldSpecified;
+
+        private string event_refidField;
+
+        [System.Xml.Serialization.XmlElement(ElementName = "event_ref_id", IsNullable = true)]
+        public string event_refid
+        {
+            get
+            {
+                return this.event_refidField;
+            }
+            set
+            {
+                this.event_refidField = value;
+            }
+        }
     
         /// <remarks/>
         public sportEventStatus sport_event_status {
@@ -435,6 +450,21 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         private int cashout_statusField;
 
         private bool cashout_statusFieldSpecified;
+
+        private int? refidField;
+
+        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+        public int? refid
+        {
+            get
+            {
+                return this.refidField;
+            }
+            set
+            {
+                this.refidField = value;
+            }
+        }
 
         /// <remarks/>
         public marketMetadata market_metadata

@@ -9,6 +9,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
     {
         internal URN Id { get; }
 
+        internal URN RefId { get; set; }
+
         internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
 
         internal IEnumerable<URN> TournamentIds { get; set; } = null;

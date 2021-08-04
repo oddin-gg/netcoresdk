@@ -14,15 +14,6 @@ using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API
 {
-    internal interface ITournamentsCache : IDisposable
-    {
-        LocalizedTournament GetTournament(URN id, IEnumerable<CultureInfo> cultures);
-
-        IEnumerable<URN> GetTournamentCompetitors(URN id, CultureInfo culture);
-        
-        void ClearCacheItem(URN id);
-    }
-
     internal class TournamentsCache : ITournamentsCache
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(TournamentsCache));
@@ -164,6 +155,7 @@ namespace Oddin.OddsFeedSdk.API
         {
             if (_cache.Get(id.ToString()) is LocalizedTournament item)
             {
+                item.RefId = string.IsNullOrEmpty(model.refid) ? null : new URN(model.refid);
                 item.StartDate = model?.tournament_length?.start_date;
                 item.EndDate = model?.tournament_length?.end_date;
                 item.SportId = new URN(model.sport.id);
@@ -174,6 +166,7 @@ namespace Oddin.OddsFeedSdk.API
             {
                 item = new LocalizedTournament(id)
                 {
+                    RefId = string.IsNullOrEmpty(model.refid) ? null : new URN(model.refid),
                     StartDate = model?.tournament_length?.start_date,
                     EndDate = model?.tournament_length?.end_date,
                     SportId = new URN(model.sport.id),

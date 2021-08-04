@@ -22,6 +22,9 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public URN Id { get; }
 
+        public URN RefId
+            => FetchMatch(_cultures)?.RefId;
+
         public URN SportId => FetchSport();
 
         private URN _localSportId { get; set; }

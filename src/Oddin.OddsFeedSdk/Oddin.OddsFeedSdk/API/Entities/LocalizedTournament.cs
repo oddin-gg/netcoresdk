@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
@@ -9,6 +9,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
     internal class LocalizedTournament : ILocalizedItem
     {
         public URN Id { get; }
+
+        public URN RefId { get; set; }
 
         internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
 

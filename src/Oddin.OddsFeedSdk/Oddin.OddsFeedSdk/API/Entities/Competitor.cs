@@ -18,6 +18,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public URN Id { get; }
 
+        public URN RefId => FetchCompetitor(_cultures)?.RefId;
+
         public IReadOnlyDictionary<CultureInfo, string> Names => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Name);
 
         public IReadOnlyDictionary<CultureInfo, string> Countries => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Country);
@@ -84,6 +86,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public string CountryCode => _competitor.CountryCode;
 
         public URN Id => _competitor.Id;
+
+        public URN RefId => _competitor.RefId;
 
         public IReadOnlyDictionary<CultureInfo, string> Names => _competitor.Names;
 

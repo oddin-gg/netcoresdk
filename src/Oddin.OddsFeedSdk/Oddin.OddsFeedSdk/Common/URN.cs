@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Oddin.OddsFeedSdk.Common
 {
@@ -60,5 +60,7 @@ namespace Oddin.OddsFeedSdk.Common
 
         public override int GetHashCode()
             => HashCode.Combine(Prefix, Type, Id);
+
+        public static implicit operator string(URN urn) => urn.ToString();
     }
 }

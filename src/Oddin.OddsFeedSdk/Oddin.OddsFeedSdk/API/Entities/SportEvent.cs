@@ -19,13 +19,15 @@ namespace Oddin.OddsFeedSdk.API.Entities
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
 
         public URN Id => _id;
+        public URN RefId { get; }
 
-        public SportEvent(URN urn, IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy)
+        public SportEvent(URN urn, URN refId, IApiClient apiClient, ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
             if (apiClient is null)
                 throw new ArgumentNullException(nameof(apiClient));
 
             _id = urn;
+            RefId = refId;
             _apiClient = apiClient;
             _exceptionHandlingStrategy = exceptionHandlingStrategy;
         }

@@ -95,12 +95,26 @@ namespace Oddin.OddsFeedSdk.API.Models
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class sport
     {
-
         private string idField;
 
         private string nameField;
 
         private string abbreviationField;
+
+        private string refidField;
+
+        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+        public string refid
+        {
+            get
+            {
+                return this.refidField;
+            }
+            set
+            {
+                this.refidField = value;
+            }
+        }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
