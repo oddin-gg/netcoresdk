@@ -26,7 +26,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
 
         Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId);
 
-        Task PostRecoveryRequest(string producerName, long requestId, int nodeId, DateTime timestamp = default);
+        Task PostRecoveryRequest(string producerName, long requestId, int? nodeId, DateTime timestamp = default);
 
         TournamentInfoModel GetTournament(URN id, CultureInfo culture = null);
 

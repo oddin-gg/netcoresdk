@@ -1,11 +1,8 @@
-using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Dispatch.EventArguments;
 using Oddin.OddsFeedSdk.Managers.Abstractions;
 using Oddin.OddsFeedSdk.Sessions.Abstractions;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 
 namespace Oddin.OddsFeedSdk.Abstractions
 {

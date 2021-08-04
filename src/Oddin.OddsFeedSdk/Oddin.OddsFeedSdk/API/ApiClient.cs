@@ -206,26 +206,27 @@ namespace Oddin.OddsFeedSdk.API
             return (long)response.ResponseCode;
         }
 
-        public async Task PostRecoveryRequest(string producerName, long requestId, int nodeId, DateTime timestamp = default)
+        public async Task PostRecoveryRequest(string producerName, long requestId, int? nodeId, DateTime timestamp = default)
         {
             var route = $"v1/{producerName}/recovery/initiate_request";
-            (string key, object value)[] parameters;
+            List<(string key, object value)> parameters;
 
             if (timestamp == default)
-                parameters = new (string key, object value)[]
+                parameters = new List<(string key, object value)>
                 {
-                    ("request_id", requestId),
-                    ("node_id", nodeId)
+                    ("request_id", requestId)
                 };
             else
-                parameters = new (string key, object value)[]
+                parameters = new List<(string key, object value)>
                 {
                     ("after", timestamp.ToEpochTimeMilliseconds()),
-                    ("request_id", requestId),
-                    ("node_id", nodeId)
+                    ("request_id", requestId)
                 };
 
-            await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters, deserializeResponse: false);
+            if (nodeId != null)
+                parameters.Add(("node_id", nodeId));
+
+            await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters.ToArray(), deserializeResponse: false);
         }
 
         public IObservable<T> SubscribeForClass<T>() => _restClient.SubscribeForClass<T>();
@@ -259,7 +260,7 @@ namespace Oddin.OddsFeedSdk.API
 
         public async Task<bool> PutReplayEvent(URN eventId, int? nodeId)
         {
-            var route = $"/replay/events/{eventId}";
+            var route = $"v1/replay/events/{eventId}";
             var parameters = ParametersOrDefault(nodeId);
 
             var result = await _restClient.SendRequestAsync<object>(route, HttpMethod.Put, parameters: parameters, deserializeResponse: false);
@@ -268,7 +269,7 @@ namespace Oddin.OddsFeedSdk.API
 
         public async Task<bool> DeleteReplayEvent(URN eventId, int? nodeId)
         {
-            var route = $"/replay/events/{eventId}";
+            var route = $"v1/replay/events/{eventId}";
             var parameters = ParametersOrDefault(nodeId);
 
             var result = await _restClient.SendRequestAsync<object>(route, HttpMethod.Delete, parameters: parameters, deserializeResponse: false);
@@ -305,6 +306,6 @@ namespace Oddin.OddsFeedSdk.API
         private (string key, object value)[] ParametersOrDefault(int? nodeId)
             => nodeId == null
                 ? default
-                : new (string key, object value)[] { ("node_id", nodeId.Value.ToString()) };
+                : new (string key, object value)[] { ("node_id", nodeId.Value) };
     }
 }

@@ -28,11 +28,22 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Oddin.OddsFeedSdk
 {
+    public class ReplayFeed : Feed
+    {
+        public IReplayManager ReplayManager
+            => Services.GetService<IReplayManager>();
+
+        public ReplayFeed(IFeedConfiguration config, ILoggerFactory loggerFactory = null)
+            : base(config, true, loggerFactory)
+        {
+        }
+    }
+
     public class Feed : DispatcherBase, IOddsFeed
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(Feed));
 
-        private readonly IServiceProvider _services;
+        protected readonly IServiceProvider Services;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IFeedConfiguration _config;
         private bool _isOpened;
@@ -48,19 +59,19 @@ namespace Oddin.OddsFeedSdk
         public event EventHandler<ProducerStatusChangeEventArgs> ProducerUp;
 
         private IFeedRecoveryManager _feedRecoveryManager
-            => _services.GetService<IFeedRecoveryManager>();
+            => Services.GetService<IFeedRecoveryManager>();
 
         public IEventRecoveryRequestIssuer EventRecoveryRequestIssuer
-            => _services.GetService<IEventRecoveryRequestIssuer>();
-    
-        public IProducerManager ProducerManager
-            => _services.GetService<IProducerManager>();
+            => Services.GetService<IEventRecoveryRequestIssuer>();
 
-        public ISportDataProvider SportDataProvider 
-            => _services.GetService<ISportDataProvider>();
+        public IProducerManager ProducerManager
+            => Services.GetService<IProducerManager>();
+
+        public ISportDataProvider SportDataProvider
+            => Services.GetService<ISportDataProvider>();
 
         public IMarketDescriptionManager MarketDescriptionManager
-            => _services.GetService<IMarketDescriptionManager>();
+            => Services.GetService<IMarketDescriptionManager>();
 
         public IBookmakerDetails BookmakerDetails
         {
@@ -68,7 +79,7 @@ namespace Oddin.OddsFeedSdk
             {
                 try
                 {
-                    return _services.GetService<IApiClient>().GetBookmakerDetails();
+                    return Services.GetService<IApiClient>().GetBookmakerDetails();
                 }
                 catch (SdkException e)
                 {
@@ -78,7 +89,7 @@ namespace Oddin.OddsFeedSdk
             }
         }
 
-        public Feed(IFeedConfiguration config, ILoggerFactory loggerFactory = null)
+        protected Feed(IFeedConfiguration config, bool isReplay, ILoggerFactory loggerFactory = null)
         {
             if (config is null)
                 throw new ArgumentNullException(nameof(config));
@@ -87,7 +98,12 @@ namespace Oddin.OddsFeedSdk
             _loggerFactory = loggerFactory;
             SdkLoggerFactory.Initialize(_loggerFactory);
 
-            _services = BuildServices();
+            Services = BuildServices();
+        }
+
+        public Feed(IFeedConfiguration config, ILoggerFactory loggerFactory = null)
+            : this(config, false, loggerFactory)
+        {
         }
 
         private IServiceProvider BuildServices()
@@ -118,6 +134,7 @@ namespace Oddin.OddsFeedSdk
                 .AddSingleton<IMarketDescriptionManager, MarketDescriptionManager>()
                 .AddSingleton<IMarketDescriptionCache, MarketDescriptionCache>()
                 .AddSingleton<IMarketDescriptionFactory, MarketDescriptionFactory>()
+                .AddSingleton<IReplayManager, ReplayManager>()
                 .BuildServiceProvider();
 
         private bool IsOpened()
@@ -251,7 +268,7 @@ namespace Oddin.OddsFeedSdk
             {
                 try
                 {
-                    foreach (var service in _services.GetServices<IDisposable>())
+                    foreach (var service in Services.GetServices<IDisposable>())
                         service.Dispose();
                 }
                 catch (Exception ex)
@@ -294,8 +311,8 @@ namespace Oddin.OddsFeedSdk
                 throw new InvalidOperationException($"Cannot create a session in an already opened feed!");
 
             var session = new OddsFeedSession(
-                _services.GetService<IAmqpClient>(),
-                _services.GetService<IFeedMessageMapper>(),
+                Services.GetService<IAmqpClient>(),
+                Services.GetService<IFeedMessageMapper>(),
                 messageInterest,
                 _config.ExceptionHandlingStrategy);
 

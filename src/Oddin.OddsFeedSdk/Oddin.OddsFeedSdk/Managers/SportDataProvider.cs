@@ -4,13 +4,14 @@ using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Exceptions;
+using Oddin.OddsFeedSdk.Managers.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Oddin.OddsFeedSdk.API
+namespace Oddin.OddsFeedSdk.Managers
 {
     internal class SportDataProvider : ISportDataProvider
     {
