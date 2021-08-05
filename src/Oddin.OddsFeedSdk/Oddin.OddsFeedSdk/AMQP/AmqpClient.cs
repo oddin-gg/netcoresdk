@@ -243,7 +243,7 @@ namespace Oddin.OddsFeedSdk.AMQP
 
         public void Disconnect()
         {
-            _log.LogInformation($"Connecting {typeof(AmqpClient).Name}...");
+            _log.LogInformation($"Disconnecting {typeof(AmqpClient).Name}...");
 
             _consumer.Received -= OnReceived;
             _channel.Close();

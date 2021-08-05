@@ -2,6 +2,7 @@
 using Oddin.OddsFeedSdk;
 using Oddin.OddsFeedSdk.AMQP.EventArguments;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Dispatch.EventArguments;
 using Oddin.OddsFeedSdk.Sessions;
 using Oddin.OddsFeedSdk.Sessions.Abstractions;
@@ -47,6 +48,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var tasks = new List<Task>
             {
                 WorkWithRecovery(feed),
+                WorkWithProducers(feed),
                 WorkWithSportDataProvider(feed),
                 WorkWithMarketDesctiptionManager(feed),
                 ctrlCPressed.Task
@@ -61,16 +63,35 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
         private async static Task WorkWithRecovery(Feed feed)
         {
-            //var producer = feed.ProducerManager.Get("live");
-            //var urn = new URN("od:match:35671");
-            //Console.WriteLine($"Event recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventMessagesAsync(producer, urn)}");
+            var matchUrn = "od:match:36856";
+            var producerName = "live";
 
-            //Console.ReadLine();
+            var producer = feed.ProducerManager.Get(producerName);
+            var urn = new URN(matchUrn);
+
+            // if the match is too old, 404 will be returned
+            Console.WriteLine($"Event recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventMessagesAsync(producer, urn)}");
+            
+            Console.WriteLine($"Event stateful recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventStatefulMessagesAsync(producer, urn)}");
+        }
+
+        private async static Task WorkWithProducers(Feed feed)
+        {
+            foreach (var producer in feed.ProducerManager.Producers)
+                Console.WriteLine($"Producer name: {producer.Name}, id: {producer.Id}");
         }
 
         private async static Task WorkWithSportDataProvider(Feed feed)
         {
             var provider = feed.SportDataProvider;
+
+            //var tournaments = provider.GetActiveTournaments(CultureEn);
+            
+
+            provider.DeleteCompetitorFromCache(new URN("od:competitor:300"));
+            provider.DeleteMatchFromCache(new URN("od:match:36856"));
+            provider.DeleteTournamentFromCache(new URN("od:tournament:1524"));
+
 
             var sportsEn = await provider.GetSportsAsync(CultureEn);
             var sportsRu = await provider.GetSportsAsync(CultureRu);

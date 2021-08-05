@@ -61,7 +61,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             _requestId = -1;
 
             _recoveryRequestDelegate = async (sender, eventArgs) => await MakeRecoveryRequestToApi();
-            _startRecoveryDelegate = async (sender, eventArgs) => await StartRecovery();
+            _startRecoveryDelegate = async (sender, eventArgs) => await StartRecoveryBasedOnReceptionTime();
         }
         
         public bool MatchesProducer(int producerId)
@@ -122,7 +122,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private void ResetAliveMessageReceivedTimer()
         {
-            if (_config.Environment == SdkEnvironment.Replay)
+            if (IgnoreRecovery())
                 return;
 
             _aliveMessageReceivedTimer.Stop();
@@ -131,7 +131,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         public void Open()
         {
-            if (_config.Environment == SdkEnvironment.Replay)
+            if (IgnoreRecovery())
                 return;
 
             AliveMessageReceivedTimerSetup();
@@ -171,10 +171,14 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             try
             {
                 if (_producer.LastTimestampBeforeDisconnect == default)
+                {
+                    _log.LogInformation($"Sending recovery request (producer name: {_producer.Name}, request ID: {_requestId}, node ID: {_config.NodeId})");
                     await _apiClient.PostRecoveryRequest(_producer.Name, _requestId, _config.NodeId);
+                }
                 else
                 {
                     var timestampFrom = GetRecoveryTimestamp(_producer.LastTimestampBeforeDisconnect);
+                    _log.LogInformation($"Sending recovery request (producer name: {_producer.Name}, request ID: {_requestId}, node ID: {_config.NodeId}, UTC timestamp: {timestampFrom})");
                     await _apiClient.PostRecoveryRequest(_producer.Name, _requestId, _config.NodeId, timestampFrom);
                 }
             }
@@ -186,9 +190,11 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private async Task StartRecovery()
         {
-            if (_config.Environment == SdkEnvironment.Replay
+            if (IgnoreRecovery()
                 || TrySetIsRecoveryInProgress() == false)
                 return;
+
+            _log.LogInformation("Starting recovery...");
 
             ((Producer)_producer).SetProducerDown(true);
             Dispatch(ProducerDown, CreateProducerStatusChangeEventArgs(), nameof(ProducerDown));
@@ -199,9 +205,17 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             _recoveryRequestTimer.Start();
         }
 
+        private async Task StartRecoveryBasedOnReceptionTime()
+        {
+            _log.LogInformation("Alive message wasn't received in time!");
+            await StartRecovery();
+        }
+
         private void CompleteRecovery()
         {
             _recoveryRequestTimer.Stop();
+
+            _log.LogInformation($"Recovery was completed (request ID: {_requestId})!");
 
             ((Producer)_producer).SetProducerDown(false);
             Dispatch(ProducerUp, CreateProducerStatusChangeEventArgs(), nameof(ProducerUp));
@@ -274,23 +288,30 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             }
         }
 
+        private bool IgnoreRecovery()
+        {
+            return _producer.IsAvailable == false
+                || _producer.IsDisabled == true
+                || _config.Environment == SdkEnvironment.Replay;
+        }
+
         public async Task HandleAliveReceived(alive message)
         {
-            if (_producer.IsAvailable == false
-                || _producer.IsDisabled == true)
-            {
+            if (IgnoreRecovery())
                 return;
-            }
 
             ResetAliveMessageReceivedTimer();
 
-            if (message.subscribed == 0
-                || AreGeneratedTimestampsTooDistant(message.timestamp.FromEpochTimeMilliseconds())
-                )
+            if (message.subscribed == 0)
             {
+                _log.LogInformation("An alive message with subscribed == 0 was received!");
                 await StartRecovery();
             }
-
+            else if (AreGeneratedTimestampsTooDistant(message.timestamp.FromEpochTimeMilliseconds()))
+            {
+                _log.LogInformation("An alive message with too old timestamp of generation was received!");
+                await StartRecovery();
+            }
             else if (IsRecoveryInProgress() == false)
             {
                 var timestamp = message.timestamp.FromEpochTimeMilliseconds();
