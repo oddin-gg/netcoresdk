@@ -13,7 +13,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
 
-        internal IEnumerable<URN> TournamentIds { get; set; } = null;
+        internal ICollection<URN> TournamentIds { get; set; } = null;
 
         public IEnumerable<CultureInfo> LoadedLocals => Name.Keys;
 

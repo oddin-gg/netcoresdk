@@ -63,13 +63,13 @@ namespace Oddin.OddsFeedSdk.API
             foreach (var tournament in tournamentData)
             {
                 var tournamentId = new URN(tournament.Key);
-                var sportId = new URN(tournament.Key);
+                var sportId = new URN(tournament.Value.id);
 
                 RefreshOrInsertItem(sportId, culture, tournament.Value);
                 var sport = _cache.Get(sportId.ToString()) as LocalizedSport;
                 if (sport is not null)
                 {
-                    var sportTournaments = sport.TournamentIds.ToList();
+                    var sportTournaments = sport.TournamentIds ??= new List<URN>();
                     sportTournaments.Add(tournamentId);
                     sport.TournamentIds = sportTournaments;
                 }
@@ -200,7 +200,7 @@ namespace Oddin.OddsFeedSdk.API
                 localizedSport.RefId = string.IsNullOrEmpty(sport?.refid) ? null : new URN(sport.refid);
                 localizedSport.Name[culture] = sport.name;
             }
-        
+            
             if(tournamentId != null)
                 localizedSport.TournamentIds ??= new List<URN>();
 
