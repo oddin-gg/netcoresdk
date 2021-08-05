@@ -171,7 +171,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
                 var specifiers = string.Join(", ", description.Specifiers.Select(s => $"Name:{s.Name} Type:{s.Type}"));
                 var outcomes = string.Join(", ", description.Outcomes.Select(o => $"Id:{o.Id}/{o.RefId} Name:{o.GetName(CultureEn)} Description:{o.GetDescription(CultureEn)}"));
 
-                Console.WriteLine($"Market Description - Id:{description.Id} RefId:{description.RefId} OutcomeType/Variant:{description.OutcomeType}");
+                Console.WriteLine($"Market Description - Name: {description.GetName(CultureEn)} Id:{description.Id} RefId:{description.RefId} OutcomeType/Variant:{description.OutcomeType}");
                 Console.WriteLine($"Specifiers:{specifiers}");
                 Console.WriteLine($"Outcomes:{outcomes}");
             }
