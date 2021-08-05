@@ -115,7 +115,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Abbreviation: {competitor.GetAbbreviation(CultureEn)}");
             Console.WriteLine($"Country: {competitor.GetCountry(CultureEn)}");
             Console.WriteLine($"Name: {competitor.GetName(CultureEn)}");
-            //Console.WriteLine($"Sport: {(await competitor.GetSportAsync()).GetName(CultureEn)}");
+            Console.WriteLine($"Sport: {(await competitor.GetSportAsync())?.GetName(CultureEn)}");
             Console.WriteLine($"ID: {competitor.Id}");
             Console.WriteLine($"Is virtual: {competitor.IsVirtual}");
             Console.WriteLine($"Name: {competitor.Names[CultureEn]}");
