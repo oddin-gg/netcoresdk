@@ -58,6 +58,8 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
 
         Task<bool> DeleteReplayEvent(URN eventId, int? nodeId);
 
+        Task<ReplayStatusEndpointModel> GetStatusOfReplay();
+
         Task<bool> PostReplayStart(
             int? nodeId,
             int? speed = null,

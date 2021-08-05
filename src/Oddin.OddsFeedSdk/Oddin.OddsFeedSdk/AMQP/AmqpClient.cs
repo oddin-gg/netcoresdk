@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Exceptions;
 using Oddin.OddsFeedSdk.AMQP.Abstractions;
@@ -29,11 +29,10 @@ namespace Oddin.OddsFeedSdk.AMQP
         private readonly IApiClient _apiClient;
         private readonly EventHandler<CallbackExceptionEventArgs> _onCallbackException;
         private readonly EventHandler<ShutdownEventArgs> _onConnectionShutdown;
+        private readonly IExchangeNameProvider _exchangeNameProvider;
         private IConnection _connection;
         private IModel _channel;
         private EventingBasicConsumer _consumer;
-
-        public const string EXCHANGE_NAME = "oddinfeed";
 
         public event EventHandler<UnparsableMessageEventArgs> UnparsableMessageReceived;
         public event EventHandler<SimpleMessageEventArgs<alive>> AliveMessageReceived;
@@ -47,7 +46,8 @@ namespace Oddin.OddsFeedSdk.AMQP
         public AmqpClient(IFeedConfiguration config,
             IApiClient apiClient,
             EventHandler<CallbackExceptionEventArgs> onCallbackException,
-            EventHandler<ShutdownEventArgs> onConnectionShutdown)
+            EventHandler<ShutdownEventArgs> onConnectionShutdown,
+            IExchangeNameProvider ExchangeNameProvider)
         {
             _host = config.Host;
             _port = config.Port;
@@ -56,6 +56,7 @@ namespace Oddin.OddsFeedSdk.AMQP
             _apiClient = apiClient;
             _onCallbackException = onCallbackException;
             _onConnectionShutdown = onConnectionShutdown;
+            _exchangeNameProvider = ExchangeNameProvider;
         }
 
         private ConnectionFactory CreateConnectionFactory()
@@ -78,8 +79,7 @@ namespace Oddin.OddsFeedSdk.AMQP
                 // INFO: following acceptable errors make it so it's not necessary to install the server certificate
                 System.Net.Security.SslPolicyErrors.RemoteCertificateNameMismatch
                 | System.Net.Security.SslPolicyErrors.RemoteCertificateNotAvailable
-                | System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors
-                ;
+                | System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors;
 
             return factory;
         }
@@ -118,12 +118,12 @@ namespace Oddin.OddsFeedSdk.AMQP
                     exclusive: true);
                 
                 _channel.ExchangeDeclare(
-                    exchange: EXCHANGE_NAME,
+                    exchange: _exchangeNameProvider.ExchangeName,
                     type: ExchangeType.Topic,
                     durable: true);
 
                 foreach (var routingKey in messageInterest.RoutingKeys)
-                    _channel.QueueBind(queueInfo.QueueName, EXCHANGE_NAME, routingKey);
+                    _channel.QueueBind(queueInfo.QueueName, _exchangeNameProvider.ExchangeName, routingKey);
 
                 _consumer = new EventingBasicConsumer(_channel);
                 _consumer.Received += OnReceived;

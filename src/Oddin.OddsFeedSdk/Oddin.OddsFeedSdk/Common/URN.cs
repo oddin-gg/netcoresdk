@@ -62,5 +62,20 @@ namespace Oddin.OddsFeedSdk.Common
             => HashCode.Combine(Prefix, Type, Id);
 
         public static implicit operator string(URN urn) => urn.ToString();
+
+        public static bool operator ==(URN firstUrn, URN secondUrn)
+        {
+            if (firstUrn is null)
+            { 
+                if (secondUrn is null)
+                    return true;
+
+                return false;
+            }
+            return firstUrn.Equals(secondUrn);
+        }
+
+        public static bool operator !=(URN firstUrn, URN secondUrn)
+            => firstUrn == secondUrn == false;
     }
 }

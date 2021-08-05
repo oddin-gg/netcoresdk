@@ -18,7 +18,6 @@ namespace Oddin.OddsFeedSdkDemoIntegration
     internal static class ReplayExample
     {
         private static readonly CultureInfo CultureEn = CultureInfo.GetCultureInfoByIetfLanguageTag("en");
-        private static readonly CultureInfo CultureRu = CultureInfo.GetCultureInfoByIetfLanguageTag("ru");
 
         internal static async Task Run()
         {
@@ -43,31 +42,46 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
             feed.Open();
 
-            var tasks = new List<Task>
-            {
-                WorkWithReplay(feed)
-            };
-            await Task.WhenAll(tasks);
+            var replayManager = feed.ReplayManager;
 
+            var match1 = new URN("od:match:32496");
+            var match2 = new URN("od:match:32497");
+            
+            // Stop replay
+            await replayManager.StopReplay();
+
+            // Get URNs of events already in queue
+            var eventsInQueue = await replayManager.GetEventsInQueue();
+
+            //Get list of events as ISportEvents 
+            var replayList = await replayManager.GetReplayList();
+
+            // If match1 is not in queue add it
+            if (eventsInQueue.Any(q => q == match1) == false)
+                await replayManager.AddMessagesToReplayQueue(match1);
+
+            // If match2 is not in queue add it
+            if (eventsInQueue.Any(q => q == match2) == false)
+                await replayManager.AddMessagesToReplayQueue(match2);
+
+            // Get URNs of events already in queue
+            var eventsInQueueAfter = await replayManager.GetEventsInQueue();
+
+            // Start the replay
+            var result = await replayManager.StartReplay(30, 500);
+
+            // Check status
+            var status = await replayManager.GetStatusOfReplay();
+            Console.WriteLine($"Start status: {result} Replay status: {status}");
+            // Wait for 30 minutes
+            await Task.Delay(TimeSpan.FromMinutes(1));
+
+            await replayManager.StopAndClearReplay();
+            
             feed.Close();
 
             DetachEvents(feed);
             DetachEvents(session);
-        }
-
-        private async static Task WorkWithReplay(ReplayFeed feed)
-        {
-            var replayManager = feed.ReplayManager;
-
-            var match1 = new URN("od:match:32494");
-            var match2 = new URN("od:match:32495");
-
-            await replayManager.AddMessagesToReplayQueue(match1);
-            await replayManager.AddMessagesToReplayQueue(match2);
-
-            await replayManager.StartReplay(30, 500);
-
-            await Task.Delay(TimeSpan.FromMinutes(30));
         }
 
         private static ILoggerFactory CreateLoggerFactory()
@@ -110,29 +124,29 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             session.OnFixtureChange -= Session_OnFixtureChange;
         }
 
-        private static async void Session_OnFixtureChange(object sender, FixtureChangeEventArgs<ISportEvent> e)
+        private static async void Session_OnFixtureChange(object sender, FixtureChangeEventArgs<ISportEvent> eventArgs)
         {
-            Console.WriteLine($"On Bet Cancel Message Received in {await e.GetFixtureChange().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine($"On Bet Cancel Message Received in {eventArgs.GetFixtureChange().Event.Id} {await eventArgs.GetFixtureChange().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
         }
 
-        private static async void Session_OnBetCancel(object sender, BetCancelEventArgs<ISportEvent> e)
+        private static async void Session_OnBetCancel(object sender, BetCancelEventArgs<ISportEvent> eventArgs)
         {
-            Console.WriteLine($"On Bet Cancel Message Received in {await e.GetBetCancel().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine($"On Bet Cancel Message Received in {eventArgs.GetBetCancel().Event.Id} {await eventArgs.GetBetCancel().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
         }
 
         private static async void OnBetSettlement(object sender, BetSettlementEventArgs<ISportEvent> eventArgs)
         {
-            Console.WriteLine($"On Bet Settlement in {await eventArgs.GetBetSettlement().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine($"On Bet Settlement in {eventArgs.GetBetSettlement().Event.Id} {await eventArgs.GetBetSettlement().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
         }
 
         private static async void OnOddsChangeReceived(object sender, OddsChangeEventArgs<ISportEvent> eventArgs)
         {
-            Console.WriteLine($"Odds changed in {await eventArgs.GetOddsChange().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine($"Odds changed in {eventArgs.GetOddsChange().Event.Id} {await eventArgs.GetOddsChange().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
         }
 
         private static async void OnBetStopReceived(object sender, BetStopEventArgs<ISportEvent> eventArgs)
         {
-            Console.WriteLine($"Bet stop in {await eventArgs.GetBetStop().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine($"Bet stop in {eventArgs.GetBetStop().Event.Id} {await eventArgs.GetBetStop().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
         }
 
         private static void OnUnparsableMessageReceived(object sender, UnparsableMessageEventArgs e)

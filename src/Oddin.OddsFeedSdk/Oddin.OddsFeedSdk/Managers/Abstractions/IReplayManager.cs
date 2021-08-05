@@ -16,10 +16,17 @@ namespace Oddin.OddsFeedSdk.Managers.Abstractions
         Task<bool> RemoveEventFromReplayQueue(ISportEvent sportEvent);
         Task<bool> RemoveEventFromReplayQueue(URN eventId);
 
-        Task<bool> StartReplay(int? speed = null, int? maxDelay = null, bool? useReplayTimestamp = null, string product = null, bool? runParallel = null);
+        Task<bool> StartReplay(
+            int? speed = null,
+            int? maxDelay = null,
+            bool? useReplayTimestamp = null,
+            string product = null,
+            bool? runParallel = null);
 
         Task<bool> StopReplay();
 
         Task<bool> StopAndClearReplay();
+
+        Task<string> GetStatusOfReplay();
     }
 }

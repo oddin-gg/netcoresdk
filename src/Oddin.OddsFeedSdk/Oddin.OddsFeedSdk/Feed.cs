@@ -28,17 +28,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Oddin.OddsFeedSdk
 {
-    public class ReplayFeed : Feed
-    {
-        public IReplayManager ReplayManager
-            => Services.GetService<IReplayManager>();
-
-        public ReplayFeed(IFeedConfiguration config, ILoggerFactory loggerFactory = null)
-            : base(config, true, loggerFactory)
-        {
-        }
-    }
-
     public class Feed : DispatcherBase, IOddsFeed
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(Feed));
@@ -98,7 +87,11 @@ namespace Oddin.OddsFeedSdk
             _loggerFactory = loggerFactory;
             SdkLoggerFactory.Initialize(_loggerFactory);
 
-            Services = BuildServices();
+            IExchangeNameProvider exchangeNameProvider = isReplay
+                ? new ReplayExchangeNameProvider()
+                : new ExchangeNameProvider(); 
+
+            Services = BuildServices(exchangeNameProvider);
         }
 
         public Feed(IFeedConfiguration config, ILoggerFactory loggerFactory = null)
@@ -106,7 +99,7 @@ namespace Oddin.OddsFeedSdk
         {
         }
 
-        private IServiceProvider BuildServices()
+        private IServiceProvider BuildServices(IExchangeNameProvider exchangeNameProvider)
             => new ServiceCollection()
                 .AddSingleton(_config)
                 .AddSingleton<IApiModelMapper, ApiModelMapper>()
@@ -135,6 +128,7 @@ namespace Oddin.OddsFeedSdk
                 .AddSingleton<IMarketDescriptionCache, MarketDescriptionCache>()
                 .AddSingleton<IMarketDescriptionFactory, MarketDescriptionFactory>()
                 .AddSingleton<IReplayManager, ReplayManager>()
+                .AddSingleton(exchangeNameProvider)
                 .BuildServiceProvider();
 
         private bool IsOpened()

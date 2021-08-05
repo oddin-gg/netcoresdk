@@ -32,9 +32,10 @@ namespace Oddin.OddsFeedSdk.Managers
             {
                 var data = await _apiClient.GetReplaySetContent(_feedConfiguration.NodeId);
 
-                return data.replay_event
+                return data?.replay_event?
                     .Where(e => e.id != null)
-                    .Select(e => new URN(e.id));
+                    .Select(e => new URN(e.id))
+                    ?? Enumerable.Empty<URN>();
             }
             catch (Exception e)
             {
@@ -49,9 +50,10 @@ namespace Oddin.OddsFeedSdk.Managers
             {
                 var data = await _apiClient.GetReplaySetContent(_feedConfiguration.NodeId);
 
-                return data.replay_event
+                return data?.replay_event?
                     .Where(e => e.id != null)
-                    .Select(e => _sportsDataProvider.GetMatch(new URN(e.id)));
+                    .Select(e => _sportsDataProvider.GetMatch(new URN(e.id)))
+                    ?? Enumerable.Empty<ISportEvent>();
             }
             catch(Exception e)
             {
@@ -143,6 +145,20 @@ namespace Oddin.OddsFeedSdk.Managers
             {
                 _log.LogError($"Failed to clear replay with: {e}");
                 return false;
+            }
+        }
+
+        public async Task<string> GetStatusOfReplay()
+        {
+            try
+            {
+                var result = await _apiClient.GetStatusOfReplay();
+                return result.status;
+            }
+            catch (Exception e)
+            {
+                _log.LogError($"Failed to get replay status: {e}");
+                return null;
             }
         }
     }

@@ -299,10 +299,17 @@ namespace Oddin.OddsFeedSdk.API
             if (product != null)
                 parameters.Add(("product", product));
 
-            var route = "/replay/play";
+            var route = "v1/replay/play";
 
             var result = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters.ToArray(), deserializeResponse: false);
             return result.Successful;
+        }
+        public async Task<ReplayStatusEndpointModel> GetStatusOfReplay()
+        {
+            var route = $"v1/replay/status";
+
+            var result = await _restClient.SendRequestAsync<ReplayStatusEndpointModel>(route, HttpMethod.Get);
+            return result.Data;
         }
 
         private (string key, object value)[] ParametersOrDefault(int? nodeId)
