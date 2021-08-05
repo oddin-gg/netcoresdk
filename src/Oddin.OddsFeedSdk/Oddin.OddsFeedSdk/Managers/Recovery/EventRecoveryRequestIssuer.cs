@@ -68,7 +68,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             }
         }
 
-        private async Task<long> RecoverMessage(IProducer producer, URN eventId, Func<string, URN, long, int, Task<long>> apiCall)
+        private async Task<long> RecoverMessage(IProducer producer, URN eventId, Func<string, URN, long, int?, Task<long>> apiCall)
         {
             if (_isOpen == false)
                 throw new InvalidOperationException($"Cannot request event recovery on {typeof(IEventRecoveryRequestIssuer)} that hasn't been opened yet!");
