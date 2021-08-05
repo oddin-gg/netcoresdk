@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.AMQP;
 using Oddin.OddsFeedSdk.AMQP.Abstractions;
@@ -22,9 +22,9 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(EventRecoveryRequestIssuer));
 
         private readonly IApiClient _apiClient;
-        private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
         private readonly IRequestIdFactory _requestIdFactory;
         private readonly IAmqpClient _amqpClient;
+        private readonly IFeedConfiguration _config;
         private readonly Dictionary<long, URN> _pendingRequests = new Dictionary<long, URN>();
         private bool _isOpen = false;
 
@@ -45,7 +45,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             _apiClient = apiClient;
             _requestIdFactory = requestIdFactory;
             _amqpClient = amqpClient;
-            _exceptionHandlingStrategy = config.ExceptionHandlingStrategy;
+            _config = config;
         }
 
         public event EventHandler<EventRecoveryCompletedEventArgs> EventRecoveryCompleted;
@@ -68,7 +68,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             }
         }
 
-        private async Task<long> RecoverMessage(IProducer producer, URN eventId, Func<string, URN, long, Task<long>> apiCall)
+        private async Task<long> RecoverMessage(IProducer producer, URN eventId, Func<string, URN, long, int?, Task<long>> apiCall)
         {
             if (_isOpen == false)
                 throw new InvalidOperationException($"Cannot request event recovery on {typeof(IEventRecoveryRequestIssuer)} that hasn't been opened yet!");
@@ -81,11 +81,11 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
                 _pendingRequests[requestId] = eventId;
 
-                return await apiCall(producer.Name, eventId, requestId);
+                return await apiCall(producer.Name, eventId, requestId, _config.NodeId);
             }
             catch (SdkException e)
             {
-                e.HandleAccordingToStrategy(GetType().Name, _log, _exceptionHandlingStrategy);
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             }
             return default;
         }

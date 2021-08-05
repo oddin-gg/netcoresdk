@@ -8,6 +8,7 @@ using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Dispatch;
 using Oddin.OddsFeedSdk.Dispatch.EventArguments;
+using Oddin.OddsFeedSdk.Exceptions;
 using Oddin.OddsFeedSdk.Managers.Abstractions;
 using System;
 using System.Threading.Tasks;
@@ -167,12 +168,19 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private async Task MakeRecoveryRequestToApi()
         {
-            if (_producer.LastTimestampBeforeDisconnect == default)
-                await _apiClient.PostRecoveryRequest(_producer.Name, _requestId, _config.NodeId);
-            else
+            try
             {
-                var timestampFrom = GetRecoveryTimestamp(_producer.LastTimestampBeforeDisconnect);
-                await _apiClient.PostRecoveryRequest(_producer.Name, _requestId, _config.NodeId, timestampFrom);
+                if (_producer.LastTimestampBeforeDisconnect == default)
+                    await _apiClient.PostRecoveryRequest(_producer.Name, _requestId, _config.NodeId);
+                else
+                {
+                    var timestampFrom = GetRecoveryTimestamp(_producer.LastTimestampBeforeDisconnect);
+                    await _apiClient.PostRecoveryRequest(_producer.Name, _requestId, _config.NodeId, timestampFrom);
+                }
+            }
+            catch (CommunicationException e)
+            {
+                _log.LogError($"Recovery request to API failed!", e);
             }
         }
 
@@ -207,7 +215,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         {
             if (message.request_id != _requestId)
             {
-                _log.LogInformation($"A SnapshotComplete message with incorrect request ID was received! Target producer: {_producer.Name}, received request ID: {message.request_id}, current request ID: {_requestId}");
+                // INFO: this is a valid possibility since EventRecoveryIssuer is public and allows issuing recovery requests from outside of the Sdk
                 return;
             }
 
@@ -265,8 +273,6 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
                 return _isRecoveryInProgress;
             }
         }
-
-
 
         public async Task HandleAliveReceived(alive message)
         {

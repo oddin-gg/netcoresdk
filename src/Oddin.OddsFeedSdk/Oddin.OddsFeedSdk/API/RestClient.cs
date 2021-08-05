@@ -45,9 +45,22 @@ namespace Oddin.OddsFeedSdk.API
             )
             where TData : class
         {
-            var result = await SendRequestGetResult<TData>(route, method, culture, objectToBeSent, parameters, deserializeResponse, ignoreUnsuccessfulStatusCode);
+            RequestResult<TData> result;
+            try
+            {
+                result = await SendRequestGetResult<TData>(route, method, culture, objectToBeSent, parameters, deserializeResponse, ignoreUnsuccessfulStatusCode);
+            }
+            catch (Exception e)
+            {
+                _log.LogError($"An exception was thrown while waiting for a result of [{method} to {CombineAddress(route)}]!");
 
-            //todo: missing try-catch from SendRequest
+                throw new CommunicationException(
+                    message: "An exception was thrown while waiting for a result of API request!",
+                    innerException: e,
+                    url: CombineAddress(route),
+                    responseCode: default,
+                    response: "");
+            }
 
             if (result.Successful == false)
             {

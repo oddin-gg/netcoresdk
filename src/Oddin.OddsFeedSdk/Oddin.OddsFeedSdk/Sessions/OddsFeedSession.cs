@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.AMQP.Abstractions;
 using Oddin.OddsFeedSdk.AMQP.EventArguments;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
@@ -18,10 +18,11 @@ namespace Oddin.OddsFeedSdk.Sessions
 
         private readonly IAmqpClient _amqpClient;
         private readonly IFeedMessageMapper _feedMessageMapper;
-        private readonly MessageInterest _messageInterest;
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
         private bool _isOpened;
         private readonly object _isOpenedLock = new object();
+
+        internal MessageInterest MessageInterest { get; }
 
         public string Name { get; }
 
@@ -42,7 +43,7 @@ namespace Oddin.OddsFeedSdk.Sessions
 
             _amqpClient = amqpClient;
             _feedMessageMapper = feedMessageMapper;
-            _messageInterest = messageInterest;
+            MessageInterest = messageInterest;
             _exceptionHandlingStrategy = exceptionHandlingStrategy;
 
             Name = messageInterest.Name;
@@ -179,7 +180,7 @@ namespace Oddin.OddsFeedSdk.Sessions
             AttachAmqpClientEvents();
             try
             {
-                _amqpClient.Connect(_messageInterest);
+                _amqpClient.Connect(MessageInterest);
             }
             catch (CommunicationException)
             {

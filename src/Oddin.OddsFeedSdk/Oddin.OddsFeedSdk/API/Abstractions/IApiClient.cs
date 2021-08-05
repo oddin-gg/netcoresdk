@@ -22,9 +22,9 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
 
         Task<MarketDescriptionsModel> GetMarketDescriptionsAsync(CultureInfo culture = null);
 
-        Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId);
+        Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId);
 
-        Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId);
+        Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId);
 
         Task PostRecoveryRequest(string producerName, long requestId, int? nodeId, DateTime timestamp = default);
 
