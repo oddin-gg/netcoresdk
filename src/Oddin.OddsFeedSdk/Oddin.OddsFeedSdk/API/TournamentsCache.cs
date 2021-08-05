@@ -72,7 +72,6 @@ namespace Oddin.OddsFeedSdk.API
         {
             var id = new URN(e.FeedMessage.event_id);
 
-
             if (id.Type == "match")
             {
                 _log.LogDebug($"Invalidating Tournament cache from FEED for: {id}");
@@ -187,12 +186,13 @@ namespace Oddin.OddsFeedSdk.API
             if (model is tournamentExtended modelExtended && modelExtended.competitors.Any())
             {
                 var ids = modelExtended.competitors.Select(c => new URN(c.id));
-                var alreadyExistingIds = item.CompetitorIds.ToHashSet();
-                
-                foreach(var competitorId in ids)
-                    alreadyExistingIds.Add(competitorId);
+                var alreadyExistingIds = item.CompetitorIds ??= new HashSet<URN>();
+                var alreadyExistingIdsHashSet = alreadyExistingIds.ToHashSet();
 
-                item.CompetitorIds = alreadyExistingIds.ToList();
+                foreach (var competitorId in ids)
+                    alreadyExistingIdsHashSet.Add(competitorId);
+
+                item.CompetitorIds = alreadyExistingIdsHashSet.ToList();
             }
 
             _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());

@@ -62,13 +62,9 @@ namespace Oddin.OddsFeedSdk.API.Entities
         {
             var tournament = _tournamentsCache.GetTournament(Id, cultures);
             if(tournament is null && _configuration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
-            {
                 throw new ItemNotFoundException(Id.ToString(), $"Competitor {Id} not found");
-            }
             else
-            {
                 return tournament;
-            }
         }
 
         private ISport FetchSport(IEnumerable<CultureInfo> cultures)
