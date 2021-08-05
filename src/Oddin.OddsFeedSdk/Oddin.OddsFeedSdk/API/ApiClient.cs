@@ -34,7 +34,7 @@ namespace Oddin.OddsFeedSdk.API
             if (culture is null)
                 culture = _defaultCulture;
 
-            var route = $"v1/sports/${culture.TwoLetterISOLanguageName}/fixtures/changes";
+            var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/fixtures/changes";
             var result = _restClient.SendRequest<fixtureChangesEndpoint>(route, HttpMethod.Get);
             return result.Data;
         }

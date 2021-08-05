@@ -134,7 +134,7 @@ namespace Oddin.OddsFeedSdk.API
                     return null;
                 }
 
-                var tournamentIds = tournaments.tournament.Select(t => new URN(t.id));
+                var tournamentIds = tournaments.tournaments.Select(t => new URN(t.id));
                 foreach (var tournamentId in tournamentIds)
                 {
                     try

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
@@ -15,6 +15,12 @@ namespace Oddin.OddsFeedSdk.Common
                 using var xmlReader = XmlReader.Create(stringReader);
 
                 var serializer = new XmlSerializer(typeof(T));
+#if DEBUG
+                serializer.UnknownAttribute += (s, args) => Console.WriteLine($"[{typeof(T)}] Unknown attribute {args.Attr.Name}='{args.Attr.Value}'");
+                serializer.UnknownNode += (s, args) => Console.WriteLine($"[{typeof(T)}] Unknown Node:{args.Name}  {args.Text}");
+                serializer.UnknownElement += (s, args) => Console.WriteLine($"[{typeof(T)}] Unknown Element:{args.Element.Name} | {args.Element.InnerXml}");
+                serializer.UnreferencedObject += (s, args) => Console.WriteLine($"[{typeof(T)}] Unreferenced Object:{args.UnreferencedId} | {args.UnreferencedObject}");
+#endif
                 if (serializer.CanDeserialize(xmlReader) == false)
                 {
                     result = default;
