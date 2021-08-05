@@ -15,6 +15,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine("R = Replay");
             Console.Write("Enter letter: ");
             var key = Console.ReadKey().KeyChar;
+            Console.WriteLine();
 
             switch (char.ToUpper(key))
             {

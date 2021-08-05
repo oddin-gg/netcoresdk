@@ -95,7 +95,18 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             provider.DeleteTournamentFromCache(tournamentUrn);
 
             var activeTournaments = provider.GetActiveTournaments(CultureEn);
+            var act = activeTournaments.First();
+            //Console.WriteLine($"Competitor: {act.GetCompetitors().First().GetName(CultureEn)}");
+            Console.WriteLine($"End date: {act.GetEndDate()}");
+            Console.WriteLine($"Name: {await act.GetNameAsync(CultureEn)}");
+            Console.WriteLine($"Scheduled end time: {await act.GetScheduledEndTimeAsync()}");
+            Console.WriteLine($"Scheduled time: {await act.GetScheduledTimeAsync()}");
+            Console.WriteLine($"Sport ID: {await act.GetSportIdAsync()}");
+            Console.WriteLine($"Start date: {act.GetStartDate()}");
+            Console.WriteLine($"ID: {act.Id}");
+
             var availableTournaments = provider.GetAvailableTournaments(sportUrn, CultureEn);
+
             var competitor = provider.GetCompetitor(competitorUrn, CultureEn);
             var fixtureChanges = provider.GetFixtureChanges(CultureEn);
             var listOfMatches = provider.GetListOfMatches(0, 2, CultureEn);
