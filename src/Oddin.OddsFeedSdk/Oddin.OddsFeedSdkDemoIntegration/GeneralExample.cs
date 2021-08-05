@@ -109,12 +109,12 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
             var competitor = provider.GetCompetitor(competitorUrn, CultureEn);
             Console.WriteLine($"Abbreviation: {competitor.Abbreviations.First()}");
-            Console.WriteLine($"Country: {competitor.Countries.First()}");
+            Console.WriteLine($"Country: {competitor.Countries.FirstOrDefault()}");
             Console.WriteLine($"Country code: {competitor.CountryCode}");
             Console.WriteLine($"Abbreviation: {competitor.GetAbbreviation(CultureEn)}");
             Console.WriteLine($"Country: {competitor.GetCountry(CultureEn)}");
             Console.WriteLine($"Name: {competitor.GetName(CultureEn)}");
-            Console.WriteLine($"Sport: {(await competitor.GetSportAsync()).GetName(CultureEn)}");
+            //Console.WriteLine($"Sport: {(await competitor.GetSportAsync()).GetName(CultureEn)}");
             Console.WriteLine($"ID: {competitor.Id}");
             Console.WriteLine($"Is virtual: {competitor.IsVirtual}");
             Console.WriteLine($"Name: {competitor.Names[CultureEn]}");
@@ -141,7 +141,14 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var liveMatches = provider.GetLiveMatches(CultureEn);
             var match = provider.GetMatch(matchUrn, CultureEn);
             var matchesForNow = provider.GetMatchesFor(DateTime.UtcNow, CultureEn);
+
             var sport = await provider.GetSportAsync(sportUrn, CultureEn);
+            Console.WriteLine($"Name: {sport.GetName(CultureEn)}");
+            Console.WriteLine($"ID: {sport.Id}");
+            Console.WriteLine($"Name: {sport.Names.FirstOrDefault()}");
+            Console.WriteLine($"Ref ID: {sport.RefId}");
+            Console.WriteLine($"Tournament ID: {sport.Tournaments.FirstOrDefault()?.Id}");
+
             var sports = await provider.GetSportsAsync(CultureEn);
 
             var sportsEn = await provider.GetSportsAsync(CultureEn);
