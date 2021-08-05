@@ -51,6 +51,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
                 WorkWithProducers(feed),
                 WorkWithSportDataProvider(feed),
                 WorkWithMarketDesctiptionManager(feed),
+                WorkWithBookmakerDetails(feed),
                 ctrlCPressed.Task
             };
             await Task.WhenAll(tasks);
@@ -179,6 +180,14 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             {
 
             }
+        }
+
+        private async static Task WorkWithBookmakerDetails(Feed feed)
+        {
+            var bookmakerDetails = feed.BookmakerDetails;
+            Console.WriteLine($"Bookmaker ID: {bookmakerDetails.BookmakerId}");
+            Console.WriteLine($"Expire at: {bookmakerDetails.ExpireAt}");
+            Console.WriteLine($"Virtual host: {bookmakerDetails.VirtualHost}");
         }
 
         private static ILoggerFactory CreateLoggerFactory()
