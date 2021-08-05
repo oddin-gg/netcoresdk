@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.Configuration.Abstractions;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace Oddin.OddsFeedSdk.Configuration
 
         internal ExceptionHandlingStrategy ExceptionHandlingStrategy;
 
-        internal int SdkNodeId;
+        internal int? SdkNodeId;
 
         internal int? HttpClientTimeout;
 
@@ -33,7 +33,7 @@ namespace Oddin.OddsFeedSdk.Configuration
             AccessToken = accessToken;
             SectionProvider = sectionProvider;
             ExceptionHandlingStrategy = ExceptionHandlingStrategy.CATCH;
-            SdkNodeId = 0;
+            SdkNodeId = null;
             DefaultLocale = Feed.AvailableLanguages().FirstOrDefault();
         }
 
@@ -48,7 +48,7 @@ namespace Oddin.OddsFeedSdk.Configuration
                 SetDefaultLocale(new CultureInfo(section.DefaultLocale.Trim()));
 
             ExceptionHandlingStrategy = section.ExceptionHandlingStrategy;
-            SdkNodeId = section.SdkNodeId.Value;
+            SdkNodeId = section.SdkNodeId;
 
             HttpClientTimeout = section.HttpClientTimeout;
         }

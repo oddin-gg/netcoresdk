@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.Configuration.Abstractions;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.Configuration
 {

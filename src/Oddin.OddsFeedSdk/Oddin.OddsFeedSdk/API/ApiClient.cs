@@ -206,28 +206,106 @@ namespace Oddin.OddsFeedSdk.API
             return (long)response.ResponseCode;
         }
 
-        public async Task PostRecoveryRequest(string producerName, long requestId, int nodeId, DateTime timestamp = default)
+        public async Task PostRecoveryRequest(string producerName, long requestId, int? nodeId, DateTime timestamp = default)
         {
             var route = $"v1/{producerName}/recovery/initiate_request";
-            (string key, object value)[] parameters;
+            List<(string key, object value)> parameters;
 
             if (timestamp == default)
-                parameters = new (string key, object value)[]
+                parameters = new List<(string key, object value)>
                 {
-                    ("request_id", requestId),
-                    ("node_id", nodeId)
+                    ("request_id", requestId)
                 };
             else
-                parameters = new (string key, object value)[]
+                parameters = new List<(string key, object value)>
                 {
                     ("after", timestamp.ToEpochTimeMilliseconds()),
-                    ("request_id", requestId),
-                    ("node_id", nodeId)
+                    ("request_id", requestId)
                 };
 
-            await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters, deserializeResponse: false);
+            if (nodeId != null)
+                parameters.Add(("node_id", nodeId));
+
+            await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters.ToArray(), deserializeResponse: false);
         }
 
         public IObservable<T> SubscribeForClass<T>() => _restClient.SubscribeForClass<T>();
+
+        public async Task<bool> PostReplayClear(int? nodeId)
+        {
+            var route = $"v1/replay/clear";
+            var parameters = ParametersOrDefault(nodeId);
+
+            var result = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters, deserializeResponse: false);
+            return result.Successful;
+        }
+
+        public async Task<bool> PostReplayStop(int? nodeId)
+        {
+            var route = $"v1/replay/stop";
+            var parameters = ParametersOrDefault(nodeId);
+
+            var result = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters, deserializeResponse: false);
+            return result.Successful;
+        }
+
+        public async Task<ReplayEndpointModel> GetReplaySetContent(int? nodeId)
+        {
+            var route = $"v1/replay";
+            var parameters = ParametersOrDefault(nodeId);
+
+            var result = await _restClient.SendRequestAsync<ReplayEndpointModel>(route, HttpMethod.Get, parameters: parameters);
+            return result.Data;
+        }
+
+        public async Task<bool> PutReplayEvent(URN eventId, int? nodeId)
+        {
+            var route = $"v1/replay/events/{eventId}";
+            var parameters = ParametersOrDefault(nodeId);
+
+            var result = await _restClient.SendRequestAsync<object>(route, HttpMethod.Put, parameters: parameters, deserializeResponse: false);
+            return result.Successful;
+        }
+
+        public async Task<bool> DeleteReplayEvent(URN eventId, int? nodeId)
+        {
+            var route = $"v1/replay/events/{eventId}";
+            var parameters = ParametersOrDefault(nodeId);
+
+            var result = await _restClient.SendRequestAsync<object>(route, HttpMethod.Delete, parameters: parameters, deserializeResponse: false);
+            return result.Successful;
+        }
+
+        public async Task<bool> PostReplayStart(int? nodeId, int? speed = null, int? maxDelay = null, bool? useReplayTimestamp = null, string product = null, bool? runParallel = null)
+        {
+            var parameters = new List<(string key, object value)>();
+            if (nodeId != null)
+                parameters.Add(("node_id", nodeId));
+
+            if (speed != null)
+                parameters.Add(("speed", speed));
+
+            if (maxDelay != null)
+                parameters.Add(("max_delay", maxDelay));
+
+            if (useReplayTimestamp != null)
+                parameters.Add(("use_replay_timestamp", useReplayTimestamp));
+
+            if (runParallel != null)
+                parameters.Add(("run_parallel", runParallel));
+
+            if (product != null)
+                parameters.Add(("product", product));
+
+            var route = "/replay/play";
+
+            var result = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters.ToArray(), deserializeResponse: false);
+            return result.Successful;
+        }
+
+        private (string key, object value)[] ParametersOrDefault(int? nodeId)
+            => nodeId == null
+                ? default
+                : new (string key, object value)[] { ("node_id", nodeId.Value) };
     }
 }

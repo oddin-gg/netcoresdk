@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 
 namespace Oddin.OddsFeedSdk.Configuration.Abstractions
 {
@@ -12,7 +12,7 @@ namespace Oddin.OddsFeedSdk.Configuration.Abstractions
 
         public int MaxRecoveryTime { get; }
 
-        public int NodeId { get; }
+        public int? NodeId { get; }
 
         public SdkEnvironment Environment { get; }
 

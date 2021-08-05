@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 
-namespace Oddin.OddsFeedSdk.API.Abstractions
+namespace Oddin.OddsFeedSdk.Managers.Abstractions
 {
     public interface ISportDataProvider
     {
@@ -22,7 +22,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
 
         ICompetitor GetCompetitor(URN id, CultureInfo culture = null);
 
-        IEnumerable<IFixtureChange> GetFixtureChanges(CultureInfo culture = null); 
+        IEnumerable<IFixtureChange> GetFixtureChanges(CultureInfo culture = null);
 
         IEnumerable<IMatch> GetListOfMatches(int stardIndex, int limit, CultureInfo culture = null);
 

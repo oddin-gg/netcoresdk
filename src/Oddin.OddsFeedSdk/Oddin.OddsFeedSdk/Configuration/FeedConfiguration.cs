@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.Configuration.Abstractions;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using System;
 using System.Globalization;
 
@@ -13,7 +13,7 @@ namespace Oddin.OddsFeedSdk.Configuration
 
         // Hosting propeties
         public string AccessToken { get; }
-        public int NodeId { get; }
+        public int? NodeId { get; }
         public string ApiHost { get; }
         public string Host { get; }
         public int Port { get; }
@@ -38,7 +38,7 @@ namespace Oddin.OddsFeedSdk.Configuration
             bool useApiSsl,
             int maxInactivitySeconds,
             int maxRecoveryExecutionInSeconds,
-            int nodeId,
+            int? nodeId,
             ExceptionHandlingStrategy exceptionHandlingStrategy,
             int httpClientTimeout,
             AppConfigurationSection section)

@@ -26,7 +26,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
 
         Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId);
 
-        Task PostRecoveryRequest(string producerName, long requestId, int nodeId, DateTime timestamp = default);
+        Task PostRecoveryRequest(string producerName, long requestId, int? nodeId, DateTime timestamp = default);
 
         TournamentInfoModel GetTournament(URN id, CultureInfo culture = null);
 
@@ -47,5 +47,23 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         fixtureChangesEndpoint GetFixtureChanges(CultureInfo culture);
         
         IObservable<T> SubscribeForClass<T>();
+
+        Task<bool> PostReplayClear(int? nodeId);
+
+        Task<bool> PostReplayStop(int? nodeId);
+
+        Task<ReplayEndpointModel> GetReplaySetContent(int? nodeId);
+
+        Task<bool> PutReplayEvent(URN eventId, int? nodeId);
+
+        Task<bool> DeleteReplayEvent(URN eventId, int? nodeId);
+
+        Task<bool> PostReplayStart(
+            int? nodeId,
+            int? speed = null,
+            int? maxDelay = null,
+            bool? useReplayTimestamp = null,
+            string product = null,
+            bool? runParallel = null);
     }
 }
