@@ -230,24 +230,36 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             session.OnFixtureChange -= Session_OnFixtureChange;
         }
 
-        private static async void Session_OnFixtureChange(object sender, FixtureChangeEventArgs<ISportEvent> e)
+        private static async void Session_OnFixtureChange(object sender, FixtureChangeEventArgs<ISportEvent> eventArgs)
         {
-            Console.WriteLine($"On Bet Cancel Message Received in {await e.GetFixtureChange().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+            var e = eventArgs.GetFixtureChange().Event;
+            Console.WriteLine($"On Bet Cancel Message Received in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
+            Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
         }
 
-        private static async void Session_OnBetCancel(object sender, BetCancelEventArgs<ISportEvent> e)
+        private static async void Session_OnBetCancel(object sender, BetCancelEventArgs<ISportEvent> eventArgs)
         {
-            Console.WriteLine($"On Bet Cancel Message Received in {await e.GetBetCancel().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+            var e = eventArgs.GetBetCancel().Event;
+            Console.WriteLine($"On Bet Cancel Message Received in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
+            Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
         }
 
         private static async void OnBetSettlement(object sender, BetSettlementEventArgs<ISportEvent> eventArgs)
         {
-            Console.WriteLine($"On Bet Settlement in {await eventArgs.GetBetSettlement().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+            var e = eventArgs.GetBetSettlement().Event;
+            Console.WriteLine($"On Bet Settlement in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
+            Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
         }
 
         private static async void OnOddsChangeReceived(object sender, OddsChangeEventArgs<ISportEvent> eventArgs)
         {
-            Console.WriteLine($"Odds changed in {await eventArgs.GetOddsChange().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+            var e = eventArgs.GetOddsChange().Event;
+            Console.WriteLine($"Odds changed in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
+            Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
         }
 
         private static async void OnBetStopReceived(object sender, BetStopEventArgs<ISportEvent> eventArgs)
