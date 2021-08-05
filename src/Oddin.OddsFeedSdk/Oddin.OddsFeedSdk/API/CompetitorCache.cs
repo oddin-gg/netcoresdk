@@ -126,14 +126,13 @@ namespace Oddin.OddsFeedSdk.API
             item.Name[culture] = data.name;
 
             if (data.abbreviation != null)
-            {
                 item.Abbreviation[culture] = data.abbreviation;
-            }
 
             if (data.country != null)
-            {
                 item.Country[culture] = data.country;
-            }
+
+            if (data is teamExtended dataExtended)
+                item.SportId = dataExtended.sport?.id == null ? null : new URN(dataExtended.sport?.id);
 
             _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
         }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
@@ -13,6 +14,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
     internal class Competitor : ICompetitor
     {
         private readonly ICompetitorCache _competitorCache;
+        private readonly ISportDataBuilder _sportDataBuilder;
         private readonly ExceptionHandlingStrategy _exceptionHandling;
         private readonly IEnumerable<CultureInfo> _cultures;
 
@@ -30,10 +32,11 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string CountryCode => FetchCompetitor(_cultures)?.CountryCode;
 
-        public Competitor(URN id, ICompetitorCache competitorCache, ExceptionHandlingStrategy exceptionHandling, IEnumerable<CultureInfo> cultures)
+        public Competitor(URN id, ICompetitorCache competitorCache, ISportDataBuilder sportDataBuilder, ExceptionHandlingStrategy exceptionHandling, IEnumerable<CultureInfo> cultures)
         {
             Id = id;
             _competitorCache = competitorCache;
+            _sportDataBuilder = sportDataBuilder;
             _exceptionHandling = exceptionHandling;
             _cultures = cultures;
         }
@@ -41,16 +44,6 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public string GetName(CultureInfo culture)
         {
             return FetchCompetitor(new[] { culture })?.Name?.FirstOrDefault(d => d.Key == culture).Value;
-        }
-
-        private LocalizedCompetitor FetchCompetitor(IEnumerable<CultureInfo> cultures)
-        {
-            var item = _competitorCache.GetCompetitor(Id, cultures);
-
-            if (item == null && _exceptionHandling == ExceptionHandlingStrategy.THROW)
-                throw new ItemNotFoundException(Id.ToString(), $"Competitor {Id} not found");
-            else
-                return item;
         }
 
         public string GetCountry(CultureInfo culture)
@@ -62,39 +55,25 @@ namespace Oddin.OddsFeedSdk.API.Entities
         {
             return FetchCompetitor(new[] { culture })?.Abbreviation?.FirstOrDefault(d => d.Key == culture).Value;
         }
-    }
 
-    internal class TeamCompetitor : ITeamCompetitor
-    {
-        private readonly string _qualifier;
-        private readonly ICompetitor _competitor;
-
-        public TeamCompetitor(string qualifier, ICompetitor competitor)
+        public Task<ISport> GetSportAsync()
         {
-            _qualifier = qualifier;
-            _competitor = competitor;
+            var sportId = FetchCompetitor(_cultures)?.SportId;
+
+            if (sportId == null)
+                return Task.FromResult<ISport>(null);
+            else
+                return Task.FromResult(_sportDataBuilder.BuildSport(sportId, _cultures));
         }
 
-        public string Qualifier => _qualifier;
+        private LocalizedCompetitor FetchCompetitor(IEnumerable<CultureInfo> cultures)
+        {
+            var item = _competitorCache.GetCompetitor(Id, cultures);
 
-        public IReadOnlyDictionary<CultureInfo, string> Countries => _competitor.Countries;
-
-        public IReadOnlyDictionary<CultureInfo, string> Abbreviations => _competitor.Abbreviations;
-
-        public bool? IsVirtual => _competitor.IsVirtual;
-
-        public string CountryCode => _competitor.CountryCode;
-
-        public URN Id => _competitor.Id;
-
-        public URN RefId => _competitor.RefId;
-
-        public IReadOnlyDictionary<CultureInfo, string> Names => _competitor.Names;
-
-        public string GetAbbreviation(CultureInfo culture) => _competitor.GetAbbreviation(culture);
-
-        public string GetCountry(CultureInfo culture) => _competitor.GetCountry(culture);
-
-        public string GetName(CultureInfo culture) => _competitor.GetName(culture);
+            if (item == null && _exceptionHandling == ExceptionHandlingStrategy.THROW)
+                throw new ItemNotFoundException(Id.ToString(), $"Competitor {Id} not found");
+            else
+                return item;
+        }
     }
 }

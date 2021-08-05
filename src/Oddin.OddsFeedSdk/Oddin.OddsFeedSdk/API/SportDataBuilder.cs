@@ -95,6 +95,7 @@ namespace Oddin.OddsFeedSdk.API
                 new Competitor(
                     id,
                     _competitorCache,
+                    this,
                     _configuration.ExceptionHandlingStrategy,
                     cultures));
         }
@@ -104,6 +105,7 @@ namespace Oddin.OddsFeedSdk.API
             return new Competitor(
                 id,
                 _competitorCache,
+                this,
                 _configuration.ExceptionHandlingStrategy,
                 cultures);
         }

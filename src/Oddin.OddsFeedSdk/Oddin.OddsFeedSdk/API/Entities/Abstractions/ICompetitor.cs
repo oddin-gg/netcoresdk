@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
-using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 {
@@ -19,7 +18,7 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 
         string CountryCode { get; }
 
-        Task<ISport> GetSportAsync() => Task.FromResult<ISport>(null);
+        Task<ISport> GetSportAsync();
 
         string ShortName => null;
     }
