@@ -85,13 +85,25 @@ namespace Oddin.OddsFeedSdkDemoIntegration
         {
             var provider = feed.SportDataProvider;
 
-            //var tournaments = provider.GetActiveTournaments(CultureEn);
-            
+            var competitorUrn = new URN("od:competitor:300");
+            var matchUrn = new URN("od:match:36856");
+            var tournamentUrn = new URN("od:tournament:1524");
+            var sportUrn = new URN("od:sport:1");
 
-            provider.DeleteCompetitorFromCache(new URN("od:competitor:300"));
-            provider.DeleteMatchFromCache(new URN("od:match:36856"));
-            provider.DeleteTournamentFromCache(new URN("od:tournament:1524"));
+            provider.DeleteCompetitorFromCache(competitorUrn);
+            provider.DeleteMatchFromCache(matchUrn);
+            provider.DeleteTournamentFromCache(tournamentUrn);
 
+            var activeTournaments = provider.GetActiveTournaments(CultureEn);
+            var availableTournaments = provider.GetAvailableTournaments(sportUrn, CultureEn);
+            var competitor = provider.GetCompetitor(competitorUrn, CultureEn);
+            var fixtureChanges = provider.GetFixtureChanges(CultureEn);
+            var listOfMatches = provider.GetListOfMatches(0, 2, CultureEn);
+            var liveMatches = provider.GetLiveMatches(CultureEn);
+            var match = provider.GetMatch(matchUrn, CultureEn);
+            var matchesForNow = provider.GetMatchesFor(DateTime.UtcNow, CultureEn);
+            var sport = await provider.GetSportAsync(sportUrn, CultureEn);
+            var sports = await provider.GetSportsAsync(CultureEn);
 
             var sportsEn = await provider.GetSportsAsync(CultureEn);
             var sportsRu = await provider.GetSportsAsync(CultureRu);
