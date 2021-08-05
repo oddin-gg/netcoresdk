@@ -35,7 +35,7 @@ namespace Oddin.OddsFeedSdk.API
                 culture = _defaultCulture;
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/fixtures/changes";
-            var result = _restClient.SendRequest<fixtureChangesEndpoint>(route, HttpMethod.Get);
+            var result = _restClient.SendRequest<fixtureChangesEndpoint>(route, HttpMethod.Get, culture);
             return result.Data;
         }
 
@@ -45,7 +45,7 @@ namespace Oddin.OddsFeedSdk.API
                 culture = _defaultCulture;
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/schedules/pre/schedule?start={startIndex}&limit={limit}";
-            var result = _restClient.SendRequest<ScheduleEndpointModel>(route, HttpMethod.Get);
+            var result = _restClient.SendRequest<ScheduleEndpointModel>(route, HttpMethod.Get, culture);
             return result.Data;
         }
 
@@ -55,7 +55,7 @@ namespace Oddin.OddsFeedSdk.API
                 culture = _defaultCulture;
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/schedules/live/schedule";
-            var result = _restClient.SendRequest<ScheduleEndpointModel>(route, HttpMethod.Get);
+            var result = _restClient.SendRequest<ScheduleEndpointModel>(route, HttpMethod.Get, culture);
             return result.Data;
         }
 
@@ -66,7 +66,7 @@ namespace Oddin.OddsFeedSdk.API
 
             var dateRoute = dateToGet.ToUniversalTime().ToString("yyyy-MM-dd");
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/schedules/{dateRoute}/schedule";
-            var result = _restClient.SendRequest<ScheduleEndpointModel>(route, HttpMethod.Get);
+            var result = _restClient.SendRequest<ScheduleEndpointModel>(route, HttpMethod.Get, culture);
             return result.Data;
         }
 
@@ -76,7 +76,7 @@ namespace Oddin.OddsFeedSdk.API
                 culture = _defaultCulture;
 
             var route = $"v1/descriptions/{culture.TwoLetterISOLanguageName}/match_status";
-            var result = _restClient.SendRequest<MatchStatusModel>(route, HttpMethod.Get);
+            var result = _restClient.SendRequest<MatchStatusModel>(route, HttpMethod.Get, culture);
             return result.Data;
         }
 
@@ -89,7 +89,7 @@ namespace Oddin.OddsFeedSdk.API
                 culture = _defaultCulture;
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sport_events/{id}/fixture";
-            var result = _restClient.SendRequest<FixturesEndpointModel>(route, HttpMethod.Get);
+            var result = _restClient.SendRequest<FixturesEndpointModel>(route, HttpMethod.Get, culture);
             return result.Data;
         }
 
