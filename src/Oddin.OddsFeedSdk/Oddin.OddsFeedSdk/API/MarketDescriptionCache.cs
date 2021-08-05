@@ -8,6 +8,7 @@ using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Models;
 using System;
+using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API
 {
@@ -18,6 +19,7 @@ namespace Oddin.OddsFeedSdk.API
         private readonly IApiClient _apiClient;
         private readonly MemoryCache _cache = new MemoryCache(nameof(MarketDescriptionCache));
         private readonly object _lock = new object();
+        private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(24);
 
         private readonly HashSet<CultureInfo> _loadedLocals = new HashSet<CultureInfo>();
 
@@ -137,7 +139,7 @@ namespace Oddin.OddsFeedSdk.API
             item.Name[culture] = marketDescription.name;
             item.Specifiers = specifiers;
 
-            _cache.Set(key.Key, item, ObjectCache.InfiniteAbsoluteExpiration);
+            _cache.Set(key.Key, item, _cacheTTL.AsCachePolicy());
         }
     }
 }
