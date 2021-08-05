@@ -40,7 +40,7 @@ namespace Oddin.OddsFeedSdk.API
                     var tournaments = response.Data switch
                     {
                         FixturesEndpointModel f => new tournament[] { f.fixture.tournament },
-                        TournamentsModel t => t.tournament.ToArray(),
+                        TournamentsModel t => t.tournaments?.ToArray() ?? new tournament[0],
                         MatchSummaryModel m => new tournament[] { m.sport_event.tournament },
                         ScheduleEndpointModel s => s.sport_event.Select(t => t.tournament).ToArray(),
                         TournamentScheduleModel t => t.tournament.ToArray(),

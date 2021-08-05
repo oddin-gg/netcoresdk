@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 
 // 
@@ -21,57 +23,17 @@ namespace Oddin.OddsFeedSdk.API.Models
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlRootAttribute("tournaments", IsNullable = false)]
+    [System.Xml.Serialization.XmlRootAttribute("sport_tournaments", IsNullable = false)]
     public partial class TournamentsModel
     {
+        [XmlArrayItemAttribute(IsNullable = false)]
+        public List<tournament> tournaments { get; set; }
 
-        private tournamentExtended[] tournamentField;
+        [XmlElement]
+        public sport sport { get; set; }
 
-        private System.DateTime generated_atField;
-
-        private bool generated_atFieldSpecified;
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("tournament")]
-        public tournamentExtended[] tournament
-        {
-            get
-            {
-                return this.tournamentField;
-            }
-            set
-            {
-                this.tournamentField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public System.DateTime generated_at
-        {
-            get
-            {
-                return this.generated_atField;
-            }
-            set
-            {
-                this.generated_atField = value;
-            }
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool generated_atSpecified
-        {
-            get
-            {
-                return this.generated_atFieldSpecified;
-            }
-            set
-            {
-                this.generated_atFieldSpecified = value;
-            }
-        }
+        [XmlAttribute]
+        public DateTime generated_at { get; set; }
     }
 
     /// <remarks/>
@@ -352,6 +314,9 @@ namespace Oddin.OddsFeedSdk.API.Models
         private bool scheduled_endFieldSpecified;
 
         private string refidField;
+
+        [XmlAttribute]
+        public string abbreviation { get; set; }
 
         [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
         public string refid
