@@ -1,4 +1,5 @@
-﻿using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
 {
@@ -9,6 +10,6 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
 
         long? EndTime { get; }
 
-        string SupersededBy { get; }
+        URN SupersededBy { get; }
     }
 }
