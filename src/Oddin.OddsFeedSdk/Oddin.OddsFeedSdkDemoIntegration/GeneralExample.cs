@@ -24,14 +24,17 @@ namespace Oddin.OddsFeedSdkDemoIntegration
         {
             var loggerFactory = CreateLoggerFactory();
 
+            // Build configuration
             var config = Feed
                 .GetConfigurationBuilder()
                 .SetAccessToken(Program.TOKEN)
                 .SelectIntegration()
                 .Build();
 
+            // Create Feed
             var feed = new Feed(config, loggerFactory);
 
+            // Subscribe for session
             var session = feed
                 .CreateBuilder()
                 .SetMessageInterest(MessageInterest.AllMessages)

@@ -12,8 +12,8 @@ namespace Oddin.OddsFeedSdk.Managers.Abstractions
         Task<IEnumerable<ISport>> GetSportsAsync(CultureInfo culture = null);
         Task<ISport> GetSportAsync(URN id, CultureInfo culture = null);
 
-        IEnumerable<ITournament> GetActiveTournaments(CultureInfo culture);
-        IEnumerable<ITournament> GetActiveTournaments(string name, CultureInfo culture);
+        IEnumerable<ITournament> GetActiveTournaments(CultureInfo culture = null);
+        IEnumerable<ITournament> GetActiveTournaments(string name, CultureInfo culture = null);
         IEnumerable<ITournament> GetAvailableTournaments(URN sportId, CultureInfo culture);
 
         IEnumerable<IMatch> GetMatchesFor(DateTime dateTime, CultureInfo culture = null);
