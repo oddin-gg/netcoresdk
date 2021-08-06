@@ -1,5 +1,6 @@
-﻿using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.Common;
 using System.Collections.Generic;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping
@@ -10,14 +11,14 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
         public long? EndTime { get; }
 
-        public string SupersededBy { get; }
+        public URN SupersededBy { get; }
 
         public BetCancel(IMessageTimestamp timestamp, IProducer producer, T @event, long? requestId, long? startTime, long? endTime, string supersededBy, IEnumerable<IMarketCancel> markets, byte[] rawMessage)
             : base(producer, timestamp, @event, requestId, rawMessage, markets)
         {
             StartTime = startTime;
             EndTime = endTime;
-            SupersededBy = supersededBy;
+            SupersededBy = new URN(supersededBy);
         }
     }
 }

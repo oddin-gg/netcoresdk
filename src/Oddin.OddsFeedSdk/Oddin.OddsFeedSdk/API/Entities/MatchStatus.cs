@@ -35,7 +35,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public URN WinnerId => FetchMatchStatus()?.WinnerId;
 
-        public EventStatus? Status => FetchMatchStatus()?.Status;
+        public EventStatus Status => GetEventStatus();
 
         public IReadOnlyDictionary<string, object> Properties => new ReadOnlyDictionary<string, object>(FetchMatchStatus()?.Properties);
 
@@ -74,6 +74,16 @@ namespace Oddin.OddsFeedSdk.API.Entities
                 throw new ItemNotFoundException(_sportEventId.ToString(), $"Match status for match {_sportEventId} not found");
             else
                 return item;
+        }
+
+        private EventStatus GetEventStatus()
+        {
+            var matchStatus = FetchMatchStatus();
+
+            if (matchStatus is null)
+                return EventStatus.Unknown;
+
+            return matchStatus.Status;
         }
     }
 }

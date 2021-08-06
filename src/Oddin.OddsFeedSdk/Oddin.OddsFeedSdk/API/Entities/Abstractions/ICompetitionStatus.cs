@@ -8,7 +8,7 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
     {
         URN WinnerId { get; }
 
-        EventStatus? Status { get; }
+        EventStatus Status { get; }
 
         IReadOnlyDictionary<string, object> Properties { get; }
     }
