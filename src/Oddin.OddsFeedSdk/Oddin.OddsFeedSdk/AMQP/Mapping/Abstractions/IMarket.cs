@@ -8,7 +8,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
     {
         int Id { get; }
 
-        int? RefId { get; }
+        int RefId { get; }
 
         IReadOnlyDictionary<string, string> Specifiers { get; }
 

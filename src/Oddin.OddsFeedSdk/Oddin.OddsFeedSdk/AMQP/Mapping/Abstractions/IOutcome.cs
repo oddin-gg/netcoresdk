@@ -7,7 +7,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
     {
         long Id { get; }
 
-        long? RefId { get; }
+        long RefId { get; }
 
         Task<string> GetNameAsync(CultureInfo culture);
     }

@@ -6,7 +6,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 {
     internal class LocalizedMarketDescription : ILocalizedItem
     {
-        public int? RefId { get; }
+        public int RefId { get; }
 
         public IDictionary<long, LocalizedOutcomeDescription> Outcomes { get; }
 
@@ -16,7 +16,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public IDictionary<CultureInfo, string> Name { get; } = new Dictionary<CultureInfo, string>();
 
-        public LocalizedMarketDescription(int? refId, IDictionary<long, LocalizedOutcomeDescription> outcomes)
+        public LocalizedMarketDescription(int refId, IDictionary<long, LocalizedOutcomeDescription> outcomes)
         {
             RefId = refId;
             Outcomes = outcomes;

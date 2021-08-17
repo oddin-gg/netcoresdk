@@ -18,7 +18,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
         public MarketWithOdds(
             int marketId,
-            int? refId,
+            int refId,
             IDictionary<string, string> specifiers,
             string extendedSpecifiers,
             IApiClient apiClient,

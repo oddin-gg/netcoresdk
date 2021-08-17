@@ -17,7 +17,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         public MarketWithSettlement(
             MarketStatus marketStatus,
             int marketId,
-            int? refId,
+            int refId,
             IDictionary<string, string> specifiers,
             string extentedSpecifiers,
             IEnumerable<IOutcomeSettlement> outcomes,
