@@ -14,7 +14,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             double? probabilities,
             IAdditionalProbabilities additionalProbabilities,
             long outcomeId,
-            long? outcomeRefId,
+            long outcomeRefId,
             IApiClient apiClient)
             : base(active, probabilities, additionalProbabilities, outcomeId, outcomeRefId, apiClient)
         {

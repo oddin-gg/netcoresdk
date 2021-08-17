@@ -233,10 +233,10 @@ public partial class bet_cancel_market
 
     private bool void_reasonFieldSpecified;
 
-    private int? refidField;
+    private int refidField;
 
     [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
-    public int? refid
+    public int refid
     {
         get
         {

@@ -456,10 +456,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
 
         private bool cashout_statusFieldSpecified;
 
-        private int? refidField;
+        private int refidField;
 
         [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
-        public int? refid
+        public int refid
         {
             get
             {
@@ -684,10 +684,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
             }
         }
 
-        private long? refidField;
+        private long refidField;
 
         [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
-        public long? refid
+        public long refid
         {
             get
             {
