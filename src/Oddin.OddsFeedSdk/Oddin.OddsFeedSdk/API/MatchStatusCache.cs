@@ -166,7 +166,9 @@ namespace Oddin.OddsFeedSdk.API
                 scoreboard.home_gold,
                 scoreboard.away_gold,
                 scoreboard.home_destroyed_towers,
-                scoreboard.away_destroyed_towers);
+                scoreboard.away_destroyed_towers,
+                scoreboard.home_goals,
+                scoreboard.away_goals);
         }
 
         private Scoreboard MakeFeedScoreboard(scoreboard scoreboard)
@@ -186,7 +188,9 @@ namespace Oddin.OddsFeedSdk.API
                 scoreboard.home_gold,
                 scoreboard.away_gold,
                 scoreboard.home_destroyed_towers,
-                scoreboard.away_destroyed_towers);
+                scoreboard.away_destroyed_towers,
+                scoreboard.home_goals,
+                scoreboard.away_goals);
         }
 
         private List<PeriodScore> MapApiPeriodScores(periodScore[] scores)
@@ -196,6 +200,7 @@ namespace Oddin.OddsFeedSdk.API
                     s.away_score,
                     s.number,
                     s.match_status_code,
+                    s.type,
                     s.home_won_rounds,
                     s.away_won_rounds,
                     s.home_kills,
@@ -210,6 +215,7 @@ namespace Oddin.OddsFeedSdk.API
                     s.away_score,
                     s.number,
                     s.match_status_code,
+                    s.type,
                     s.home_won_rounds,
                     s.away_won_rounds,
                     s.home_kills,

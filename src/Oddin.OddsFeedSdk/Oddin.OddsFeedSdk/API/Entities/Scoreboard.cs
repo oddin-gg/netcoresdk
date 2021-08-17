@@ -16,6 +16,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public int? AwayGold { get; }
         public int? HomeDestroyedTowers { get; }
         public int? AwayDestroyedTowers { get; }
+        public int? HomeGoals { get; }
+        public int? AwayGoals { get; }
 
         public Scoreboard(
             int? currentCtTeam,
@@ -29,7 +31,9 @@ namespace Oddin.OddsFeedSdk.API.Entities
             int? homeGold,
             int? awayGold,
             int? homeDestroyedTowers,
-            int? awayDestroyedTowers)
+            int? awayDestroyedTowers,
+            int? homeGoals,
+            int? awayGoals)
         {
             CurrentCtTeam = currentCtTeam;
             HomeWonRounds = homeWonRounds;
@@ -43,6 +47,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
             AwayGold = awayGold;
             HomeDestroyedTowers = homeDestroyedTowers;
             AwayDestroyedTowers = awayDestroyedTowers;
+            HomeGoals = homeGoals;
+            AwayGoals = awayGoals;
         }
     }
 }

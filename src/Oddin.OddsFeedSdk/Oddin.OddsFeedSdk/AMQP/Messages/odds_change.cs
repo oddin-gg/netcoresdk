@@ -201,6 +201,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         public int home_destroyed_towers { get; set; }
         [XmlAttribute]
         public int away_destroyed_towers { get; set; }
+        [XmlAttribute]
+        public int home_goals { get; set; }
+        [XmlAttribute]
+        public int away_goals { get; set; }
     }
 
     [Serializable]
@@ -1215,6 +1219,8 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
     public class periodScoreType
     {
 
+        private string typeField;
+
         private int match_status_codeField;
 
         private int numberField;
@@ -1222,6 +1228,20 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         private double home_scoreField;
 
         private double away_scoreField;
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string type
+        {
+            get
+            {
+                return this.typeField;
+            }
+            set
+            {
+                this.typeField = value;
+            }
+        }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
