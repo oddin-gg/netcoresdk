@@ -50,7 +50,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
 
         private string event_refidField;
 
-        [System.Xml.Serialization.XmlElement(ElementName = "event_ref_id", IsNullable = true)]
+        [System.Xml.Serialization.XmlAttributeAttribute(AttributeName = "event_ref_id")]
         public string event_refid
         {
             get
@@ -458,7 +458,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
 
         private int? refidField;
 
-        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+        [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
         public int? refid
         {
             get
@@ -686,7 +686,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
 
         private long? refidField;
 
-        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+        [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
         public long? refid
         {
             get

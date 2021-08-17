@@ -105,7 +105,7 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         private string refidField;
 
-        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+        [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
         public string refid
         {
             get
@@ -334,7 +334,7 @@ namespace Oddin.OddsFeedSdk.API.Models
         [XmlAttribute]
         public string abbreviation { get; set; }
 
-        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+        [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
         public string refid
         {
             get

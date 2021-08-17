@@ -92,7 +92,7 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         private int? refidField;
 
-        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+        [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
         public int? refid
         {
             get
@@ -193,7 +193,7 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         private int? refidField;
 
-        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+        [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
         public int? refid
         {
             get
