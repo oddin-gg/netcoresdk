@@ -32,6 +32,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string CountryCode => FetchCompetitor(_cultures)?.CountryCode;
 
+        public int? Underage => FetchCompetitor(_cultures)?.Underage;
+
         public Competitor(URN id, ICompetitorCache competitorCache, ISportDataBuilder sportDataBuilder, ExceptionHandlingStrategy exceptionHandling, IEnumerable<CultureInfo> cultures)
         {
             Id = id;

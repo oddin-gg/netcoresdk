@@ -18,6 +18,8 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 
         string CountryCode { get; }
 
+        int? Underage { get; }
+
         Task<ISport> GetSportAsync();
 
         string ShortName => null;

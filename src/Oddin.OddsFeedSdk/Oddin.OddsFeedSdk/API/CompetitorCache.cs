@@ -113,6 +113,7 @@ namespace Oddin.OddsFeedSdk.API
                 item.RefId = data.refid == null ? null : new URN(data.refid);
                 item.IsVirtual = data.virtualSpecified ? data.@virtual : default(bool?);
                 item.CountryCode = data.country_code;
+                item.Underage = data.underage;
             }
             else
             {
@@ -120,7 +121,8 @@ namespace Oddin.OddsFeedSdk.API
                 {
                     RefId = data.refid == null ? null : new URN(data.refid),
                     IsVirtual = data.virtualSpecified ? data.@virtual : default(bool?),
-                    CountryCode = data.country_code
+                    CountryCode = data.country_code,
+                    Underage = data.underage
                 };
             }
             item.Name[culture] = data.name;

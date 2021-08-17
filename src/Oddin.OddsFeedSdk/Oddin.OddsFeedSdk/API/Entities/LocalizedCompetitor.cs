@@ -25,6 +25,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string CountryCode { get; set; }
 
+        public int Underage { get; set; }
+
         public IEnumerable<CultureInfo> LoadedLocals => GetLoadedLocals();
 
         private IEnumerable<CultureInfo> GetLoadedLocals()

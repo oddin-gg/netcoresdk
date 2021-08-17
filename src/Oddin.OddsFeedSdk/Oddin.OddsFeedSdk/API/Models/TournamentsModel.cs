@@ -93,6 +93,8 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         private string abbreviationField;
 
+        private int underageField;
+
         private string countryField;
 
         private string country_codeField;
@@ -155,6 +157,20 @@ namespace Oddin.OddsFeedSdk.API.Models
             set
             {
                 this.abbreviationField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttribute()]
+        public int underage
+        {
+            get
+            {
+                return this.underageField;
+            }
+            set
+            {
+                this.underageField = value;
             }
         }
 
