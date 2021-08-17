@@ -14,5 +14,7 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
         int? AwayGold { get; }
         int? HomeDestroyedTowers { get; }
         int? AwayDestroyedTowers { get; }
+        int? HomeGoals { get; }
+        int? AwayGoals { get; }
     }
 }
