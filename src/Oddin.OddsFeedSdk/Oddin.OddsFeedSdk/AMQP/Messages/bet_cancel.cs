@@ -48,7 +48,7 @@ public partial class bet_cancel : FeedMessageModel
 
     private string event_refidField;
 
-    [System.Xml.Serialization.XmlElement(ElementName = "event_ref_id", IsNullable = true)]
+    [System.Xml.Serialization.XmlAttributeAttribute(AttributeName = "event_ref_id")]
     public string event_refid
     {
         get
@@ -233,10 +233,10 @@ public partial class bet_cancel_market
 
     private bool void_reasonFieldSpecified;
 
-    private int? refidField;
+    private int refidField;
 
-    [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
-    public int? refid
+    [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
+    public int refid
     {
         get
         {

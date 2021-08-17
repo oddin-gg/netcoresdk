@@ -50,7 +50,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
 
         private string event_refidField;
 
-        [System.Xml.Serialization.XmlElement(ElementName = "event_ref_id", IsNullable = true)]
+        [System.Xml.Serialization.XmlAttributeAttribute(AttributeName = "event_ref_id")]
         public string event_refid
         {
             get
@@ -201,6 +201,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         public int home_destroyed_towers { get; set; }
         [XmlAttribute]
         public int away_destroyed_towers { get; set; }
+        [XmlAttribute]
+        public int home_goals { get; set; }
+        [XmlAttribute]
+        public int away_goals { get; set; }
     }
 
     [Serializable]
@@ -260,7 +264,8 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         public double away_score { get; set; }
         [XmlAttribute]
         public bool scoreboard_available { get; set; }
-
+        [XmlAttribute]
+        public string winner_id { get; set; }
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
@@ -451,10 +456,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
 
         private bool cashout_statusFieldSpecified;
 
-        private int? refidField;
+        private int refidField;
 
-        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
-        public int? refid
+        [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
+        public int refid
         {
             get
             {
@@ -679,10 +684,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
             }
         }
 
-        private long? refidField;
+        private long refidField;
 
-        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
-        public long? refid
+        [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
+        public long refid
         {
             get
             {
@@ -1215,6 +1220,8 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
     public class periodScoreType
     {
 
+        private string typeField;
+
         private int match_status_codeField;
 
         private int numberField;
@@ -1222,6 +1229,20 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         private double home_scoreField;
 
         private double away_scoreField;
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string type
+        {
+            get
+            {
+                return this.typeField;
+            }
+            set
+            {
+                this.typeField = value;
+            }
+        }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]

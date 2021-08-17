@@ -27,6 +27,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string CountryCode => _competitor.CountryCode;
 
+        public string Underage => _competitor.Underage;
+
         public URN Id => _competitor.Id;
 
         public URN RefId => _competitor.RefId;

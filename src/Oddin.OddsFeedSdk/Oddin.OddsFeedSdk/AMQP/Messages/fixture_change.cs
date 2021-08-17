@@ -45,7 +45,7 @@ public partial class fixture_change : FeedMessageModel
 
     private string event_refidField;
 
-    [System.Xml.Serialization.XmlElement(ElementName = "event_ref_id", IsNullable = true)]
+    [System.Xml.Serialization.XmlAttributeAttribute(AttributeName = "event_ref_id")]
     public string event_refid
     {
         get

@@ -34,7 +34,7 @@ namespace Oddin.OddsFeedSdk.Managers
 
                 return data?.replay_event?
                     .Where(e => e.id != null)
-                    .Select(e => new URN(e.id))
+                    .Select(e => string.IsNullOrEmpty(e?.id) ? null : new URN(e.id))
                     ?? Enumerable.Empty<URN>();
             }
             catch (Exception e)
@@ -52,7 +52,7 @@ namespace Oddin.OddsFeedSdk.Managers
 
                 return data?.replay_event?
                     .Where(e => e.id != null)
-                    .Select(e => _sportsDataProvider.GetMatch(new URN(e.id)))
+                    .Select(e => _sportsDataProvider.GetMatch(string.IsNullOrEmpty(e?.id) ? null : new URN(e.id)))
                     ?? Enumerable.Empty<ISportEvent>();
             }
             catch(Exception e)

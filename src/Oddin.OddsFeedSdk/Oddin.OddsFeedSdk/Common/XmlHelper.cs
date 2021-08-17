@@ -30,7 +30,7 @@ namespace Oddin.OddsFeedSdk.Common
                 result = (T)serializer.Deserialize(xmlReader);
                 return true;
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException e)
             {
                 result = default;
                 return false;

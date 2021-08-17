@@ -35,7 +35,7 @@ namespace Oddin.OddsFeedSdk.API.Models
         [XmlAttribute]
         public DateTime generated_at { get; set; }
     }
-
+    
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
     [System.SerializableAttribute()]
@@ -93,6 +93,8 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         private string abbreviationField;
 
+        private string underageField;
+
         private string countryField;
 
         private string country_codeField;
@@ -103,7 +105,7 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         private string refidField;
 
-        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+        [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
         public string refid
         {
             get
@@ -155,6 +157,20 @@ namespace Oddin.OddsFeedSdk.API.Models
             set
             {
                 this.abbreviationField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttribute()]
+        public string underage
+        {
+            get
+            {
+                return this.underageField;
+            }
+            set
+            {
+                this.underageField = value;
             }
         }
 
@@ -318,7 +334,7 @@ namespace Oddin.OddsFeedSdk.API.Models
         [XmlAttribute]
         public string abbreviation { get; set; }
 
-        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
+        [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
         public string refid
         {
             get

@@ -11,9 +11,9 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
         public long Id { get; }
 
-        public long? RefId { get; }
+        public long RefId { get; }
 
-        public Outcome(long id, long? refId, IApiClient apiClient)
+        public Outcome(long id, long refId, IApiClient apiClient)
         {
             Id = id;
             RefId = refId;

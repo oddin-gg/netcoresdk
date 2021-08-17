@@ -15,7 +15,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         internal OutcomeSettlement(
             double? deadHeatFactor,
             long id,
-            long? refId,
+            long refId,
             IApiClient client,
             int result,
             double? voidFactor)

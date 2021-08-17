@@ -33,5 +33,9 @@ namespace Oddin.OddsFeedSdk.API.Models
         public int home_destroyed_towers { get; set; }
         [XmlAttribute]
         public int away_destroyed_towers { get; set; }
+        [XmlAttribute]
+        public int home_goals { get; set; }
+        [XmlAttribute]
+        public int away_goals { get; set; }
     }
 }

@@ -5,7 +5,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 {
     internal class LocalizedOutcomeDescription
     {
-        public long? RefId { get; set; }
+        public int RefId { get; set; }
 
         internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
 

@@ -62,8 +62,8 @@ namespace Oddin.OddsFeedSdk.API
         {
             foreach (var tournament in tournamentData)
             {
-                var tournamentId = new URN(tournament.Key);
-                var sportId = new URN(tournament.Value.id);
+                var tournamentId = string.IsNullOrEmpty(tournament.Key) ? null : new URN(tournament.Key);
+                var sportId = string.IsNullOrEmpty(tournament.Key) ? null : new URN(tournament.Value.id);
 
                 RefreshOrInsertItem(sportId, culture, tournament.Value);
                 var sport = _cache.Get(sportId.ToString()) as LocalizedSport;
@@ -134,7 +134,7 @@ namespace Oddin.OddsFeedSdk.API
                     return null;
                 }
 
-                var tournamentIds = tournaments.tournaments.Select(t => new URN(t.id));
+                var tournamentIds = tournaments.tournaments.Select(t => string.IsNullOrEmpty(t?.id) ? null : new URN(t.id));
                 foreach (var tournamentId in tournamentIds)
                 {
                     try
@@ -171,7 +171,7 @@ namespace Oddin.OddsFeedSdk.API
 
                 foreach(var sport in sports.sport)
                 {
-                    var id = new URN(sport.id);
+                    var id = string.IsNullOrEmpty(sport?.id) ? null : new URN(sport.id);
                     try
                     {
                         RefreshOrInsertItem(id, culture, sport);

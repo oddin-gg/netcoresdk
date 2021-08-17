@@ -110,17 +110,19 @@ namespace Oddin.OddsFeedSdk.API
         {
             if (_cache.Get(id.ToString()) is LocalizedCompetitor item)
             {
-                item.RefId = data.refid == null ? null : new URN(data.refid);
+                item.RefId = string.IsNullOrEmpty(data?.refid) ? null : new URN(data.refid);
                 item.IsVirtual = data.virtualSpecified ? data.@virtual : default(bool?);
                 item.CountryCode = data.country_code;
+                item.Underage = data.underage;
             }
             else
             {
                 item = new LocalizedCompetitor(id)
                 {
-                    RefId = data.refid == null ? null : new URN(data.refid),
+                    RefId = string.IsNullOrEmpty(data?.refid) ? null : new URN(data.refid),
                     IsVirtual = data.virtualSpecified ? data.@virtual : default(bool?),
-                    CountryCode = data.country_code
+                    CountryCode = data.country_code,
+                    Underage = data.underage
                 };
             }
             item.Name[culture] = data.name;
@@ -132,7 +134,7 @@ namespace Oddin.OddsFeedSdk.API
                 item.Country[culture] = data.country;
 
             if (data is teamExtended dataExtended)
-                item.SportId = dataExtended.sport?.id == null ? null : new URN(dataExtended.sport?.id);
+                item.SportId = string.IsNullOrEmpty(dataExtended?.sport?.id) ? null : new URN(dataExtended.sport?.id);
 
             _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
         }
@@ -146,7 +148,7 @@ namespace Oddin.OddsFeedSdk.API
         {
             foreach(var team in teams)
             {
-                var id = new URN(team.id);
+                var id = string.IsNullOrEmpty(team?.id) ? null : new URN(team.id);
                 RefreshOrInsertItem(id, culture, team);
             }
         }

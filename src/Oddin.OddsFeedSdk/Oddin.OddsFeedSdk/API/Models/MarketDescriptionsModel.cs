@@ -90,10 +90,10 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         private string variantField;
 
-        private int? refidField;
+        private int refidField;
 
-        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
-        public int? refid
+        [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
+        public int refid
         {
             get
             {
@@ -191,10 +191,10 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         private string descriptionField;
 
-        private int? refidField;
+        private int refidField;
 
-        [System.Xml.Serialization.XmlElement(ElementName = "ref_id", IsNullable = true)]
-        public int? refid
+        [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
+        public int refid
         {
             get
             {

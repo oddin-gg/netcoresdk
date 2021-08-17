@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 
@@ -24,6 +22,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public bool? IsVirtual { get; set; }
 
         public string CountryCode { get; set; }
+
+        public string Underage { get; set; }
 
         public IEnumerable<CultureInfo> LoadedLocals => GetLoadedLocals();
 

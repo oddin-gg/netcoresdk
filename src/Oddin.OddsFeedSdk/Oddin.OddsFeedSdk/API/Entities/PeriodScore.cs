@@ -9,6 +9,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
             double awayScore,
             int periodNumber,
             int matchStatusCode,
+            string type,
             int? homeWonRounds,
             int? awayWonRounds,
             int? homeKills,
@@ -18,6 +19,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
             AwayScore = awayScore;
             PeriodNumber = periodNumber;
             MatchStatusCode = matchStatusCode;
+            Type = type;
             HomeWonRounds = homeWonRounds;
             AwayWonRounds = awayWonRounds;
             HomeKills = homeKills;
@@ -28,6 +30,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public double AwayScore { get; }
         public int PeriodNumber { get; }
         public int MatchStatusCode { get; }
+        public string Type { get; }
         public int? HomeWonRounds { get; }
         public int? AwayWonRounds { get; }
         public int? HomeKills { get; }

@@ -6,6 +6,7 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
         double AwayScore { get; }
         int PeriodNumber { get; }
         int MatchStatusCode { get; }
+        string Type { get; }
         int? HomeWonRounds { get; }
         int? AwayWonRounds { get; }
         int? HomeKills { get; }
