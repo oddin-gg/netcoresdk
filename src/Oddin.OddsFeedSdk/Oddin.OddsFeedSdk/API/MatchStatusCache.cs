@@ -82,13 +82,16 @@ namespace Oddin.OddsFeedSdk.API
 
         private void RefreshOrInsertFeedItem(URN id, AMQP.Messages.sportEventStatus status)
         {
+            if (status.winner_id is null == false)
+            { }
+
             var item = _cache.Get(id.ToString()) as LocalizedMatchStatus;
 
             if (item is null)
             {
                 item = new LocalizedMatchStatus
                 {
-                    WinnerId = null,
+                    WinnerId = status.winner_id is null ? null : new URN(status.winner_id),
                     Status = status.status.GetEventStatusFromFeed(),
                     PeriodScores = MapFeedPeriodScores(status.period_scores?.period_score ?? new periodScoreType[0]),
                     MatchStatusId = status.match_status,
@@ -100,6 +103,7 @@ namespace Oddin.OddsFeedSdk.API
             }
             else
             {
+                item.WinnerId = status.winner_id is null ? null : new URN(status.winner_id);
                 item.Status = status.status.GetEventStatusFromFeed();
                 item.PeriodScores = MapFeedPeriodScores(status.period_scores?.period_score ?? new periodScoreType[0]);
                 item.MatchStatusId = status.match_status;

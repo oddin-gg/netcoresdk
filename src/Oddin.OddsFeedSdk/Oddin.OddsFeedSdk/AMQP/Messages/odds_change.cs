@@ -264,7 +264,8 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         public double away_score { get; set; }
         [XmlAttribute]
         public bool scoreboard_available { get; set; }
-
+        [XmlAttribute]
+        public string winner_id { get; set; }
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
