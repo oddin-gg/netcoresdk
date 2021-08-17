@@ -69,7 +69,7 @@ namespace Oddin.OddsFeedSdk.API
 
         private void MatchFixtureChangeInvalidatesCache(object sender, SimpleMessageEventArgs<fixture_change> e)
         {
-            var id = new URN(e.FeedMessage.event_id);
+            var id = string.IsNullOrEmpty(e?.FeedMessage?.event_id) ? null : new URN(e.FeedMessage.event_id);
 
             if (id.Type == "match")
             {
@@ -135,10 +135,10 @@ namespace Oddin.OddsFeedSdk.API
                 item.RefId = string.IsNullOrEmpty(model.refid) ? null : new URN(model.refid);
                 item.ScheduledTime = model.scheduledSpecified ? model.scheduled : default(DateTime?);
                 item.ScheduledEndTime = model.scheduled_endSpecified ? model.scheduled_end : default(DateTime?);
-                item.SportId = new URN(model.tournament.sport.id);
-                item.TournamentId = new URN(model.tournament.id);
-                item.HomeTeamId = homeTeamId != null ? new URN(homeTeamId) : null;
-                item.AwayTeamId = awayTeamId != null ? new URN(awayTeamId) : null;
+                item.SportId = string.IsNullOrEmpty(model?.tournament?.sport?.id) ? null : new URN(model.tournament.sport.id);
+                item.TournamentId = string.IsNullOrEmpty(model?.tournament?.id) ? null : new URN(model.tournament.id);
+                item.HomeTeamId = string.IsNullOrEmpty(homeTeamId) ? null : new URN(homeTeamId);
+                item.AwayTeamId = string.IsNullOrEmpty(awayTeamId) ? null : new URN(awayTeamId);
                 item.LiveOddsAvailability = model.liveodds.ParseToLiveOddsAvailability();
                 item.HomeTeamQualifier = homeTeamQualifier;
                 item.AwayTeamQualifier = awayTeamQualifier;
@@ -150,10 +150,10 @@ namespace Oddin.OddsFeedSdk.API
                     RefId = string.IsNullOrEmpty(model.refid) ? null : new URN(model.refid),
                     ScheduledTime = model.scheduledSpecified ? model.scheduled : default(DateTime?),
                     ScheduledEndTime = model.scheduled_endSpecified ? model.scheduled_end : default(DateTime?),
-                    SportId = new URN(model.tournament.sport.id),
-                    TournamentId = new URN(model.tournament.id),
-                    HomeTeamId = homeTeamId != null ? new URN(homeTeamId) : null,
-                    AwayTeamId = awayTeamId != null ? new URN(awayTeamId) : null,
+                    SportId = string.IsNullOrEmpty(model?.tournament?.sport?.id) ? null : new URN(model.tournament.sport.id),
+                    TournamentId = string.IsNullOrEmpty(model?.tournament?.id) ? null : new URN(model.tournament.id),
+                    HomeTeamId = string.IsNullOrEmpty(homeTeamId) ? null : new URN(homeTeamId),
+                    AwayTeamId = string.IsNullOrEmpty(awayTeamId) ? null : new URN(awayTeamId),
                     LiveOddsAvailability = model.liveodds.ParseToLiveOddsAvailability(),
                     HomeTeamQualifier = homeTeamQualifier,
                     AwayTeamQualifier = awayTeamQualifier
@@ -169,7 +169,7 @@ namespace Oddin.OddsFeedSdk.API
         {
             foreach(var tournament in tournaments)
             {
-                var id = new URN(tournament.id);
+                var id = string.IsNullOrEmpty(tournament?.id) ? null : new URN(tournament.id);
                 RefreshOrInsertItem(id, culture, tournament);
             }
         }

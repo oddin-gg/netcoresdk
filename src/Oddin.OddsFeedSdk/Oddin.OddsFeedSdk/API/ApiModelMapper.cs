@@ -48,15 +48,12 @@ namespace Oddin.OddsFeedSdk.API
                 if (model?.sport_event is null)
                     throw new ArgumentException($"{typeof(MatchSummaryModel).Name}.{nameof(model.sport_event)} cannot be null!");
 
-                if (model?.sport_event?.tournament?.sport?.id is null)
-                    throw new ArgumentException($"{typeof(MatchSummaryModel).Name}.{typeof(sportEvent)}.{typeof(tournament)}.{typeof(sport)}.{nameof(model.sport_event.tournament.sport.id)} or one of the classes it's contained in is null!");
-
                 var sportEvent = model.sport_event;
                 return new MatchSummary(
                     sportEvent.name,
                     sportEvent.scheduledSpecified ? (DateTime?)sportEvent.scheduled : null,
                     sportEvent.scheduled_endSpecified ? (DateTime?)sportEvent.scheduled_end : null,
-                    new URN(sportEvent.tournament.sport.id));
+                    string.IsNullOrEmpty(sportEvent?.tournament?.sport?.id) ? null : new URN(sportEvent.tournament.sport.id));
             }
             catch (Exception e)
             {

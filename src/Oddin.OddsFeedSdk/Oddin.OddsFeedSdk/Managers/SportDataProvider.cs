@@ -79,7 +79,7 @@ namespace Oddin.OddsFeedSdk.Managers
                 => _apiClient.GetTournaments(sportId, culture));
 
             return result.tournaments.Select(
-                t => _builder.BuildTournament(new URN(t.id), sportId, new[] { culture }));
+                t => _builder.BuildTournament(string.IsNullOrEmpty(t?.id) ? null : new URN(t.id), sportId, new[] { culture }));
         }
 
         public void DeleteTournamentFromCache(URN id)
@@ -125,7 +125,7 @@ namespace Oddin.OddsFeedSdk.Managers
             {
                 var result = _apiClient.GetMatches(dateTime, culture);
                 return result.sport_event.Select(s
-                    => _builder.BuildMatch(new URN(s.id), new[] { culture }));
+                    => _builder.BuildMatch(string.IsNullOrEmpty(s?.id) ? null : new URN(s.id), new[] { culture }));
             });
         }
 
@@ -138,7 +138,7 @@ namespace Oddin.OddsFeedSdk.Managers
             {
                 var result = _apiClient.GetLiveMatches(culture);
                 return result.sport_event.Select(s
-                    => _builder.BuildMatch(new URN(s.id), new[] { culture }));
+                    => _builder.BuildMatch(string.IsNullOrEmpty(s?.id) ? null : new URN(s.id), new[] { culture }));
             });
         }
 
@@ -157,7 +157,7 @@ namespace Oddin.OddsFeedSdk.Managers
             {
                 var result = _apiClient.GetSchedule(startIndex, limit, culture);
 
-                var ids = result.sport_event.Select(s => new URN(s.id));
+                var ids = result.sport_event.Select(s => string.IsNullOrEmpty(s?.id) ? null : new URN(s.id));
                 return _builder.BuildMatches(ids, new[] { culture });
             });
         }
@@ -171,7 +171,7 @@ namespace Oddin.OddsFeedSdk.Managers
             {
                 var result = _apiClient.GetFixtureChanges(culture);
 
-                return result.fixture_change.Select(f => new FixtureChange(new URN(f.sport_event_id), f.update_time));
+                return result.fixture_change.Select(f => new FixtureChange(string.IsNullOrEmpty(f?.sport_event_id) ? null : new URN(f.sport_event_id), f.update_time));
             });
         }
     }

@@ -70,7 +70,7 @@ namespace Oddin.OddsFeedSdk.API
 
         private void MatchFixtureChangeInvalidatesCache(object sender, SimpleMessageEventArgs<fixture_change> e)
         {
-            var id = new URN(e.FeedMessage.event_id);
+            var id = string.IsNullOrEmpty(e?.FeedMessage?.event_id) ? null : new URN(e.FeedMessage.event_id);
 
             if (id.Type == "match")
             {
@@ -83,7 +83,7 @@ namespace Oddin.OddsFeedSdk.API
         {
             foreach(var tournament in tournaments)
             {
-                var id = new URN(tournament.id);
+                var id = string.IsNullOrEmpty(tournament?.id) ? null : new URN(tournament.id);
 
                 try
                 {
@@ -163,7 +163,7 @@ namespace Oddin.OddsFeedSdk.API
                 item.RefId = string.IsNullOrEmpty(model.refid) ? null : new URN(model.refid);
                 item.StartDate = model?.tournament_length?.start_date;
                 item.EndDate = model?.tournament_length?.end_date;
-                item.SportId = new URN(model.sport.id);
+                item.SportId = string.IsNullOrEmpty(model?.sport?.id) ? null : new URN(model.sport.id);
                 item.ScheduledTime = model?.scheduled;
                 item.ScheduledEndTime = model?.scheduled_end;
             }
@@ -174,7 +174,7 @@ namespace Oddin.OddsFeedSdk.API
                     RefId = string.IsNullOrEmpty(model.refid) ? null : new URN(model.refid),
                     StartDate = model?.tournament_length?.start_date,
                     EndDate = model?.tournament_length?.end_date,
-                    SportId = new URN(model.sport.id),
+                    SportId = string.IsNullOrEmpty(model?.sport?.id) ? null : new URN(model.sport.id),
                     ScheduledTime = model?.scheduled,
                     ScheduledEndTime = model?.scheduled_end
                 };
@@ -185,7 +185,7 @@ namespace Oddin.OddsFeedSdk.API
 
             if (model is tournamentExtended modelExtended && modelExtended.competitors.Any())
             {
-                var ids = modelExtended.competitors.Select(c => new URN(c.id));
+                var ids = modelExtended.competitors.Select(c => string.IsNullOrEmpty(c?.id) ? null : new URN(c.id));
                 var alreadyExistingIds = item.CompetitorIds ??= new HashSet<URN>();
                 var alreadyExistingIdsHashSet = alreadyExistingIds.ToHashSet();
 

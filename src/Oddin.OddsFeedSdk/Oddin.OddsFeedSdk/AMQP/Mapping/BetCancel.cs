@@ -18,7 +18,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         {
             StartTime = startTime;
             EndTime = endTime;
-            SupersededBy = new URN(supersededBy);
+            SupersededBy = string.IsNullOrEmpty(supersededBy) ? null : new URN(supersededBy);
         }
     }
 }

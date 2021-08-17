@@ -41,7 +41,7 @@ namespace Oddin.OddsFeedSdk.API
                     if (response.Data is not MatchSummaryModel summary)
                         return;
 
-                    var id = new URN(summary.sport_event.id);
+                    var id = string.IsNullOrEmpty(summary?.sport_event?.id) ? null : new URN(summary.sport_event.id);
 
                     _semaphore.WaitOne();
                     try
@@ -68,7 +68,7 @@ namespace Oddin.OddsFeedSdk.API
             _semaphore.WaitOne();
             try
             {
-                RefreshOrInsertFeedItem(new URN(e.FeedMessage.event_id), e.FeedMessage.sport_event_status);
+                RefreshOrInsertFeedItem(string.IsNullOrEmpty(e?.FeedMessage?.event_id) ? null : new URN(e.FeedMessage.event_id), e.FeedMessage.sport_event_status);
             }
             catch (Exception ex)
             {
@@ -91,7 +91,7 @@ namespace Oddin.OddsFeedSdk.API
             {
                 item = new LocalizedMatchStatus
                 {
-                    WinnerId = status.winner_id is null ? null : new URN(status.winner_id),
+                    WinnerId = string.IsNullOrEmpty(status?.winner_id) ? null : new URN(status.winner_id),
                     Status = status.status.GetEventStatusFromFeed(),
                     PeriodScores = MapFeedPeriodScores(status.period_scores?.period_score ?? new periodScoreType[0]),
                     MatchStatusId = status.match_status,
@@ -103,7 +103,7 @@ namespace Oddin.OddsFeedSdk.API
             }
             else
             {
-                item.WinnerId = status.winner_id is null ? null : new URN(status.winner_id);
+                item.WinnerId = string.IsNullOrEmpty(status?.winner_id) ? null : new URN(status.winner_id);
                 item.Status = status.status.GetEventStatusFromFeed();
                 item.PeriodScores = MapFeedPeriodScores(status.period_scores?.period_score ?? new periodScoreType[0]);
                 item.MatchStatusId = status.match_status;
@@ -126,7 +126,7 @@ namespace Oddin.OddsFeedSdk.API
             {
                 item = new LocalizedMatchStatus
                 {
-                    WinnerId = summary.winner_id is null ? null : new URN(summary.winner_id),
+                    WinnerId = string.IsNullOrEmpty(summary?.winner_id) ? null : new URN(summary.winner_id),
                     Status = summary.status.GetEventStatusFromApi(),
                     PeriodScores = MapApiPeriodScores(summary.period_scores ?? new periodScore[0]),
                     MatchStatusId = summary.match_status_code,
@@ -138,7 +138,7 @@ namespace Oddin.OddsFeedSdk.API
             }
             else
             {
-                item.WinnerId = summary.winner_id is null ? null : new URN(summary.winner_id);
+                item.WinnerId = string.IsNullOrEmpty(summary?.winner_id) ? null : new URN(summary.winner_id);
                 item.Status = summary.status.GetEventStatusFromApi();
                 item.PeriodScores = MapApiPeriodScores(summary.period_scores ?? new periodScore[0]);
                 item.MatchStatusId = summary.match_status_code;
