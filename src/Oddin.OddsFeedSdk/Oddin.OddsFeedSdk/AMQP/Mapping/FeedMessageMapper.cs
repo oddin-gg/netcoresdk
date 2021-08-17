@@ -260,7 +260,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
             var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
             ISportEvent sportEvent = new SportEvent(
-                new URN(message.event_id),
+                string.IsNullOrEmpty(message.event_id) ? null : new URN(message.event_id),
                 string.IsNullOrEmpty(message.event_refid) ? null : new URN(message.event_refid),
                 _apiClient,
                 _exceptionHandlingStrategy);
