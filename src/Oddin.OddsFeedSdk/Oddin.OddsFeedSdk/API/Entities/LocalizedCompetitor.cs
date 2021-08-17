@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 
@@ -25,7 +23,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string CountryCode { get; set; }
 
-        public int Underage { get; set; }
+        public int? Underage { get; set; }
 
         public IEnumerable<CultureInfo> LoadedLocals => GetLoadedLocals();
 
