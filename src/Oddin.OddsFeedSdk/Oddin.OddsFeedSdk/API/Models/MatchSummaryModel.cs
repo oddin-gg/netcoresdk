@@ -391,6 +391,10 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         private int match_status_codeField;
 
+        private int home_goalsField;
+
+        private int away_goalsField;
+
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public double home_score
@@ -430,6 +434,33 @@ namespace Oddin.OddsFeedSdk.API.Models
             set
             {
                 this.match_status_codeField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int home_goals
+        {
+            get
+            {
+                return this.home_goalsField;
+            }
+            set
+            {
+                this.home_goalsField = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int away_goals
+        {
+            get
+            {
+                return this.away_goalsField;
+            }
+            set
+            {
+                this.away_goalsField = value;
             }
         }
 
