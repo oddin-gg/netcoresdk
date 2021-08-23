@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.AMQP.EventArguments;
+using Oddin.OddsFeedSdk.AMQP.EventArguments;
 using Oddin.OddsFeedSdk.AMQP.Messages;
 using Oddin.OddsFeedSdk.Sessions;
 using System;

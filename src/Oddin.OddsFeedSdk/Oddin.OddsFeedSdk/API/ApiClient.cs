@@ -6,9 +6,11 @@ using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Reactive.Subjects;
+using Oddin.OddsFeedSdk.AMQP;
 
 namespace Oddin.OddsFeedSdk.API
 {
@@ -31,8 +33,8 @@ namespace Oddin.OddsFeedSdk.API
 
         public fixtureChangesEndpoint GetFixtureChanges(CultureInfo culture)
         {
-            if (culture is null)
-                culture = _defaultCulture;
+            culture ??= _defaultCulture;
+            ValidateCulture(culture);
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/fixtures/changes";
             var result = _restClient.SendRequest<fixtureChangesEndpoint>(route, HttpMethod.Get, culture);
@@ -41,8 +43,8 @@ namespace Oddin.OddsFeedSdk.API
 
         public ScheduleEndpointModel GetSchedule(int startIndex, int limit, CultureInfo culture)
         {
-            if (culture is null)
-                culture = _defaultCulture;
+            culture ??= _defaultCulture;
+            ValidateCulture(culture);
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/schedules/pre/schedule?start={startIndex}&limit={limit}";
             var result = _restClient.SendRequest<ScheduleEndpointModel>(route, HttpMethod.Get, culture);
@@ -51,8 +53,8 @@ namespace Oddin.OddsFeedSdk.API
 
         public ScheduleEndpointModel GetLiveMatches(CultureInfo culture)
         {
-            if (culture is null)
-                culture = _defaultCulture;
+            culture ??= _defaultCulture;
+            ValidateCulture(culture);
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/schedules/live/schedule";
             var result = _restClient.SendRequest<ScheduleEndpointModel>(route, HttpMethod.Get, culture);
@@ -61,8 +63,8 @@ namespace Oddin.OddsFeedSdk.API
 
         public ScheduleEndpointModel GetMatches(DateTime dateToGet, CultureInfo culture)
         {
-            if (culture is null)
-                culture = _defaultCulture;
+            culture ??= _defaultCulture;
+            ValidateCulture(culture);
 
             var dateRoute = dateToGet.ToUniversalTime().ToString("yyyy-MM-dd");
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/schedules/{dateRoute}/schedule";
@@ -72,8 +74,8 @@ namespace Oddin.OddsFeedSdk.API
 
         public MatchStatusModel GetMatchStatusDescriptions(CultureInfo culture)
         {
-            if (culture is null)
-                culture = _defaultCulture;
+            culture ??= _defaultCulture;
+            ValidateCulture(culture);
 
             var route = $"v1/descriptions/{culture.TwoLetterISOLanguageName}/match_status";
             var result = _restClient.SendRequest<MatchStatusModel>(route, HttpMethod.Get, culture);
@@ -85,8 +87,8 @@ namespace Oddin.OddsFeedSdk.API
             if (id is null)
                 throw new ArgumentNullException(nameof(id));
 
-            if (culture is null)
-                culture = _defaultCulture;
+            culture ??= _defaultCulture;
+            ValidateCulture(culture);
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sport_events/{id}/fixture";
             var result = _restClient.SendRequest<FixturesEndpointModel>(route, HttpMethod.Get, culture);
@@ -98,8 +100,8 @@ namespace Oddin.OddsFeedSdk.API
             if (id is null)
                 throw new ArgumentNullException(nameof(id));
 
-            if (culture is null)
-                culture = _defaultCulture;
+            culture ??= _defaultCulture;
+            ValidateCulture(culture);
 
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/competitors/{id}/profile";
             var result = _restClient.SendRequest<competitorProfileEndpoint>(route, HttpMethod.Get, culture);
@@ -112,8 +114,8 @@ namespace Oddin.OddsFeedSdk.API
             if (id is null)
                 throw new ArgumentNullException(nameof(id));
 
-            if (culture is null)
-                culture = _defaultCulture;
+            culture ??= _defaultCulture;
+            ValidateCulture(culture);
             
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/tournaments/{id}/info";
             var result = _restClient.SendRequest<TournamentInfoModel>(route, HttpMethod.Get, culture);
@@ -125,8 +127,8 @@ namespace Oddin.OddsFeedSdk.API
             if (sportId is null)
                 throw new ArgumentNullException(nameof(sportId));
 
-            if (culture is null)
-                culture = _defaultCulture;
+            culture ??= _defaultCulture;
+            ValidateCulture(culture);
             
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sports/{sportId}/tournaments";
             var result = _restClient.SendRequest<TournamentsModel>(route, HttpMethod.Get, culture);
@@ -135,9 +137,9 @@ namespace Oddin.OddsFeedSdk.API
 
         public async Task<SportsModel> GetSports(CultureInfo culture)
         {
-            if (culture is null)
-                culture = _defaultCulture;
-
+            culture ??= _defaultCulture;
+            ValidateCulture(culture);
+            
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sports";
             var result = await _restClient.SendRequestAsync<SportsModel>(route, HttpMethod.Get, culture);
             return result.Data;
@@ -158,7 +160,9 @@ namespace Oddin.OddsFeedSdk.API
 
         public async Task<IMatchSummary> GetMatchSummaryAsync(URN sportEventId, CultureInfo desiredCulture = null)
         {
-            var culture = desiredCulture is null ? _defaultCulture : desiredCulture;
+            var culture = desiredCulture ?? _defaultCulture;
+            ValidateCulture(culture);
+
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sport_events/{sportEventId}/summary";
 
             var response = await _restClient.SendRequestAsync<MatchSummaryModel>(route, HttpMethod.Get, culture);
@@ -168,6 +172,8 @@ namespace Oddin.OddsFeedSdk.API
         public MatchSummaryModel GetMatchSummary(URN sportEventId, CultureInfo desiredCulture)
         {
             var culture = desiredCulture ?? _defaultCulture;
+            ValidateCulture(culture);
+
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sport_events/{sportEventId}/summary";
 
             var response = _restClient.SendRequest<MatchSummaryModel>(route, HttpMethod.Get, culture);
@@ -176,7 +182,9 @@ namespace Oddin.OddsFeedSdk.API
 
         public async Task<MarketDescriptionsModel> GetMarketDescriptionsAsync(CultureInfo desiredCulture = null)
         {
-            var culture = desiredCulture is null ? _defaultCulture : desiredCulture;
+            var culture = desiredCulture ?? _defaultCulture;
+            ValidateCulture(culture);
+
             var route = $"v1/descriptions/{culture.TwoLetterISOLanguageName}/markets";
             var response = await _restClient.SendRequestAsync<MarketDescriptionsModel>(route, HttpMethod.Get);
             return response.Data;
@@ -304,6 +312,7 @@ namespace Oddin.OddsFeedSdk.API
             var result = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters.ToArray(), deserializeResponse: false);
             return result.Successful;
         }
+
         public async Task<ReplayStatusEndpointModel> GetStatusOfReplay()
         {
             var route = $"v1/replay/status";
@@ -316,5 +325,12 @@ namespace Oddin.OddsFeedSdk.API
             => nodeId == null
                 ? default
                 : new (string key, object value)[] { ("node_id", nodeId.Value) };
+
+        private void ValidateCulture(CultureInfo culture)
+        {
+            if (Feed.AvailableLanguages().Any(c => c.Equals(culture)) == false)
+                throw new InvalidOperationException(
+                    $"Provided culture: {culture.DisplayName} is not supported! Supported cultures are: {string.Join(", ", Feed.AvailableLanguages().Select(c => c.DisplayName))}");
+        }
     }
 }

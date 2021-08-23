@@ -43,7 +43,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
         }
 
         public string GetName(CultureInfo culture)
-            => FetchMarketDescription(new[] { culture })?.Name?.FirstOrDefault(d => d.Key == culture).Value;
+            => FetchMarketDescription(new[] { culture })?.Name?.FirstOrDefault(d => d.Key.Equals(culture)).Value;
 
         private LocalizedMarketDescription FetchMarketDescription(IEnumerable<CultureInfo> cultures)
         {

@@ -12,9 +12,9 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public long? RefId => _localizedOutcomeDescription?.RefId;
 
-        public string GetName(CultureInfo culture) => _localizedOutcomeDescription?.Name?.FirstOrDefault(d => d.Key == culture).Value;
+        public string GetName(CultureInfo culture) => _localizedOutcomeDescription?.Name?.FirstOrDefault(d => d.Key.Equals(culture)).Value;
 
-        public string GetDescription(CultureInfo culture) => _localizedOutcomeDescription?.Description?.FirstOrDefault(d => d.Key == culture).Value;
+        public string GetDescription(CultureInfo culture) => _localizedOutcomeDescription?.Description?.FirstOrDefault(d => d.Key.Equals(culture)).Value;
 
         public OutcomeDescription(long id, LocalizedOutcomeDescription localizedOutcomeDescription)
         {

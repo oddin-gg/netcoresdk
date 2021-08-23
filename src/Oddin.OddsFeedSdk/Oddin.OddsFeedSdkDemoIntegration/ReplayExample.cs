@@ -19,13 +19,13 @@ namespace Oddin.OddsFeedSdkDemoIntegration
     {
         private static readonly CultureInfo CultureEn = CultureInfo.GetCultureInfoByIetfLanguageTag("en");
 
-        internal static async Task Run()
+        internal static async Task Run(string token)
         {
             var loggerFactory = CreateLoggerFactory();
 
             var config = Feed
                 .GetConfigurationBuilder()
-                .SetAccessToken(Program.TOKEN)
+                .SetAccessToken(token)
                 .SelectReplay()
                 .SetNodeId(1)
                 .Build();

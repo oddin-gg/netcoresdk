@@ -18,16 +18,15 @@ namespace Oddin.OddsFeedSdkDemoIntegration
     internal static class GeneralExample
     {
         private static readonly CultureInfo CultureEn = CultureInfo.GetCultureInfoByIetfLanguageTag("en");
-        private static readonly CultureInfo CultureRu = CultureInfo.GetCultureInfoByIetfLanguageTag("ru");
 
-        internal static async Task Run()
+        internal static async Task Run(string token)
         {
             var loggerFactory = CreateLoggerFactory();
 
             // Build configuration
             var config = Feed
                 .GetConfigurationBuilder()
-                .SetAccessToken(Program.TOKEN)
+                .SetAccessToken(token)
                 .SelectIntegration()
                 .Build();
 
@@ -65,7 +64,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             DetachEvents(session);
         }
 
-        private async static Task WorkWithRecovery(Feed feed)
+        private static async Task WorkWithRecovery(Feed feed)
         {
             var matchUrn = "od:match:36856";
             var producerName = "live";
@@ -79,7 +78,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Event stateful recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventStatefulMessagesAsync(producer, urn)}");
         }
 
-        private async static Task WorkWithProducers(Feed feed)
+        private static async Task WorkWithProducers(Feed feed)
         {
             foreach (var producer in feed.ProducerManager.Producers)
                 Console.WriteLine($"Producer name: {producer.Name}, id: {producer.Id}");
@@ -89,6 +88,8 @@ namespace Oddin.OddsFeedSdkDemoIntegration
         {
             var provider = feed.SportDataProvider;
 
+            var testSports = provider.GetSportsAsync(CultureEn);
+                
             var competitorUrn = new URN("od:competitor:300");
             var matchUrn = new URN("od:match:36856");
             var tournamentUrn = new URN("od:tournament:1524");
@@ -156,10 +157,8 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var sports = await provider.GetSportsAsync(CultureEn);
 
             var sportsEn = await provider.GetSportsAsync(CultureEn);
-            var sportsRu = await provider.GetSportsAsync(CultureRu);
 
             Console.WriteLine($"{sportsEn.FirstOrDefault()?.Id}");
-            Console.WriteLine($"{sportsRu.FirstOrDefault()?.Id}");
         }
 
         private async static Task WorkWithMarketDesctiptionManager(Feed feed)
@@ -169,7 +168,6 @@ namespace Oddin.OddsFeedSdkDemoIntegration
                 var manager = feed.MarketDescriptionManager;
 
                 var marketDescriptionsEn = manager.GetMarketDescriptions(CultureEn);
-                var marketDescriptionsRu = manager.GetMarketDescriptions(CultureRu);
 
                 var description = marketDescriptionsEn.First();
                 var specifiers = string.Join(", ", description.Specifiers.Select(s => $"Name:{s.Name} Type:{s.Type}"));

@@ -89,7 +89,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public Task<string> GetNameAsync(CultureInfo culture)
         {
-            var name = FetchMatch(new[] { culture })?.Name?.FirstOrDefault(d => d.Key == culture).Value;
+            var name = FetchMatch(new[] { culture })?.Name?.FirstOrDefault(d => d.Key.Equals(culture)).Value;
             return Task.FromResult(name);
         }
 

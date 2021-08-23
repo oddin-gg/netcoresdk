@@ -45,17 +45,17 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string GetName(CultureInfo culture)
         {
-            return FetchCompetitor(new[] { culture })?.Name?.FirstOrDefault(d => d.Key == culture).Value;
+            return FetchCompetitor(new[] { culture })?.Name?.FirstOrDefault(d => d.Key.Equals(culture)).Value;
         }
 
         public string GetCountry(CultureInfo culture)
         {
-            return FetchCompetitor(new[] { culture })?.Country?.FirstOrDefault(d => d.Key == culture).Value;
+            return FetchCompetitor(new[] { culture })?.Country?.FirstOrDefault(d => d.Key.Equals(culture)).Value;
         }
 
         public string GetAbbreviation(CultureInfo culture)
         {
-            return FetchCompetitor(new[] { culture })?.Abbreviation?.FirstOrDefault(d => d.Key == culture).Value;
+            return FetchCompetitor(new[] { culture })?.Abbreviation?.FirstOrDefault(d => d.Key.Equals(culture)).Value;
         }
 
         public Task<ISport> GetSportAsync()

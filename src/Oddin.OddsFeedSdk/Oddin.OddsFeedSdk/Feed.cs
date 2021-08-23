@@ -166,10 +166,9 @@ namespace Oddin.OddsFeedSdk
         
         public static IEnumerable<CultureInfo> AvailableLanguages()
         {
-            var codes = new[] { "en" };
+            var codes = new[] { "en", "br", "de", "es", "fi", "fr", "pl", "pt", "ru", "th", "vi", "zh" };
             return codes
-                .Select(c => CultureInfo.GetCultureInfo(c))
-                .OrderBy(c => c.Name);
+                .Select(c => CultureInfo.GetCultureInfo(c));
         }
 
         private void OnEventRecoveryCompleted(object sender, EventRecoveryCompletedEventArgs eventArgs)

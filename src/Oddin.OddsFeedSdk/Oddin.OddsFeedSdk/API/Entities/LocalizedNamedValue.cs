@@ -22,6 +22,6 @@ namespace Oddin.OddsFeedSdk.API.Entities
             _descriptionMap = descriptionMap;
         }
 
-        public string GetDescription(CultureInfo culture) => _descriptionMap?.FirstOrDefault(d => d.Key == culture).Value;
+        public string GetDescription(CultureInfo culture) => _descriptionMap?.FirstOrDefault(d => d.Key.Equals(culture)).Value;
     }
 }

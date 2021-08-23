@@ -38,7 +38,7 @@ namespace Oddin.OddsFeedSdk.API
                 var items = _cache.Where(c =>
                 {
                     var localizedItem = c.Value as LocalizedMarketDescription;
-                    return localizedItem.LoadedLocals.Any(i => i == culture);
+                    return localizedItem.LoadedLocals.Any(i => i.Equals(culture));
                 });
 
                 return items
@@ -94,11 +94,11 @@ namespace Oddin.OddsFeedSdk.API
                     continue;
                 }
 
-                foreach(var marketDesctiption in marketDescriptions.market)
+                foreach(var description in marketDescriptions.market)
                 {
                     try
                     {
-                        RefreshOrInsertItem(marketDesctiption, culture);
+                        RefreshOrInsertItem(description, culture);
                     }
                     catch (Exception e)
                     {

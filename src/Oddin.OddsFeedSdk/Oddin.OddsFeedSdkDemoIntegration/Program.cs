@@ -21,12 +21,12 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             {
                 case 'R':
                 {
-                    await ReplayExample.Run();
+                    await ReplayExample.Run(TOKEN);
                     break;
                 }
                 default:
                 {
-                    await GeneralExample.Run();
+                    await GeneralExample.Run(TOKEN);
                     break;
                 }
             }
