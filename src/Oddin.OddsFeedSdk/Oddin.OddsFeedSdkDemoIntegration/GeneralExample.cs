@@ -88,8 +88,6 @@ namespace Oddin.OddsFeedSdkDemoIntegration
         {
             var provider = feed.SportDataProvider;
 
-            var testSports = provider.GetSportsAsync(CultureEn);
-                
             var competitorUrn = new URN("od:competitor:300");
             var matchUrn = new URN("od:match:36856");
             var tournamentUrn = new URN("od:tournament:1524");

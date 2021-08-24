@@ -1,4 +1,4 @@
-Java SDK
+.NET SDK
 ----------------
 
 Purpose of this SDK is to make integration process much smoother and easier. This SDK should take care of all connection, 
@@ -7,7 +7,7 @@ data binding and other issues related to connection to API and Feed.
 ### How to start
 
 
-```java
+```c#
 // Build configuration
 var config = Feed
     .GetConfigurationBuilder()
@@ -45,7 +45,7 @@ You are all set and messages should start coming.
 
 You can check more information via appropriate managers - SportsInfoManager, MarketDescriptionManager, ReplayManager and others
 For example:
-```java
+```c#
 var sportsInfoManager = feed.SportDataProvider;
 
 // Fetch all sports with default locale
@@ -59,7 +59,7 @@ var tournaments = sportsInfoManager.GetActiveTournaments("Dota 2");
 
 You can use replay feature to receive data from previously played events. You need to build a replay session via session builder, add events to replay list and play it.
 
-```java
+```c#
 // Set up your odds feed config
 var config = Feed
     .GetConfigurationBuilder()
