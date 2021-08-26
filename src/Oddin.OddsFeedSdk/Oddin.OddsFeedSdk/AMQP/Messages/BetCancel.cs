@@ -229,6 +229,8 @@ public partial class bet_cancel_market
 
     private string extended_specifiersField;
 
+    private string groupsField;
+
     private int void_reasonField;
 
     private bool void_reasonFieldSpecified;
@@ -287,6 +289,19 @@ public partial class bet_cancel_market
         set
         {
             this.extended_specifiersField = value;
+        }
+    }
+
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public string groups
+    {
+        get
+        {
+            return this.groupsField;
+        }
+        set
+        {
+            this.groupsField = value;
         }
     }
 

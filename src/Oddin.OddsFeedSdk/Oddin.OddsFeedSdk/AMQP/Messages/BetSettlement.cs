@@ -166,6 +166,8 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
 
         private string extended_specifiersField;
 
+        private string groupsField;
+
         private int void_reasonField;
 
         private bool void_reasonFieldSpecified;
@@ -240,6 +242,19 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
             set
             {
                 this.extended_specifiersField = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string groups
+        {
+            get
+            {
+                return this.groupsField;
+            }
+            set
+            {
+                this.groupsField = value;
             }
         }
 

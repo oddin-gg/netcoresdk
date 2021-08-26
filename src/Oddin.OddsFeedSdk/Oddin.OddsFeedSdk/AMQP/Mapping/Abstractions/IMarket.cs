@@ -14,6 +14,8 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
 
         string ExtendedSpecifiers { get; }
 
+        IEnumerable<string> Groups { get; }
+
         Task<string> GetNameAsync(CultureInfo culture);
     }
 }

@@ -119,6 +119,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 oddsChangeMarket.refid,
                 GetSpecifiers(oddsChangeMarket.specifiers),
                 oddsChangeMarket.extended_specifiers,
+                oddsChangeMarket.groups?.Split("|"),
                 _apiClient,
                 _exceptionHandlingStrategy,
                 marketStatus,
@@ -234,6 +235,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 refId: message.refid,
                 specifiers: GetSpecifiers(message.specifiers),
                 extentedSpecifiers: message.extended_specifiers,
+                groups: message.groups?.Split("|"),
                 outcomes: GetOutcomeSettlements(message.Items),
                 apiClient: _apiClient,
                 exceptionHandlingStrategy: _exceptionHandlingStrategy,
@@ -287,6 +289,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 refId: message.refid,
                 specifiers: GetSpecifiers(message.specifiers),
                 extentedSpecifiers: message.extended_specifiers,
+                groups: message.groups?.Split("|"),
                 client: _apiClient,
                 exceptionHandlingStrategy: _exceptionHandlingStrategy,
                 voidReason: message.void_reasonSpecified ? message.void_reason : default);

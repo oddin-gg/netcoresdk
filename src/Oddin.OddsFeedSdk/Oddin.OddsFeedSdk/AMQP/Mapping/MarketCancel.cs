@@ -14,10 +14,11 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             int refId,
             IDictionary<string, string> specifiers,
             string extentedSpecifiers,
+            IEnumerable<string> groups,
             IApiClient client,
             ExceptionHandlingStrategy exceptionHandlingStrategy,
             int? voidReason)
-            : base(id, refId, specifiers, extentedSpecifiers, client, exceptionHandlingStrategy)
+            : base(id, refId, specifiers, extentedSpecifiers, groups, client, exceptionHandlingStrategy)
         {
             VoidReason = voidReason;
         }

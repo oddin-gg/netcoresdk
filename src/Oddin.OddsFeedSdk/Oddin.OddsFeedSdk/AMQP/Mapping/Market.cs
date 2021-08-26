@@ -27,11 +27,14 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
         public string ExtendedSpecifiers { get; }
 
+        public IEnumerable<string> Groups { get; }
+
         public Market(
             int id,
             int refId,
             IDictionary<string, string> specifiers,
             string extendedSpecifiers,
+            IEnumerable<string> groups,
             IApiClient apiClient,
             ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
@@ -45,6 +48,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             RefId = refId;
             Specifiers = specifiers as IReadOnlyDictionary<string, string>;
             ExtendedSpecifiers = extendedSpecifiers;
+            Groups = groups;
 
             _apiClient = apiClient;
             _exceptionHandlingStrategy = exceptionHandlingStrategy;

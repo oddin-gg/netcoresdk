@@ -21,13 +21,14 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             int refId,
             IDictionary<string, string> specifiers,
             string extendedSpecifiers,
+            IEnumerable<string> groups,
             IApiClient apiClient,
             ExceptionHandlingStrategy exceptionHandlingStrategy,
             MarketStatus marketStatus,
             bool isFavorite,
             IEnumerable<IOutcomeOdds> outcomeOdds,
             IMarketMetadata marketMetadata)
-            : base(marketId, refId, specifiers, extendedSpecifiers, apiClient, exceptionHandlingStrategy)
+            : base(marketId, refId, specifiers, extendedSpecifiers, groups, apiClient, exceptionHandlingStrategy)
         {
             Status = marketStatus;
             IsFavorite = isFavorite;
