@@ -1,6 +1,6 @@
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
-using Oddin.OddsFeedSdk.API.Abstractions;
+using Oddin.OddsFeedSdk.Managers.Abstractions;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping
 {
@@ -16,10 +16,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             double? deadHeatFactor,
             long id,
             long refId,
-            IApiClient client,
+            IMarketDescriptionManager marketDescriptionManager,
             int result,
             double? voidFactor)
-            : base(id, refId, client)
+            : base(id, refId, marketDescriptionManager)
         {
             DeadHeatFactor = deadHeatFactor;
 

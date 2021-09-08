@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -114,8 +113,6 @@ namespace Oddin.OddsFeedSdk.API.Entities
             _handlingStrategy = handlingStrategy;
             _cultures = cultures;
         }
-
-        // TODO: Subscribe and dispose to data  from feed and api
 
         private LocalizedMatch FetchMatch(IEnumerable<CultureInfo> cultures)
         {

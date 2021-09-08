@@ -7,11 +7,9 @@ using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.AMQP.Abstractions;
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.EventArguments;
-using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.AMQP.Messages;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
-using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
 
@@ -23,18 +21,16 @@ namespace Oddin.OddsFeedSdk.API
 
         private readonly IApiClient _apiClient;
         private readonly IAmqpClient _ampqClient;
-        private readonly IFeedMessageMapper _feedMessageMapper;
-        private readonly MemoryCache _cache = new MemoryCache(nameof(MatchStatusCache));
+        private readonly MemoryCache _cache = new(nameof(MatchStatusCache));
 
-        private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly Semaphore _semaphore = new(1, 1);
         private readonly TimeSpan _cacheTTL = TimeSpan.FromMinutes(20);
         private readonly IDisposable _subscription;
 
-        public MatchStatusCache(IApiClient apiClient, IAmqpClient ampqClient, IFeedMessageMapper feedMessageMapper)
+        public MatchStatusCache(IApiClient apiClient, IAmqpClient ampqClient)
         {
             _apiClient = apiClient;
             _ampqClient = ampqClient;
-            _feedMessageMapper = feedMessageMapper;
             _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
                 .Subscribe(response =>
                 {
@@ -251,8 +247,6 @@ namespace Oddin.OddsFeedSdk.API
             _cache.Remove(id.ToString());
         }
 
-
-        //TODO
         public void Dispose() => _subscription.Dispose();
     }
 }

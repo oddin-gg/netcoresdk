@@ -1,6 +1,7 @@
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
+using Oddin.OddsFeedSdk.Managers.Abstractions;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping
 {
@@ -15,8 +16,8 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             IAdditionalProbabilities additionalProbabilities,
             long outcomeId,
             long outcomeRefId,
-            IApiClient apiClient)
-            : base(active, probabilities, additionalProbabilities, outcomeId, outcomeRefId, apiClient)
+            IMarketDescriptionManager marketDescriptionManager)
+            : base(active, probabilities, additionalProbabilities, outcomeId, outcomeRefId, marketDescriptionManager)
         {
             _odds = odds;
         }

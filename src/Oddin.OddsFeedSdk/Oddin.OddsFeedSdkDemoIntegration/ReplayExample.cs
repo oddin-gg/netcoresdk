@@ -8,7 +8,6 @@ using Oddin.OddsFeedSdk.Sessions;
 using Oddin.OddsFeedSdk.Sessions.Abstractions;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;

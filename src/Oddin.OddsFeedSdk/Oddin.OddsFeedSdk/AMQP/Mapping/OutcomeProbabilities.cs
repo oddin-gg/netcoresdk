@@ -1,5 +1,6 @@
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
+using Oddin.OddsFeedSdk.Managers.Abstractions;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping
 {
@@ -17,8 +18,8 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             IAdditionalProbabilities additionalProbabilities,
             long outcomeId,
             long outcomeRefId,
-            IApiClient apiClient)
-            : base(outcomeId, outcomeRefId, apiClient)
+            IMarketDescriptionManager marketDescriptionManager)
+            : base(outcomeId, outcomeRefId, marketDescriptionManager)
         {
             Active = active;
             Probabilities = probabilities;

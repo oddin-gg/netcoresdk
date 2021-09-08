@@ -1,14 +1,13 @@
 using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
-using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using Oddin.OddsFeedSdk.Exceptions;
+using Oddin.OddsFeedSdk.Managers.Abstractions;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping
 {
@@ -16,8 +15,8 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(Market));
 
-        private readonly IApiClient _apiClient;
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
+        private readonly IMarketDescriptionManager _marketDescriptionManager;
 
         public int Id { get; }
 
@@ -35,14 +34,14 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             IDictionary<string, string> specifiers,
             string extendedSpecifiers,
             IEnumerable<string> groups,
-            IApiClient apiClient,
+            IMarketDescriptionManager marketDescriptionManager,
             ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
             if (specifiers is null)
                 throw new ArgumentNullException(nameof(specifiers));
 
-            if (apiClient is null)
-                throw new ArgumentNullException(nameof(apiClient));
+            if (marketDescriptionManager is null)
+                throw new ArgumentNullException(nameof(marketDescriptionManager));
 
             Id = id;
             RefId = refId;
@@ -50,19 +49,17 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             ExtendedSpecifiers = extendedSpecifiers;
             Groups = groups;
 
-            _apiClient = apiClient;
             _exceptionHandlingStrategy = exceptionHandlingStrategy;
+            _marketDescriptionManager = marketDescriptionManager;
         }
 
-        public async Task<string> GetNameAsync(CultureInfo culture)
+        public string GetName(CultureInfo culture)
         {
             try
             {
-                var marketDescriptions = await _apiClient.GetMarketDescriptionsAsync(culture);
-                return marketDescriptions.market
-                    .Where(m => m.id == Id)
-                    .First()
-                    .name;
+                var marketDescriptions =  _marketDescriptionManager.GetMarketDescriptions(culture);
+                return marketDescriptions
+                    .FirstOrDefault(m => m.Id == Id)?.GetName(culture);
             }
             catch (SdkException e)
             {

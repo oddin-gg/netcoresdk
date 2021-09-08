@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Threading.Tasks;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
 {
@@ -9,6 +8,6 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
 
         long RefId { get; }
 
-        Task<string> GetNameAsync(CultureInfo culture);
+        string GetName(CultureInfo culture);
     }
 }

@@ -229,6 +229,24 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             session.OnFixtureChange -= Session_OnFixtureChange;
         }
 
+        private static async void OnOddsChangeReceived(object sender, OddsChangeEventArgs<ISportEvent> eventArgs)
+        {
+            var e = eventArgs.GetOddsChange().Event;
+            var match = e as IMatch;
+            Console.WriteLine($"Odds changed in {match.Status}");
+            Console.WriteLine($"{match.HomeCompetitor?.Abbreviations}");
+            Console.WriteLine($"{match.LiveOddsAvailability}");
+            Console.WriteLine($"{match.Fixture?.Id}");
+            Console.WriteLine($"{await match.GetNameAsync(CultureEn)}");
+            Console.WriteLine($"{await match.GetScheduledTimeAsync()}");
+            Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
+            Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
+            
+            /*Console.WriteLine($"Odds changed in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
+            Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");*/
+        }
+
         private static async void Session_OnFixtureChange(object sender, FixtureChangeEventArgs<ISportEvent> eventArgs)
         {
             var e = eventArgs.GetFixtureChange().Event;
@@ -249,14 +267,6 @@ namespace Oddin.OddsFeedSdkDemoIntegration
         {
             var e = eventArgs.GetBetSettlement().Event;
             Console.WriteLine($"On Bet Settlement in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
-            Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
-            Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
-        }
-
-        private static async void OnOddsChangeReceived(object sender, OddsChangeEventArgs<ISportEvent> eventArgs)
-        {
-            var e = eventArgs.GetOddsChange().Event;
-            Console.WriteLine($"Odds changed in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
             Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
             Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
         }
