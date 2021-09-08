@@ -22,11 +22,14 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public URN RefId => FetchCompetitor(_cultures)?.RefId;
 
-        public IReadOnlyDictionary<CultureInfo, string> Names => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Name);
+        public IReadOnlyDictionary<CultureInfo, string> Names
+            => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Name);
 
-        public IReadOnlyDictionary<CultureInfo, string> Countries => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Country);
+        public IReadOnlyDictionary<CultureInfo, string> Countries
+            => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Country);
 
-        public IReadOnlyDictionary<CultureInfo, string> Abbreviations => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Abbreviation);
+        public IReadOnlyDictionary<CultureInfo, string> Abbreviations
+            => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Abbreviation);
 
         public bool? IsVirtual => FetchCompetitor(_cultures)?.IsVirtual;
 
@@ -34,7 +37,14 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string Underage => FetchCompetitor(_cultures)?.Underage;
 
-        public Competitor(URN id, ICompetitorCache competitorCache, ISportDataBuilder sportDataBuilder, ExceptionHandlingStrategy exceptionHandling, IEnumerable<CultureInfo> cultures)
+        public string IconPath => FetchCompetitor(_cultures)?.IconPath;
+
+        public Competitor(
+            URN id,
+            ICompetitorCache competitorCache,
+            ISportDataBuilder sportDataBuilder,
+            ExceptionHandlingStrategy exceptionHandling,
+            IEnumerable<CultureInfo> cultures)
         {
             Id = id;
             _competitorCache = competitorCache;
@@ -45,17 +55,26 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string GetName(CultureInfo culture)
         {
-            return FetchCompetitor(new[] { culture })?.Name?.FirstOrDefault(d => d.Key.Equals(culture)).Value;
+            return FetchCompetitor(new[] { culture })
+                ?.Name
+                ?.FirstOrDefault(d => d.Key.Equals(culture))
+                .Value;
         }
 
         public string GetCountry(CultureInfo culture)
         {
-            return FetchCompetitor(new[] { culture })?.Country?.FirstOrDefault(d => d.Key.Equals(culture)).Value;
+            return FetchCompetitor(new[] { culture })
+                ?.Country
+                ?.FirstOrDefault(d => d.Key.Equals(culture))
+                .Value;
         }
 
         public string GetAbbreviation(CultureInfo culture)
         {
-            return FetchCompetitor(new[] { culture })?.Abbreviation?.FirstOrDefault(d => d.Key.Equals(culture)).Value;
+            return FetchCompetitor(new[] { culture })
+                ?.Abbreviation
+                ?.FirstOrDefault(d => d.Key.Equals(culture))
+                .Value;
         }
 
         public Task<ISport> GetSportAsync()

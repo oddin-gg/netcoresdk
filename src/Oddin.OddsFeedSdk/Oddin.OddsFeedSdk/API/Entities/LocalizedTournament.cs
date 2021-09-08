@@ -27,7 +27,9 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public DateTime? ScheduledEndTime { get; set; }
 
         public IEnumerable<URN> CompetitorIds { get; set; } = null;
-        
+
+        public string IconPath { get; set; }
+
         public LocalizedTournament(URN id)
         {
             Id = id;

@@ -8,21 +8,26 @@ using System.Globalization;
 using System.Linq;
 using Oddin.OddsFeedSdk.Exceptions;
 using Oddin.OddsFeedSdk.Managers.Abstractions;
+using Oddin.OddsFeedSdk.API.Abstractions;
+using System.Collections.ObjectModel;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping
 {
     internal class Market : IMarket
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(Market));
-
+        private readonly IMarketDescriptionFactory _marketDescriptionFactory;
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
-        private readonly IMarketDescriptionManager _marketDescriptionManager;
 
         public int Id { get; }
 
         public int RefId { get; }
 
-        public IReadOnlyDictionary<string, string> Specifiers { get; }
+        private readonly IDictionary<string, string> _specifiers;
+        public IReadOnlyDictionary<string, string> Specifiers
+            => _specifiers is null
+                ? null
+                : new ReadOnlyDictionary<string, string>(_specifiers);
 
         public string ExtendedSpecifiers { get; }
 
@@ -34,38 +39,52 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             IDictionary<string, string> specifiers,
             string extendedSpecifiers,
             IEnumerable<string> groups,
-            IMarketDescriptionManager marketDescriptionManager,
+            IMarketDescriptionFactory marketDescriptionFactory,
             ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
-            if (specifiers is null)
-                throw new ArgumentNullException(nameof(specifiers));
-
-            if (marketDescriptionManager is null)
-                throw new ArgumentNullException(nameof(marketDescriptionManager));
-
             Id = id;
             RefId = refId;
-            Specifiers = specifiers as IReadOnlyDictionary<string, string>;
+            _specifiers = specifiers;
             ExtendedSpecifiers = extendedSpecifiers;
             Groups = groups;
-
+            _marketDescriptionFactory = marketDescriptionFactory;
             _exceptionHandlingStrategy = exceptionHandlingStrategy;
-            _marketDescriptionManager = marketDescriptionManager;
         }
 
         public string GetName(CultureInfo culture)
         {
             try
             {
-                var marketDescriptions =  _marketDescriptionManager.GetMarketDescriptions(culture);
-                return marketDescriptions
-                    .FirstOrDefault(m => m.Id == Id)?.GetName(culture);
+                var marketDescription = _marketDescriptionFactory.GetMarketDescription(Id, _specifiers, new[] { culture });
+                var marketName = marketDescription?.GetName(culture);
+
+                if (marketName is null)
+                    if (_exceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
+                        throw new ItemNotFoundException(Id.ToString(), "Cannot find market name!");
+                    else
+                        return null;
+
+                return MakeMarketName(marketName, culture);
             }
             catch (SdkException e)
             {
                 e.HandleAccordingToStrategy(GetType().Name, _log, _exceptionHandlingStrategy);
             }
             return null;
+        }
+
+        private string MakeMarketName(string marketName, CultureInfo culture)
+        {
+            return marketName;
+
+            if (Specifiers is null || Specifiers.Any() == false)
+                return marketName;
+
+            var template = marketName;
+            foreach(var specifier in Specifiers)
+            {
+
+            }
         }
     }
 }

@@ -97,8 +97,10 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private void AliveMessageReceivedTimerSetup()
         {
-            _aliveMessageReceivedTimer = new Timer(_config.MaxInactivitySeconds * 1000 + TOLERABLE_FEED_COMMUNICATION_DELAY_MILLISECONDS);
-            _aliveMessageReceivedTimer.AutoReset = false;
+            _aliveMessageReceivedTimer = new Timer(_config.MaxInactivitySeconds * 1000 + TOLERABLE_FEED_COMMUNICATION_DELAY_MILLISECONDS)
+            {
+                AutoReset = false
+            };
             _aliveMessageReceivedTimer.Elapsed += _startRecoveryDelegate;
         }
 

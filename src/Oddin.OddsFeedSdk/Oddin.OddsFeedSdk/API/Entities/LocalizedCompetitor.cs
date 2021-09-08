@@ -25,6 +25,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string Underage { get; set; }
 
+        public string IconPath { get; set; }
+
         public IEnumerable<CultureInfo> LoadedLocals => GetLoadedLocals();
 
         private IEnumerable<CultureInfo> GetLoadedLocals()

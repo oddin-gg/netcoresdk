@@ -200,6 +200,9 @@ namespace Oddin.OddsFeedSdk.API
                 localizedSport.RefId = string.IsNullOrEmpty(sport?.refid) ? null : new URN(sport.refid);
                 localizedSport.Name[culture] = sport.name;
             }
+
+            if(sport is sportExtended sportExtended)
+                localizedSport.IconPath = sportExtended.icon_path;
             
             if(tournamentId != null)
                 localizedSport.TournamentIds ??= new List<URN>();

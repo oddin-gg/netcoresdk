@@ -148,6 +148,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var sport = await provider.GetSportAsync(sportUrn, CultureEn);
             Console.WriteLine($"Name: {sport.GetName(CultureEn)}");
             Console.WriteLine($"ID: {sport.Id}");
+            Console.WriteLine($"Icon Path: {sport.IconPath}");
             Console.WriteLine($"Name: {sport.Names.FirstOrDefault()}");
             Console.WriteLine($"Ref ID: {sport.RefId}");
             Console.WriteLine($"Tournament ID: {sport.Tournaments.FirstOrDefault()?.Id}");

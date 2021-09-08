@@ -1,5 +1,6 @@
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Managers.Abstractions;
 using System.Collections.Generic;
@@ -21,10 +22,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             string extentedSpecifiers,
             IEnumerable<string> groups,
             IEnumerable<IOutcomeSettlement> outcomes,
-            IMarketDescriptionManager marketDescriptionManager,
+            IMarketDescriptionFactory marketDescriptionFactory,
             ExceptionHandlingStrategy exceptionHandlingStrategy,
             int? voidReason)
-            : base(marketId, refId, specifiers, extentedSpecifiers, groups, marketDescriptionManager, exceptionHandlingStrategy, voidReason)
+            : base(marketId, refId, specifiers, extentedSpecifiers, groups, marketDescriptionFactory, exceptionHandlingStrategy, voidReason)
         {
             MarketStatus = marketStatus;
             OutcomeSettlements = outcomes

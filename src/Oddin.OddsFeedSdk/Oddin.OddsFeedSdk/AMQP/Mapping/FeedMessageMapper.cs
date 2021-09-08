@@ -17,6 +17,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
     {
         private readonly IProducerManager _producerManager;
         private readonly IMarketDescriptionManager _marketDescriptionManager;
+        private readonly IMarketDescriptionFactory _marketDescriptionFactory;
         private readonly ISportDataBuilder _sportDataBuilder;
         private readonly IFeedConfiguration _configuration;
 
@@ -26,10 +27,12 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             IProducerManager producerManager,
             IFeedConfiguration configuration,
             IMarketDescriptionManager marketDescriptionManager,
+            IMarketDescriptionFactory marketDescriptionFactory,
             ISportDataBuilder sportDataBuilder)
         {
             _producerManager = producerManager;
             _marketDescriptionManager = marketDescriptionManager;
+            _marketDescriptionFactory = marketDescriptionFactory;
             _sportDataBuilder = sportDataBuilder;
             _configuration = configuration;
         }
@@ -119,7 +122,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 GetSpecifiers(oddsChangeMarket.specifiers),
                 oddsChangeMarket.extended_specifiers,
                 oddsChangeMarket.groups?.Split("|"),
-                _marketDescriptionManager,
+                _marketDescriptionFactory,
                 _configuration.ExceptionHandlingStrategy,
                 marketStatus,
                 oddsChangeMarket.favouriteSpecified && oddsChangeMarket.favourite == 1,
@@ -230,7 +233,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 extentedSpecifiers: message.extended_specifiers,
                 groups: message.groups?.Split("|"),
                 outcomes: GetOutcomeSettlements(message.Items),
-                marketDescriptionManager: _marketDescriptionManager,
+                marketDescriptionFactory: _marketDescriptionFactory,
                 exceptionHandlingStrategy: _configuration.ExceptionHandlingStrategy,
                 voidReason: message.void_reasonSpecified ? message.void_reason : default(int?));
         }
@@ -279,7 +282,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 specifiers: GetSpecifiers(message.specifiers),
                 extentedSpecifiers: message.extended_specifiers,
                 groups: message.groups?.Split("|"),
-                marketDescriptionManager: _marketDescriptionManager,
+                marketDescriptionFactory: _marketDescriptionFactory,
                 exceptionHandlingStrategy: _configuration.ExceptionHandlingStrategy,
                 voidReason: message.void_reasonSpecified ? message.void_reason : default);
         }

@@ -22,6 +22,9 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public URN RefId
             => FetchSport(_cultures)?.RefId;
 
+        public string IconPath
+            => FetchSport(_cultures)?.IconPath;
+
         public IReadOnlyDictionary<CultureInfo, string> Names 
             => new ReadOnlyDictionary<CultureInfo, string>(FetchSport(_cultures)?.Name);
 

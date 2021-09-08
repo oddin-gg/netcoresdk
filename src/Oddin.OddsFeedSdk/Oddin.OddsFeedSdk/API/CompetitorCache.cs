@@ -134,7 +134,11 @@ namespace Oddin.OddsFeedSdk.API
                 item.Country[culture] = data.country;
 
             if (data is teamExtended dataExtended)
+            {
                 item.SportId = string.IsNullOrEmpty(dataExtended?.sport?.id) ? null : new URN(dataExtended.sport?.id);
+                item.IconPath = dataExtended?.icon_path;
+            }
+
 
             _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
         }

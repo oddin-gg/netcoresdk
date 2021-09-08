@@ -11,6 +11,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         internal URN RefId { get; set; }
 
+        internal string IconPath { get; set; }
+
         internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
 
         internal ICollection<URN> TournamentIds { get; set; } = null;

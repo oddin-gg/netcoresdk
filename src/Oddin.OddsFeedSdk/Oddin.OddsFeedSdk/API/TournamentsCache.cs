@@ -177,22 +177,28 @@ namespace Oddin.OddsFeedSdk.API
                     SportId = string.IsNullOrEmpty(model?.sport?.id) ? null : new URN(model.sport.id),
                     ScheduledTime = model?.scheduled,
                     ScheduledEndTime = model?.scheduled_end
+                    
                 };
             }
 
             item.Name[culture] = model.name;
 
 
-            if (model is tournamentExtended modelExtended && modelExtended.competitors.Any())
+            if (model is tournamentExtended modelExtended)
             {
-                var ids = modelExtended.competitors.Select(c => string.IsNullOrEmpty(c?.id) ? null : new URN(c.id));
-                var alreadyExistingIds = item.CompetitorIds ??= new HashSet<URN>();
-                var alreadyExistingIdsHashSet = alreadyExistingIds.ToHashSet();
+                item.IconPath = modelExtended.icon_path;
 
-                foreach (var competitorId in ids)
-                    alreadyExistingIdsHashSet.Add(competitorId);
+                if (modelExtended.competitors.Any())
+                {
+                    var ids = modelExtended.competitors.Select(c => string.IsNullOrEmpty(c?.id) ? null : new URN(c.id));
+                    var alreadyExistingIds = item.CompetitorIds ??= new HashSet<URN>();
+                    var alreadyExistingIdsHashSet = alreadyExistingIds.ToHashSet();
 
-                item.CompetitorIds = alreadyExistingIdsHashSet.ToList();
+                    foreach (var competitorId in ids)
+                        alreadyExistingIdsHashSet.Add(competitorId);
+
+                    item.CompetitorIds = alreadyExistingIdsHashSet.ToList();
+                }
             }
 
             _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());

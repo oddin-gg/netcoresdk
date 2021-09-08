@@ -490,7 +490,6 @@ namespace Oddin.OddsFeedSdk.API.Models
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class teamExtended : team
     {
-
         private sport sportField;
 
         private string icon_pathField;

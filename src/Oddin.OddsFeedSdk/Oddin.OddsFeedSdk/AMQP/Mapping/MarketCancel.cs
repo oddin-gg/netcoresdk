@@ -16,10 +16,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             IDictionary<string, string> specifiers,
             string extentedSpecifiers,
             IEnumerable<string> groups,
-            IMarketDescriptionManager marketDescriptionManager,
+            IMarketDescriptionFactory marketDescriptionFactory,
             ExceptionHandlingStrategy exceptionHandlingStrategy,
             int? voidReason)
-            : base(id, refId, specifiers, extentedSpecifiers, groups, marketDescriptionManager, exceptionHandlingStrategy)
+            : base(id, refId, specifiers, extentedSpecifiers, groups, marketDescriptionFactory, exceptionHandlingStrategy)
         {
             VoidReason = voidReason;
         }

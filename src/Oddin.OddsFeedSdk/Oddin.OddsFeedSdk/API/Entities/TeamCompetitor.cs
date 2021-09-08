@@ -33,6 +33,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public URN RefId => _competitor.RefId;
 
+        public string IconPath => _competitor.IconPath;
+
         public IReadOnlyDictionary<CultureInfo, string> Names => _competitor.Names;
 
         public string GetAbbreviation(CultureInfo culture) => _competitor.GetAbbreviation(culture);

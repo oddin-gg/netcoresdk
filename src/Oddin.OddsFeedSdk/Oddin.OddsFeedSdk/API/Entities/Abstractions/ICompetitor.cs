@@ -20,9 +20,11 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 
         string Underage { get; }
 
-        Task<ISport> GetSportAsync();
-
         string ShortName => null;
+
+        string IconPath { get; }
+
+        Task<ISport> GetSportAsync();
     }
 
     public interface ITeamCompetitor : ICompetitor
