@@ -6,7 +6,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
     class Program
     {
         // Put you token here:
-        internal const string TOKEN = "1a0c5a30-74ed-416d-b120-8c05f92e382f";
+        internal const string TOKEN = "your-token";
 
         static async Task Main(string[] _)
         {

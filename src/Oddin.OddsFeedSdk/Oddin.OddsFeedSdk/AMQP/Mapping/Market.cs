@@ -2,21 +2,22 @@ using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Oddin.OddsFeedSdk.Exceptions;
-using Oddin.OddsFeedSdk.Managers.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using System.Collections.ObjectModel;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping
 {
     internal class Market : IMarket
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(Market));
+
         private readonly IMarketDescriptionFactory _marketDescriptionFactory;
+        private readonly ISportEvent _sportEvent;
         private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
 
         public int Id { get; }
@@ -40,6 +41,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             string extendedSpecifiers,
             IEnumerable<string> groups,
             IMarketDescriptionFactory marketDescriptionFactory,
+            ISportEvent sportEvent,
             ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
             Id = id;
@@ -48,6 +50,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             ExtendedSpecifiers = extendedSpecifiers;
             Groups = groups;
             _marketDescriptionFactory = marketDescriptionFactory;
+            _sportEvent = sportEvent;
             _exceptionHandlingStrategy = exceptionHandlingStrategy;
         }
 
@@ -75,16 +78,27 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
         private string MakeMarketName(string marketName, CultureInfo culture)
         {
-            return marketName;
-
             if (Specifiers is null || Specifiers.Any() == false)
                 return marketName;
 
             var template = marketName;
             foreach(var specifier in Specifiers)
             {
+                var key = $"{{{specifier.Key}}}";
+                if (template.Contains(key) == false)
+                    continue;
 
+                var value = specifier.Value switch
+                {
+                    "home" => (_sportEvent as IMatch)?.HomeCompetitor?.GetName(culture),
+                    "away" => (_sportEvent as IMatch)?.AwayCompetitor?.GetName(culture),
+                    _ => specifier.Value
+                };
+
+                template = template.Replace(key, value);
             }
+
+            return template;
         }
     }
 }

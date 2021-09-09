@@ -1,6 +1,9 @@
+using System.Collections.Generic;
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
-using Oddin.OddsFeedSdk.Managers.Abstractions;
+using Oddin.OddsFeedSdk.API.Abstractions;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping
 {
@@ -16,10 +19,14 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             double? deadHeatFactor,
             long id,
             long refId,
-            IMarketDescriptionManager marketDescriptionManager,
             int result,
-            double? voidFactor)
-            : base(id, refId, marketDescriptionManager)
+            double? voidFactor,
+            IMarketDescriptionFactory marketDescriptionFactory,
+            IFeedConfiguration configuration,
+            int marketId,
+            IDictionary<string, string> marketSpecifiers,
+            ISportEvent sportEvent)
+            : base(id, refId, marketDescriptionFactory, configuration, marketId, marketSpecifiers, sportEvent)
         {
             DeadHeatFactor = deadHeatFactor;
 

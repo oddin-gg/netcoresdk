@@ -14,8 +14,9 @@ namespace Oddin.OddsFeedSdk
 
         internal const int StatefulRecoveryWindowInMinutes = 4320;
 
-        internal const int MinInactivitySeconds = 10;
-        internal const int MaxInactivitySeconds = 20;
+        internal const int MinInactivitySeconds = 11;
+        internal const int DefaultInactivitySeconds = 15;
+        internal const int MaxInactivitySeconds = 30;
 
         internal const int MinRecoveryExecutionInSeconds = 600;
         internal const int MaxRecoveryExecutionInSeconds = 21600;

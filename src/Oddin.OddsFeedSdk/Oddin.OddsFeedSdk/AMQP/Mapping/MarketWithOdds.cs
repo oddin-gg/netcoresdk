@@ -1,6 +1,7 @@
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using System.Collections.Generic;
 
@@ -27,8 +28,9 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             MarketStatus marketStatus,
             bool isFavorite,
             IEnumerable<IOutcomeOdds> outcomeOdds,
+            ISportEvent sportEvent,
             IMarketMetadata marketMetadata)
-            : base(marketId, refId, specifiers, extendedSpecifiers, groups, marketDescriptionFactory, exceptionHandlingStrategy)
+            : base(marketId, refId, specifiers, extendedSpecifiers, groups, marketDescriptionFactory, sportEvent, exceptionHandlingStrategy)
         {
             Status = marketStatus;
             IsFavorite = isFavorite;
