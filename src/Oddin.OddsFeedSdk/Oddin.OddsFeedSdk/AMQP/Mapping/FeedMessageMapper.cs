@@ -16,7 +16,6 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
     internal class FeedMessageMapper : IFeedMessageMapper
     {
         private readonly IProducerManager _producerManager;
-        private readonly IMarketDescriptionManager _marketDescriptionManager;
         private readonly IMarketDescriptionFactory _marketDescriptionFactory;
         private readonly ISportDataBuilder _sportDataBuilder;
         private readonly IFeedConfiguration _configuration;
@@ -26,12 +25,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         public FeedMessageMapper(
             IProducerManager producerManager,
             IFeedConfiguration configuration,
-            IMarketDescriptionManager marketDescriptionManager,
             IMarketDescriptionFactory marketDescriptionFactory,
             ISportDataBuilder sportDataBuilder)
         {
             _producerManager = producerManager;
-            _marketDescriptionManager = marketDescriptionManager;
             _marketDescriptionFactory = marketDescriptionFactory;
             _sportDataBuilder = sportDataBuilder;
             _configuration = configuration;
@@ -92,7 +89,11 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 outcome.refund_probabilitiesSpecified ? outcome.refund_probabilities : default);
         }
 
-        private IOutcomeOdds GetOutcomeOdds(oddsChangeMarketOutcome outcome)
+        private IOutcomeOdds GetOutcomeOdds(
+            oddsChangeMarketOutcome outcome,
+            int marketId,
+            IDictionary<string, string> marketSpecifiers,
+            ISportEvent sportEvent)
         {
             if (outcome is null)
                 throw new ArgumentNullException(nameof(outcome));
@@ -104,10 +105,15 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 GetAdditionalProbabilities(outcome),
                 outcome.id,
                 outcome.refid,
-                _marketDescriptionManager);
+                _marketDescriptionFactory,
+                _configuration,
+                marketId,
+                marketSpecifiers,
+                sportEvent
+            );
         }
 
-        private IMarketWithOdds GetMarketWithOdds(oddsChangeMarket oddsChangeMarket)
+        private IMarketWithOdds GetMarketWithOdds(oddsChangeMarket oddsChangeMarket, ISportEvent sportEvent)
         {
             if (oddsChangeMarket is null)
                 throw new ArgumentNullException(nameof(oddsChangeMarket));
@@ -116,17 +122,20 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                     ? EnumParsingHelper.GetEnumFromInt<MarketStatus>(oddsChangeMarket.status)
                     : DEFAULT_MARKET_STATUS;
 
+            var specifiers = GetSpecifiers(oddsChangeMarket.specifiers);
+
             return new MarketWithOdds(
                 oddsChangeMarket.id,
                 oddsChangeMarket.refid,
-                GetSpecifiers(oddsChangeMarket.specifiers),
+                specifiers,
                 oddsChangeMarket.extended_specifiers,
                 oddsChangeMarket.groups?.Split("|"),
                 _marketDescriptionFactory,
                 _configuration.ExceptionHandlingStrategy,
                 marketStatus,
                 oddsChangeMarket.favouriteSpecified && oddsChangeMarket.favourite == 1,
-                oddsChangeMarket.outcome?.Select(outcome => GetOutcomeOdds(outcome)),
+                oddsChangeMarket.outcome?.Select(outcome => GetOutcomeOdds(outcome, oddsChangeMarket.id, specifiers, sportEvent)),
+                sportEvent,
                 new MarketMetadata(oddsChangeMarket.market_metadata));
         }
 
@@ -171,7 +180,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 (T)sportEvent,
                 message.request_idSpecified ? (long?)message.request_id : null,
                 rawMessage,
-                message.odds?.market?.Select(market => GetMarketWithOdds(market)),
+                message.odds?.market?.Select(market => GetMarketWithOdds(market, sportEvent)),
                 GetBetStopReason(message.odds),
                 GetBettingStatus(message.odds));
         }
@@ -213,41 +222,53 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 _producerManager.Get(message.product),
                 (T)sportEvent,
                 message.request_idSpecified ? (long?)message.request_id : null,
-                message.outcomes.Select(m => GetMarketWithResults(m)),
+                message.outcomes.Select(m => GetMarketWithResults(m, sportEvent)),
                 message.certainty,
                 rawMessage);
         }
 
-        private IMarketWithSettlement GetMarketWithResults(betSettlementMarket message)
+        private IMarketWithSettlement GetMarketWithResults(betSettlementMarket message, ISportEvent sportEvent)
         {
             if (message is null)
                 throw new ArgumentNullException(nameof(message));
 
             var marketStatus = EnumParsingHelper.GetEnumFromInt<MarketStatus>(message.status);
+            var specifiers = GetSpecifiers(message.specifiers);
 
             return new MarketWithSettlement(
                 marketStatus: marketStatus,
                 marketId: message.id,
                 refId: message.refid,
-                specifiers: GetSpecifiers(message.specifiers),
+                specifiers: specifiers,
                 extentedSpecifiers: message.extended_specifiers,
                 groups: message.groups?.Split("|"),
-                outcomes: GetOutcomeSettlements(message.Items),
+                outcomes: GetOutcomeSettlements(message.Items, message.id, specifiers, sportEvent),
                 marketDescriptionFactory: _marketDescriptionFactory,
+                sportEvent: sportEvent,
                 exceptionHandlingStrategy: _configuration.ExceptionHandlingStrategy,
                 voidReason: message.void_reasonSpecified ? message.void_reason : default(int?));
         }
 
-        private IEnumerable<IOutcomeSettlement> GetOutcomeSettlements(betSettlementMarketOutcome[] betSettlementMarkets)
+        private IEnumerable<IOutcomeSettlement> GetOutcomeSettlements(
+            betSettlementMarketOutcome[] betSettlementMarkets,
+            int marketId,
+            IDictionary<string, string> marketSpecifiers,
+            ISportEvent sportEvent)
         {
             return betSettlementMarkets.Select(b =>
                 new OutcomeSettlement(
                     b.dead_heat_factorSpecified ? b.dead_heat_factor : default(double?),
                     b.id,
                     b.refid,
-                    _marketDescriptionManager,
                     b.result,
-                    b.void_factorSpecified ? b.void_factor : default(double?)));
+                    b.void_factorSpecified ? b.void_factor : default(double?),
+                    _marketDescriptionFactory,
+                    _configuration,
+                    marketId,
+                    marketSpecifiers,
+                    sportEvent
+                )
+            );
         }
 
         public IBetCancel<T> MapBetCancel<T>(bet_cancel message, byte[] rawMessage)
@@ -267,11 +288,11 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 startTime: message.start_timeSpecified ? message.start_time : default,
                 endTime: message.end_timeSpecified ? message.end_time : default,
                 supersededBy: message.superceded_by,
-                markets: message.market.Select(m => GetMarketWithCancel(m)),
+                markets: message.market.Select(m => GetMarketWithCancel(m, sportEvent)),
                 rawMessage: rawMessage);
         }
 
-        private IMarketCancel GetMarketWithCancel(bet_cancel_market message)
+        private IMarketCancel GetMarketWithCancel(bet_cancel_market message, ISportEvent sportEvent)
         {
             if (message is null)
                 throw new ArgumentNullException(nameof(message));
@@ -283,6 +304,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 extentedSpecifiers: message.extended_specifiers,
                 groups: message.groups?.Split("|"),
                 marketDescriptionFactory: _marketDescriptionFactory,
+                sportEvent: sportEvent,
                 exceptionHandlingStrategy: _configuration.ExceptionHandlingStrategy,
                 voidReason: message.void_reasonSpecified ? message.void_reason : default);
         }

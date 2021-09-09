@@ -242,10 +242,16 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"{await match.GetScheduledTimeAsync()}");
             Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
             Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
-            
-            /*Console.WriteLine($"Odds changed in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
-            Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
-            Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");*/
+
+            // Market
+            var market = eventArgs.GetOddsChange().Markets?.FirstOrDefault();
+            Console.WriteLine($"Odds changed market: {market?.GetName(CultureEn)}");
+            Console.WriteLine($"Odds changed market: {market?.Status}");
+
+            // Outcome
+            var outcome = eventArgs.GetOddsChange().Markets?.FirstOrDefault()?.OutcomeOdds?.FirstOrDefault();
+            Console.WriteLine($"Odds changed market outcome: {outcome?.GetName(CultureEn)}");
+            Console.WriteLine($"Odds changed market outcome: {outcome?.Id} {outcome?.RefId} {outcome?.Probabilities}");
         }
 
         private static async void Session_OnFixtureChange(object sender, FixtureChangeEventArgs<ISportEvent> eventArgs)

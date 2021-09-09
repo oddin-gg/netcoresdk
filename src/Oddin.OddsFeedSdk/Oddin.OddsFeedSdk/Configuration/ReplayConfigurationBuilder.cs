@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.Configuration.Abstractions;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.Configuration
 {
@@ -22,7 +22,7 @@ namespace Oddin.OddsFeedSdk.Configuration
                 apiHost: SdkDefaults.IntegrationApiHost,
                 useSsl: true,
                 useApiSsl: true,
-                maxInactivitySeconds: SdkDefaults.MaxInactivitySeconds,
+                maxInactivitySeconds: SdkDefaults.DefaultInactivitySeconds,
                 maxRecoveryExecutionInSeconds: SdkDefaults.MaxRecoveryExecutionInSeconds,
                 nodeId: SdkNodeId,
                 exceptionHandlingStrategy: ExceptionHandlingStrategy,

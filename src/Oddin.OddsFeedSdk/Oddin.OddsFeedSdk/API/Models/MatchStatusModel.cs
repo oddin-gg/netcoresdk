@@ -22,7 +22,7 @@ namespace Oddin.OddsFeedSdk.API.Models
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    [System.Xml.Serialization.XmlRootAttribute(IsNullable = false)]
+    [System.Xml.Serialization.XmlRootAttribute(ElementName = "match_status_descriptions", IsNullable = false)]
     public partial class MatchStatusModel
     { 
         private match_status_description[] match_statusField;

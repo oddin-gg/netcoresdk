@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
-using Oddin.OddsFeedSdk.Managers.Abstractions;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping
 {
@@ -16,8 +18,22 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             IAdditionalProbabilities additionalProbabilities,
             long outcomeId,
             long outcomeRefId,
-            IMarketDescriptionManager marketDescriptionManager)
-            : base(active, probabilities, additionalProbabilities, outcomeId, outcomeRefId, marketDescriptionManager)
+            IMarketDescriptionFactory marketDescriptionFactory,
+            IFeedConfiguration configuration,
+            int marketId,
+            IDictionary<string, string> marketSpecifiers,
+            ISportEvent sportEvent)
+            : base(
+                  active,
+                  probabilities,
+                  additionalProbabilities,
+                  outcomeId,
+                  outcomeRefId,
+                  marketDescriptionFactory,
+                  configuration,
+                  marketId,
+                  marketSpecifiers,
+                  sportEvent)
         {
             _odds = odds;
         }

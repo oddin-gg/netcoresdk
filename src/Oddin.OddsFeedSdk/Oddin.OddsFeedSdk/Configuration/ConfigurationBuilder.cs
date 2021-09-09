@@ -25,7 +25,7 @@ namespace Oddin.OddsFeedSdk.Configuration
                 apiHost: _environment == SdkEnvironment.Production ? SdkDefaults.ProductionApiHost : SdkDefaults.IntegrationApiHost,
                 useSsl: true,
                 useApiSsl: true,
-                maxInactivitySeconds: MaxInactivitySeconds ?? SdkDefaults.MinInactivitySeconds,
+                maxInactivitySeconds: MaxInactivitySeconds ?? SdkDefaults.DefaultInactivitySeconds,
                 maxRecoveryExecutionInSeconds: MaxRecoveryTimeInSeconds ?? SdkDefaults.MaxRecoveryExecutionInSeconds,
                 nodeId: SdkNodeId,
                 exceptionHandlingStrategy: ExceptionHandlingStrategy,

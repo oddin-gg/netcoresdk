@@ -155,7 +155,7 @@ namespace Oddin.OddsFeedSdk.Managers
                 "Unknown producer",
                 false,
                 "live|prematch",
-                SdkDefaults.MaxInactivitySeconds,
+                SdkDefaults.DefaultInactivitySeconds,
                 SdkDefaults.StatefulRecoveryWindowInMinutes);
     }
 }
