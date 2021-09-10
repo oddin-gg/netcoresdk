@@ -78,12 +78,7 @@ namespace Oddin.OddsFeedSdk.API
 
         private void RefreshOrInsertFeedItem(URN id, AMQP.Messages.sportEventStatus status)
         {
-            if (status.winner_id is null == false)
-            { }
-
-            var item = _cache.Get(id.ToString()) as LocalizedMatchStatus;
-
-            if (item is null)
+            if (_cache.Get(id.ToString()) is not LocalizedMatchStatus item)
             {
                 item = new LocalizedMatchStatus
                 {
@@ -107,7 +102,7 @@ namespace Oddin.OddsFeedSdk.API
                 item.AwayScore = status.away_score;
                 item.IsScoreboardAvailable = status.scoreboard_available;
 
-                if(status.scoreboard is not null)
+                if (status.scoreboard is not null)
                     item.Scoreboard = MakeFeedScoreboard(status.scoreboard);
             }
 
@@ -116,9 +111,7 @@ namespace Oddin.OddsFeedSdk.API
 
         private void RefreshOrInsertApiItem(URN id, Models.sportEventStatus summary)
         {
-            var item = _cache.Get(id.ToString()) as LocalizedMatchStatus;
-
-            if (item is null)
+            if (_cache.Get(id.ToString()) is not LocalizedMatchStatus item)
             {
                 item = new LocalizedMatchStatus
                 {
@@ -225,21 +218,12 @@ namespace Oddin.OddsFeedSdk.API
 
         public LocalizedMatchStatus GetMatchStatus(URN id)
         {
-            _semaphore.WaitOne();
-            try
+            if (_cache.Get(id.ToString()) is not LocalizedMatchStatus matchStatus)
             {
-                var matchStatus = _cache.Get(id.ToString()) as LocalizedMatchStatus;
-                if (matchStatus == null)
-                {
-                    _apiClient.GetMatchSummary(id, Feed.AvailableLanguages().First());
-                    matchStatus = _cache.Get(id.ToString()) as LocalizedMatchStatus;
-                }
-                return matchStatus;
+                _apiClient.GetMatchSummary(id, Feed.AvailableLanguages().First());
+                matchStatus = _cache.Get(id.ToString()) as LocalizedMatchStatus;
             }
-            finally
-            {
-                _semaphore.Release();
-            }
+            return matchStatus;
         }
 
         public void ClearCacheItem(URN id)

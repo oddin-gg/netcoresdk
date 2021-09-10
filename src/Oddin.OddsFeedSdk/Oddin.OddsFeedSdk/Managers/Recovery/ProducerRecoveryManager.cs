@@ -27,13 +27,13 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         private readonly IProducer _producer;
         private readonly IApiClient _apiClient;
         private readonly IRequestIdFactory _requestIdFactory;
-        private readonly object _lockIsRecoveryInProgress = new object();
+        private readonly object _lockIsRecoveryInProgress = new();
         private bool _isRecoveryInProgress;
         private long _requestId;
         private Timer _recoveryRequestTimer;
-        private ElapsedEventHandler _recoveryRequestDelegate;
+        private readonly ElapsedEventHandler _recoveryRequestDelegate;
         private Timer _aliveMessageReceivedTimer;
-        private ElapsedEventHandler _startRecoveryDelegate;
+        private readonly ElapsedEventHandler _startRecoveryDelegate;
 
         public event EventHandler<FeedCloseEventArgs> Closed;
         public event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
@@ -72,8 +72,10 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         private void RecoveryRequestTimerSetup()
         {
             // INFO: _config.MaxRecoveryTime is maximum recovery execution time in seconds
-            _recoveryRequestTimer = new Timer(_config.MaxRecoveryTime * 1000);
-            _recoveryRequestTimer.AutoReset = true;
+            _recoveryRequestTimer = new Timer(_config.MaxRecoveryTime * 1000)
+            {
+                AutoReset = true
+            };
             _recoveryRequestTimer.Elapsed += _recoveryRequestDelegate;
         }
 

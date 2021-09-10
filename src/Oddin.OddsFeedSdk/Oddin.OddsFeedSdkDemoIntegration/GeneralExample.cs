@@ -9,6 +9,7 @@ using Oddin.OddsFeedSdk.Sessions.Abstractions;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -78,10 +79,12 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Event stateful recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventStatefulMessagesAsync(producer, urn)}");
         }
 
-        private static async Task WorkWithProducers(Feed feed)
+        private static Task WorkWithProducers(Feed feed)
         {
             foreach (var producer in feed.ProducerManager.Producers)
                 Console.WriteLine($"Producer name: {producer.Name}, id: {producer.Id}");
+
+            return Task.CompletedTask;
         }
 
         private async static Task WorkWithSportDataProvider(Feed feed)
@@ -108,8 +111,6 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Start date: {act.GetStartDate()}");
             Console.WriteLine($"ID: {act.Id}");
 
-            var availableTournaments = provider.GetAvailableTournaments(sportUrn, CultureEn);
-
             var competitor = provider.GetCompetitor(competitorUrn, CultureEn);
             Console.WriteLine($"Abbreviation: {competitor.Abbreviations.First()}");
             Console.WriteLine($"Country: {competitor.Countries.FirstOrDefault()}");
@@ -133,7 +134,9 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var m = listOfMatches.First();
             Console.WriteLine($"Away competitor name: {m.AwayCompetitor.GetName(CultureEn)}");
             Console.WriteLine($"Fixture ID: {m.Fixture.Id}");
+            Console.WriteLine($"Fixture extra info: {string.Join(", ", m.Fixture?.ExtraInfo ?? new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()))}");
             Console.WriteLine($"Name: {await m.GetNameAsync(CultureEn)}");
+            Console.WriteLine($"Properties: {string.Join(", ", m.Status?.Properties ?? new ReadOnlyDictionary<string, object>(new Dictionary<string, object>()))}");
             Console.WriteLine($"Scheduled end time: {await m.GetScheduledEndTimeAsync()}");
             Console.WriteLine($"Scheduled time: {await m.GetScheduledTimeAsync()}");
             Console.WriteLine($"Sport ID: {await m.GetSportIdAsync()}");
@@ -141,53 +144,40 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Live odds availability: {m.LiveOddsAvailability}");
             Console.WriteLine($"Status: {m.Status}");
 
-            var liveMatches = provider.GetLiveMatches(CultureEn);
-            var match = provider.GetMatch(matchUrn, CultureEn);
-            var matchesForNow = provider.GetMatchesFor(DateTime.UtcNow, CultureEn);
-
             var sport = await provider.GetSportAsync(sportUrn, CultureEn);
             Console.WriteLine($"Name: {sport.GetName(CultureEn)}");
+            Console.WriteLine($"Names: {string.Join(", ", sport?.Names ?? new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>()))}");
             Console.WriteLine($"ID: {sport.Id}");
             Console.WriteLine($"Icon Path: {sport.IconPath}");
             Console.WriteLine($"Name: {sport.Names.FirstOrDefault()}");
             Console.WriteLine($"Ref ID: {sport.RefId}");
             Console.WriteLine($"Tournament ID: {sport.Tournaments.FirstOrDefault()?.Id}");
-
-            var sports = await provider.GetSportsAsync(CultureEn);
-
-            var sportsEn = await provider.GetSportsAsync(CultureEn);
-
-            Console.WriteLine($"{sportsEn.FirstOrDefault()?.Id}");
         }
 
-        private async static Task WorkWithMarketDesctiptionManager(Feed feed)
+        private static Task WorkWithMarketDesctiptionManager(Feed feed)
         {
-            try
-            {
-                var manager = feed.MarketDescriptionManager;
+            var manager = feed.MarketDescriptionManager;
+            var marketDescriptionsEn = manager.GetMarketDescriptions(CultureEn);
 
-                var marketDescriptionsEn = manager.GetMarketDescriptions(CultureEn);
+            var description = marketDescriptionsEn.First();
+            var specifiers = string.Join(", ", description.Specifiers.Select(s => $"Name:{s.Name} Type:{s.Type}"));
+            var outcomes = string.Join(", ", description.Outcomes.Select(o => $"Id:{o.Id}/{o.RefId} Name:{o.GetName(CultureEn)} Description:{o.GetDescription(CultureEn)}"));
 
-                var description = marketDescriptionsEn.First();
-                var specifiers = string.Join(", ", description.Specifiers.Select(s => $"Name:{s.Name} Type:{s.Type}"));
-                var outcomes = string.Join(", ", description.Outcomes.Select(o => $"Id:{o.Id}/{o.RefId} Name:{o.GetName(CultureEn)} Description:{o.GetDescription(CultureEn)}"));
+            Console.WriteLine($"Market Description - Name: {description.GetName(CultureEn)} Id:{description.Id} RefId:{description.RefId} OutcomeType/Variant:{description.OutcomeType}");
+            Console.WriteLine($"Specifiers:{specifiers}");
+            Console.WriteLine($"Outcomes:{outcomes}");
 
-                Console.WriteLine($"Market Description - Name: {description.GetName(CultureEn)} Id:{description.Id} RefId:{description.RefId} OutcomeType/Variant:{description.OutcomeType}");
-                Console.WriteLine($"Specifiers:{specifiers}");
-                Console.WriteLine($"Outcomes:{outcomes}");
-            }
-            catch (Exception e)
-            {
-
-            }
+            return Task.CompletedTask;
         }
 
-        private async static Task WorkWithBookmakerDetails(Feed feed)
+        private static Task WorkWithBookmakerDetails(Feed feed)
         {
             var bookmakerDetails = feed.BookmakerDetails;
             Console.WriteLine($"Bookmaker ID: {bookmakerDetails.BookmakerId}");
             Console.WriteLine($"Expire at: {bookmakerDetails.ExpireAt}");
             Console.WriteLine($"Virtual host: {bookmakerDetails.VirtualHost}");
+
+            return Task.CompletedTask;
         }
 
         private static ILoggerFactory CreateLoggerFactory()
@@ -235,7 +225,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var e = eventArgs.GetOddsChange().Event;
             var match = e as IMatch;
             Console.WriteLine($"Odds changed in {match.Status}");
-            Console.WriteLine($"{match.HomeCompetitor?.Abbreviations}");
+            Console.WriteLine($"{string.Join(", ", match.HomeCompetitor?.Abbreviations ?? new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>()))}");
             Console.WriteLine($"{match.LiveOddsAvailability}");
             Console.WriteLine($"{match.Fixture?.Id}");
             Console.WriteLine($"{await match.GetNameAsync(CultureEn)}");

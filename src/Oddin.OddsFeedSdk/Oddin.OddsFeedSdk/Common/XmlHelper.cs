@@ -32,6 +32,9 @@ namespace Oddin.OddsFeedSdk.Common
             }
             catch (InvalidOperationException e)
             {
+#if DEBUG
+                Console.WriteLine($"[{typeof(T)}] Exception when Deserializing {e}");
+#endif
                 result = default;
                 return false;
             }

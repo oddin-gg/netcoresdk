@@ -25,11 +25,20 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public string IconPath
             => FetchSport(_cultures)?.IconPath;
 
-        public IReadOnlyDictionary<CultureInfo, string> Names 
-            => new ReadOnlyDictionary<CultureInfo, string>(FetchSport(_cultures)?.Name);
+        public IReadOnlyDictionary<CultureInfo, string> Names
+        {
+            get
+            {
+                var names = FetchSport(_cultures)?.Name;
+                if (names is not null)
+                    return new ReadOnlyDictionary<CultureInfo, string>(names);
 
-        public IEnumerable<ITournament> Tournaments 
-            => FetchTournaments();
+                return null;
+            }
+        }
+
+        public IEnumerable<ITournament> Tournaments
+                    => FetchTournaments();
 
         internal Sport(URN id, IEnumerable<CultureInfo> cultures, ISportDataCache cache, ISportDataBuilder builder, ExceptionHandlingStrategy exceptionHandling)
         {
@@ -54,7 +63,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
             return sport;
         }
-        
+
         private IEnumerable<ITournament> FetchTournaments()
         {
             var sport = _cache.GetSport(Id, _cultures).ConfigureAwait(false).GetAwaiter().GetResult();

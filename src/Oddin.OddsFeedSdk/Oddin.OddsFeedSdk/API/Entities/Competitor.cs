@@ -23,13 +23,40 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public URN RefId => FetchCompetitor(_cultures)?.RefId;
 
         public IReadOnlyDictionary<CultureInfo, string> Names
-            => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Name);
+        {
+            get
+            {
+                var names = FetchCompetitor(_cultures)?.Name;
+                if(names is not null)
+                    return new ReadOnlyDictionary<CultureInfo, string>(names);
+
+                return null;
+            }
+        }
 
         public IReadOnlyDictionary<CultureInfo, string> Countries
-            => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Country);
+        {
+            get
+            {
+                var coutries = FetchCompetitor(_cultures)?.Country;
+                if (coutries is not null)
+                    return new ReadOnlyDictionary<CultureInfo, string>(coutries);
+
+                return null;
+            }
+        }
 
         public IReadOnlyDictionary<CultureInfo, string> Abbreviations
-            => new ReadOnlyDictionary<CultureInfo, string>(FetchCompetitor(_cultures)?.Abbreviation);
+        {
+            get
+            {
+                var abbreviations = FetchCompetitor(_cultures)?.Abbreviation;
+                if (abbreviations is not null)
+                    return new ReadOnlyDictionary<CultureInfo, string>(abbreviations);
+
+                return null;
+            }
+        }
 
         public bool? IsVirtual => FetchCompetitor(_cultures)?.IsVirtual;
 

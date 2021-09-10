@@ -12,7 +12,10 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public long Id { get; }
 
-        public IReadOnlyDictionary<CultureInfo, string> Descriptions => new ReadOnlyDictionary<CultureInfo, string>(_descriptionMap);
+        public IReadOnlyDictionary<CultureInfo, string> Descriptions
+            => _descriptionMap is null
+            ? null
+            : new ReadOnlyDictionary<CultureInfo, string>(_descriptionMap);
 
         public string Description => _descriptionMap.Values.FirstOrDefault();
 

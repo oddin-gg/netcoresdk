@@ -18,10 +18,10 @@ namespace Oddin.OddsFeedSdk.API
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(SportDataCache));
 
         private readonly IApiClient _apiClient;
-        private readonly MemoryCache _cache = new MemoryCache(nameof(SportDataCache));
+        private readonly MemoryCache _cache = new(nameof(SportDataCache));
         private readonly IList<CultureInfo> _loadedLocales = new List<CultureInfo>();
 
-        private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly Semaphore _semaphore = new(1, 1);
         private readonly TimeSpan _cacheTTL = TimeSpan.FromDays(1);
 
         private readonly IDisposable _subscription;

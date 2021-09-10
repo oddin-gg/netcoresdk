@@ -17,8 +17,8 @@ namespace Oddin.OddsFeedSdk.API
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(CompetitorCache));
 
         private readonly IApiClient _apiClient;
-        private readonly MemoryCache _cache = new MemoryCache(nameof(CompetitorCache));
-        private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly MemoryCache _cache = new(nameof(CompetitorCache));
+        private readonly Semaphore _semaphore = new(1, 1);
         private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(24);
         private readonly IDisposable _subscription;
 

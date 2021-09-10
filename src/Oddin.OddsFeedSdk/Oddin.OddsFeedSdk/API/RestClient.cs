@@ -21,8 +21,8 @@ namespace Oddin.OddsFeedSdk.API
         private readonly string _apiHost;
         private readonly bool _useSsl;
         private readonly int _timeoutSeconds;
-        private readonly HttpClient _httpClient = new HttpClient();
-        private readonly Subject<IRequestResult<object>> _publisher = new ();
+        private readonly HttpClient _httpClient = new();
+        private readonly Subject<IRequestResult<object>> _publisher = new();
 
         public RestClient(IFeedConfiguration config)
         {

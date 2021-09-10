@@ -21,7 +21,17 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public DateTime? StartTime => FetchFixture()?.StartTime;
 
-        public IReadOnlyDictionary<string, string> ExtraInfo => new ReadOnlyDictionary<string, string>(FetchFixture()?.ExtraInfo);
+        public IReadOnlyDictionary<string, string> ExtraInfo
+        {
+            get
+            {
+                var fixtures = FetchFixture()?.ExtraInfo;
+                if(fixtures is not null)
+                    return new ReadOnlyDictionary<string, string>(fixtures);
+
+                return null;
+            }
+        }
 
         public IEnumerable<ITvChannel> TvChannels => FetchFixture()?.TvChannels;
 

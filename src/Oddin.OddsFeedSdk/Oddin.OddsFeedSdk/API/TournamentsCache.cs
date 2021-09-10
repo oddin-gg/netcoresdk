@@ -20,9 +20,9 @@ namespace Oddin.OddsFeedSdk.API
 
         private readonly IApiClient _apiClient;
         private readonly IAmqpClient _amqpClient;
-        private readonly MemoryCache _cache = new MemoryCache(nameof(TournamentsCache));
+        private readonly MemoryCache _cache = new(nameof(TournamentsCache));
 
-        private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly Semaphore _semaphore = new(1, 1);
         private readonly IDisposable _subscription;
         private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(12);
 

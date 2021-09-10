@@ -16,8 +16,6 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 {
     internal static class ReplayExample
     {
-        private static readonly CultureInfo CultureEn = CultureInfo.GetCultureInfoByIetfLanguageTag("en");
-
         internal static async Task Run(string token)
         {
             var loggerFactory = CreateLoggerFactory();

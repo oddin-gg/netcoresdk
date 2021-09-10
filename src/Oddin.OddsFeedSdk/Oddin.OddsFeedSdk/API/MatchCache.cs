@@ -9,10 +9,8 @@ using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.AMQP.Abstractions;
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.EventArguments;
-using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
-using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
 
@@ -24,8 +22,8 @@ namespace Oddin.OddsFeedSdk.API
 
         private readonly IApiClient _apiClient;
         private readonly IAmqpClient _amqpClient;
-        private readonly MemoryCache _cache = new MemoryCache(nameof(MatchCache));
-        private readonly Semaphore _semaphore = new Semaphore(1, 1);
+        private readonly MemoryCache _cache = new(nameof(MatchCache));
+        private readonly Semaphore _semaphore = new(1, 1);
         private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(12);
         private readonly IDisposable _subscription;
 
@@ -69,7 +67,9 @@ namespace Oddin.OddsFeedSdk.API
 
         private void MatchFixtureChangeInvalidatesCache(object sender, SimpleMessageEventArgs<fixture_change> e)
         {
-            var id = string.IsNullOrEmpty(e?.FeedMessage?.event_id) ? null : new URN(e.FeedMessage.event_id);
+            var id = string.IsNullOrEmpty(e?.FeedMessage?.event_id)
+                ? null
+                : new URN(e.FeedMessage.event_id);
 
             if (id.Type == "match")
             {

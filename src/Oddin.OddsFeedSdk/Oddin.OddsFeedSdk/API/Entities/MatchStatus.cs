@@ -37,7 +37,17 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public EventStatus Status => GetEventStatus();
 
-        public IReadOnlyDictionary<string, object> Properties => new ReadOnlyDictionary<string, object>(FetchMatchStatus()?.Properties);
+        public IReadOnlyDictionary<string, object> Properties
+        {
+            get
+            {
+                var properties = FetchMatchStatus()?.Properties;
+                if(properties is not null)
+                    return new ReadOnlyDictionary<string, object>(properties);
+
+                return null;
+            }
+        }
 
         public MatchStatus(
             URN sportEventId,

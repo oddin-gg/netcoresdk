@@ -10,7 +10,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Reactive.Subjects;
-using Oddin.OddsFeedSdk.AMQP;
 
 namespace Oddin.OddsFeedSdk.API
 {
@@ -19,7 +18,7 @@ namespace Oddin.OddsFeedSdk.API
         private readonly IApiModelMapper _apiModelMapper;
         private readonly IRestClient _restClient;
         private readonly CultureInfo _defaultCulture;
-        private readonly Subject<object> _publisher = new Subject<object>();
+        private readonly Subject<object> _publisher = new();
 
         public ApiClient(IApiModelMapper apiModelMapper, IFeedConfiguration config, IRestClient restClient)
         {

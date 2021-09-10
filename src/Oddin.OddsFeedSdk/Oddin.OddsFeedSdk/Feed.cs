@@ -36,7 +36,7 @@ namespace Oddin.OddsFeedSdk
         private readonly ILoggerFactory _loggerFactory;
         private readonly IFeedConfiguration _config;
         private bool _isOpened;
-        private readonly object _isOpenedLock = new object();
+        private readonly object _isOpenedLock = new();
         private readonly IList<IOpenable> _sessions = new List<IOpenable>();
         private bool _isDisposed;
 

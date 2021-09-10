@@ -23,7 +23,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         private readonly IRequestIdFactory _requestIdFactory;
         private readonly IAmqpClient _amqpClient;
         private IEnumerable<ProducerRecoveryManager> _producerRecoveryManagers;
-        private EventHandler<SimpleMessageEventArgs<alive>> _onAliveReceivedDelegate;
+        private readonly EventHandler<SimpleMessageEventArgs<alive>> _onAliveReceivedDelegate;
 
         public event EventHandler<FeedCloseEventArgs> Closed;
         public event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
