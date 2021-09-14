@@ -183,7 +183,6 @@ namespace Oddin.OddsFeedSdk.API
 
             item.Name[culture] = model.name;
 
-
             if (model is tournamentExtended modelExtended)
             {
                 item.IconPath = modelExtended.icon_path;

@@ -124,6 +124,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Name: {competitor.Names[CultureEn]}");
             Console.WriteLine($"Ref ID: {competitor.RefId}");
             Console.WriteLine($"Short name: {competitor.ShortName}");
+            Console.WriteLine($"Icon Path: {competitor.IconPath}");
 
             var fixtureChanges = provider.GetFixtureChanges(CultureEn);
             var fc = fixtureChanges.First();
@@ -242,6 +243,9 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var outcome = eventArgs.GetOddsChange().Markets?.FirstOrDefault()?.OutcomeOdds?.FirstOrDefault();
             Console.WriteLine($"Odds changed market outcome: {outcome?.GetName(CultureEn)}");
             Console.WriteLine($"Odds changed market outcome: {outcome?.Id} {outcome?.RefId} {outcome?.Probabilities}");
+
+            var competitor = match.Competitors.FirstOrDefault();
+            Console.WriteLine($"Odds change competitor icon path: {competitor.IconPath}");
         }
 
         private static async void Session_OnFixtureChange(object sender, FixtureChangeEventArgs<ISportEvent> eventArgs)

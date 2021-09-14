@@ -10,6 +10,8 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
     {
         LocalizedCompetitor GetCompetitor(URN id, IEnumerable<CultureInfo> cultures);
 
+        string GetCompetitorIconPath(URN id, CultureInfo culture);
+
         void ClearCacheItem(URN id);
     }
 }

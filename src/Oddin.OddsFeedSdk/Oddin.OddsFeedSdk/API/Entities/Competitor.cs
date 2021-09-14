@@ -64,7 +64,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string Underage => FetchCompetitor(_cultures)?.Underage;
 
-        public string IconPath => FetchCompetitor(_cultures)?.IconPath;
+        public string IconPath => _competitorCache.GetCompetitorIconPath(Id, _cultures.First());
 
         public Competitor(
             URN id,

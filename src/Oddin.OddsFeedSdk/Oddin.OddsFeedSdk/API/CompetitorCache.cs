@@ -80,6 +80,25 @@ namespace Oddin.OddsFeedSdk.API
             }
         }
 
+        public string GetCompetitorIconPath(URN id, CultureInfo culture)
+        {
+            var competitor = _cache.Get(id.ToString()) as LocalizedCompetitor;
+            if (competitor?.IconPathLoaded == true)
+                return competitor.IconPath;
+
+            _semaphore.WaitOne();
+            try
+            {
+                LoadAndCacheItem(id, new[] { culture });
+                competitor = _cache.Get(id.ToString()) as LocalizedCompetitor;
+                return competitor?.IconPath;
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
         private void LoadAndCacheItem(URN id, IEnumerable<CultureInfo> cultures)
         {
             foreach (var culture in cultures)
@@ -137,8 +156,8 @@ namespace Oddin.OddsFeedSdk.API
             {
                 item.SportId = string.IsNullOrEmpty(dataExtended?.sport?.id) ? null : new URN(dataExtended.sport?.id);
                 item.IconPath = dataExtended?.icon_path;
+                item.IconPathLoaded = true;
             }
-
 
             _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
         }
