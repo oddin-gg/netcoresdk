@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -104,14 +105,17 @@ namespace Oddin.OddsFeedSdk.API.Entities
                 .Value;
         }
 
-        public Task<ISport> GetSportAsync()
-        {
-            var sportId = FetchCompetitor(_cultures)?.SportId;
+        public Task<ISport> GetSportAsync() => Task.FromResult(GetSports()?.FirstOrDefault());
 
-            if (sportId == null)
-                return Task.FromResult<ISport>(null);
+        public IEnumerable<ISport> GetSports()
+        {
+            var sportIds = FetchCompetitor(_cultures)?.SportIds;
+
+            if (sportIds is null || sportIds.Any() == false)
+                return null;
             else
-                return Task.FromResult(_sportDataBuilder.BuildSport(sportId, _cultures));
+                return sportIds
+                    .Select(s => _sportDataBuilder.BuildSport(s, _cultures));
         }
 
         private LocalizedCompetitor FetchCompetitor(IEnumerable<CultureInfo> cultures)

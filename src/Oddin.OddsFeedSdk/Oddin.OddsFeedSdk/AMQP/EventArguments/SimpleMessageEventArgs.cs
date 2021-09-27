@@ -1,7 +1,7 @@
-﻿namespace Oddin.OddsFeedSdk.AMQP.EventArguments
-{
-    using System;
+using System;
 
+namespace Oddin.OddsFeedSdk.AMQP.EventArguments
+{
     public class SimpleMessageEventArgs<T> : EventArgs
     {
         public T FeedMessage { get; }

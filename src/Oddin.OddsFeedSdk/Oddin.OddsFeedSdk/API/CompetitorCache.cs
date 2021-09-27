@@ -154,7 +154,10 @@ namespace Oddin.OddsFeedSdk.API
 
             if (data is teamExtended dataExtended)
             {
-                item.SportId = string.IsNullOrEmpty(dataExtended?.sport?.id) ? null : new URN(dataExtended.sport?.id);
+                item.SportIds = dataExtended?.sport?
+                    .Where(s => string.IsNullOrEmpty(s.id) == false)
+                    .Select(s => new URN(s.id));
+
                 item.IconPath = dataExtended?.icon_path;
                 item.IconPathLoaded = true;
             }

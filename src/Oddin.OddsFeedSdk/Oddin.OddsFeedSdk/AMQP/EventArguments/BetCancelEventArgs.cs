@@ -1,6 +1,8 @@
-﻿using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace Oddin.OddsFeedSdk.AMQP.EventArguments
 {
@@ -8,10 +10,15 @@ namespace Oddin.OddsFeedSdk.AMQP.EventArguments
     {
         private readonly IFeedMessageMapper _messageMapper;
         private readonly bet_cancel _feedMessage;
+        private readonly IEnumerable<CultureInfo> _defaultCultures;
         private readonly byte[] _rawMessage;
         private readonly IBetCancel<T> _betCancel;
 
-        internal BetCancelEventArgs(IFeedMessageMapper messageMapper, bet_cancel feedMessage, byte[] rawMessage)
+        internal BetCancelEventArgs(
+            IFeedMessageMapper messageMapper,
+            bet_cancel feedMessage,
+            IEnumerable<CultureInfo> defaultCultures,
+            byte[] rawMessage)
         {
             if (messageMapper is null)
                 throw new ArgumentNullException($"{nameof(messageMapper)}");
@@ -21,17 +28,23 @@ namespace Oddin.OddsFeedSdk.AMQP.EventArguments
 
             _messageMapper = messageMapper;
             _feedMessage = feedMessage;
+            _defaultCultures = defaultCultures;
             _rawMessage = rawMessage;
 
             _betCancel = GetBetCancel();
         }
 
-        public IBetCancel<T> GetBetCancel()
+        public IBetCancel<T> GetBetCancel(CultureInfo culture = null)
         {
-            if ((_betCancel is null) == false)
+            if (_betCancel is not null && culture is null)
                 return _betCancel;
 
-            return _messageMapper.MapBetCancel<T>(_feedMessage, _rawMessage);
+            return _messageMapper.MapBetCancel<T>(
+                _feedMessage,
+                culture is null
+                    ? _defaultCultures
+                    : new[] {culture},
+                _rawMessage);
         }
     }
 }

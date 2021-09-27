@@ -18,7 +18,7 @@ namespace Oddin.OddsFeedSdk.Sessions
 
         private readonly IAmqpClient _amqpClient;
         private readonly IFeedMessageMapper _feedMessageMapper;
-        private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
+        private readonly IFeedConfiguration _configuration;
         private bool _isOpened;
         private readonly object _isOpenedLock = new object();
 
@@ -30,7 +30,7 @@ namespace Oddin.OddsFeedSdk.Sessions
             IAmqpClient amqpClient,
             IFeedMessageMapper feedMessageMapper,
             MessageInterest messageInterest,
-            ExceptionHandlingStrategy exceptionHandlingStrategy)
+            IFeedConfiguration configuration)
         {
             if (amqpClient is null)
                 throw new ArgumentNullException(nameof(amqpClient));
@@ -44,7 +44,7 @@ namespace Oddin.OddsFeedSdk.Sessions
             _amqpClient = amqpClient;
             _feedMessageMapper = feedMessageMapper;
             MessageInterest = messageInterest;
-            _exceptionHandlingStrategy = exceptionHandlingStrategy;
+            _configuration = configuration;
 
             Name = messageInterest.Name;
         }
@@ -71,7 +71,7 @@ namespace Oddin.OddsFeedSdk.Sessions
             {
                 var message = $"An exception was thrown when creating an object of type {typeof(TMessageEventArgs).Name} from a message received form AMQP feed!";
                 _log.LogError($"{message} Exception: {e}");
-                if (_exceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
+                if (_configuration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
                     throw;
                 else
                     return;
@@ -80,31 +80,56 @@ namespace Oddin.OddsFeedSdk.Sessions
 
         private void CreateAndDispatchOddsChange(object sender, SimpleMessageEventArgs<odds_change> eventArgs)
         {
-            var oddsChangeEventArgs = new OddsChangeEventArgs<ISportEvent>(_feedMessageMapper, eventArgs.FeedMessage, eventArgs.RawMessage);
+            var oddsChangeEventArgs = new OddsChangeEventArgs<ISportEvent>(
+                _feedMessageMapper,
+                eventArgs.FeedMessage,
+                new[] { _configuration.DefaultLocale },
+                eventArgs.RawMessage);
+
             Dispatch(OnOddsChange, oddsChangeEventArgs, nameof(OnOddsChange));
         }
 
         private void CreateAndDispatchBetStop(object sender, SimpleMessageEventArgs<bet_stop> eventArgs)
         {
-            var betStopEventArgs = new BetStopEventArgs<ISportEvent>(_feedMessageMapper, eventArgs.FeedMessage, eventArgs.RawMessage);
+            var betStopEventArgs = new BetStopEventArgs<ISportEvent>(
+                _feedMessageMapper,
+                eventArgs.FeedMessage,
+                new[] { _configuration.DefaultLocale },
+                eventArgs.RawMessage);
+
             Dispatch(OnBetStop, betStopEventArgs, nameof(OnBetStop));
         }
         
         private void CreateAndDispatchBetSettlement(object sender, SimpleMessageEventArgs<bet_settlement> eventArgs)
         {
-            var betSettlementEventArgs = new BetSettlementEventArgs<ISportEvent>(_feedMessageMapper, eventArgs.FeedMessage, eventArgs.RawMessage);
+            var betSettlementEventArgs = new BetSettlementEventArgs<ISportEvent>(
+                _feedMessageMapper,
+                eventArgs.FeedMessage,
+                new[] { _configuration.DefaultLocale },
+                eventArgs.RawMessage);
+
             Dispatch(OnBetSettlement, betSettlementEventArgs, nameof(OnBetSettlement));
         } 
         
         private void CreateAndDispatchBetCancel(object sender, SimpleMessageEventArgs<bet_cancel> eventArgs)
         {
-            var betCancelEventArgs = new BetCancelEventArgs<ISportEvent>(_feedMessageMapper, eventArgs.FeedMessage, eventArgs.RawMessage);
+            var betCancelEventArgs = new BetCancelEventArgs<ISportEvent>(
+                _feedMessageMapper,
+                eventArgs.FeedMessage,
+                new[] { _configuration.DefaultLocale },
+                eventArgs.RawMessage);
+
             Dispatch(OnBetCancel, betCancelEventArgs, nameof(OnBetCancel));
         }
         
         private void CreateAndDispatchFixtureChange(object sender, SimpleMessageEventArgs<fixture_change> eventArgs)
         {
-            var fixtureChangeEventArgs = new FixtureChangeEventArgs<ISportEvent>(_feedMessageMapper, eventArgs.FeedMessage, eventArgs.RawMessage);
+            var fixtureChangeEventArgs = new FixtureChangeEventArgs<ISportEvent>(
+                _feedMessageMapper,
+                eventArgs.FeedMessage,
+                new[] { _configuration.DefaultLocale },
+                eventArgs.RawMessage);
+
             Dispatch(OnFixtureChange, fixtureChangeEventArgs, nameof(OnFixtureChange));
         }
 

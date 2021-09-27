@@ -44,5 +44,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public string GetName(CultureInfo culture) => _competitor.GetName(culture);
 
         public Task<ISport> GetSportAsync() => _competitor.GetSportAsync();
+
+        public IEnumerable<ISport> GetSports() => _competitor.GetSports();
     }
 }

@@ -11,7 +11,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public URN RefId { get; set; }
 
-        public URN SportId { get; set; }
+        public IEnumerable<URN> SportIds { get; set; }
 
         internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
 

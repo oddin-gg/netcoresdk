@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Globalization;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping
 {
@@ -159,20 +160,31 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 : null;
         }
 
-        private ISportEvent MapSportEvent(URN id)
+        private ISportEvent MapSportEvent(URN id, IEnumerable<CultureInfo> cultures)
         {
-            return _sportDataBuilder
-                .BuildMatch(id, new[] { _configuration.DefaultLocale });
+            if (cultures is null || cultures.Any() == false)
+                cultures = new[] { _configuration.DefaultLocale };
+
+            return _sportDataBuilder.BuildMatch(id, cultures);
         }
 
-        public IOddsChange<T> MapOddsChange<T>(odds_change message, byte[] rawMessage)
+        public IOddsChange<T> MapOddsChange<T>(odds_change message, IEnumerable<CultureInfo> cultures, byte[] rawMessage)
             where T : ISportEvent
         {
             if (message is null)
                 throw new ArgumentNullException(nameof(message));
 
-            var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            var sportEvent = MapSportEvent(string.IsNullOrEmpty(message?.event_id) ? null : new URN(message.event_id));
+            var messageTimestamp = new MessageTimestamp(
+                message.GeneratedAt,
+                message.SentAt,
+                message.ReceivedAt,
+                DateTime.UtcNow.ToEpochTimeMilliseconds());
+
+            var sportEvent = MapSportEvent(
+                string.IsNullOrEmpty(message?.event_id)
+                    ? null
+                    : new URN(message.event_id),
+                cultures);
 
             return new OddsChange<T>(
                 _producerManager.Get(message.product),
@@ -185,14 +197,23 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 GetBettingStatus(message.odds));
         }
 
-        public IBetStop<T> MapBetStop<T>(bet_stop message, byte[] rawMessage)
+        public IBetStop<T> MapBetStop<T>(bet_stop message, IEnumerable<CultureInfo> cultures, byte[] rawMessage)
             where T : ISportEvent
         {
             if (message is null)
                 throw new ArgumentNullException(nameof(message));
 
-            var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            var sportEvent = MapSportEvent(string.IsNullOrEmpty(message?.event_id) ? null : new URN(message.event_id));
+            var messageTimestamp = new MessageTimestamp(
+                message.GeneratedAt,
+                message.SentAt,
+                message.ReceivedAt,
+                DateTime.UtcNow.ToEpochTimeMilliseconds());
+
+            var sportEvent = MapSportEvent(
+                string.IsNullOrEmpty(message?.event_id)
+                    ? null
+                    : new URN(message.event_id),
+                cultures);
 
             var marketStatus = message.market_statusSpecified
                     ? EnumParsingHelper.GetEnumFromInt<MarketStatus>(message.market_status)
@@ -208,14 +229,23 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 rawMessage);
         }
 
-        public IBetSettlement<T> MapBetSettlement<T>(bet_settlement message, byte[] rawMessage)
+        public IBetSettlement<T> MapBetSettlement<T>(bet_settlement message, IEnumerable<CultureInfo> cultures, byte[] rawMessage)
             where T : ISportEvent
         {
             if (message is null)
                 throw new ArgumentNullException($"{nameof(message)}");
 
-            var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            var sportEvent = MapSportEvent(string.IsNullOrEmpty(message?.event_id) ? null : new URN(message.event_id));
+            var messageTimestamp = new MessageTimestamp(
+                message.GeneratedAt,
+                message.SentAt,
+                message.ReceivedAt,
+                DateTime.UtcNow.ToEpochTimeMilliseconds());
+
+            var sportEvent = MapSportEvent(
+                string.IsNullOrEmpty(message?.event_id)
+                    ? null
+                    : new URN(message.event_id),
+                cultures);
 
             return new BetSettlement<T>(
                 messageTimestamp,
@@ -271,14 +301,23 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             );
         }
 
-        public IBetCancel<T> MapBetCancel<T>(bet_cancel message, byte[] rawMessage)
+        public IBetCancel<T> MapBetCancel<T>(bet_cancel message, IEnumerable<CultureInfo> cultures, byte[] rawMessage)
             where T : ISportEvent
         {
             if (message is null)
                 throw new ArgumentNullException($"{nameof(message)}");
 
-            var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            var sportEvent = MapSportEvent(string.IsNullOrEmpty(message?.event_id) ? null : new URN(message.event_id));
+            var messageTimestamp = new MessageTimestamp(
+                message.GeneratedAt,
+                message.SentAt,
+                message.ReceivedAt,
+                DateTime.UtcNow.ToEpochTimeMilliseconds());
+
+            var sportEvent = MapSportEvent(
+                string.IsNullOrEmpty(message?.event_id)
+                    ? null
+                    : new URN(message.event_id),
+                 cultures);
 
             return new BetCancel<T>(
                 timestamp: messageTimestamp,
@@ -309,13 +348,22 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 voidReason: message.void_reasonSpecified ? message.void_reason : default);
         }
 
-        public IFixtureChange<T> MapFixtureChange<T>(fixture_change message, byte[] rawMessage) where T : ISportEvent
+        public IFixtureChange<T> MapFixtureChange<T>(fixture_change message, IEnumerable<CultureInfo> cultures, byte[] rawMessage) where T : ISportEvent
         {
             if (message is null)
                 throw new ArgumentNullException(nameof(message));
 
-            var messageTimestamp = new MessageTimestamp(message.GeneratedAt, message.SentAt, message.ReceivedAt, DateTime.UtcNow.ToEpochTimeMilliseconds());
-            var sportEvent = MapSportEvent(string.IsNullOrEmpty(message?.event_id) ? null : new URN(message.event_id));
+            var messageTimestamp = new MessageTimestamp(
+                message.GeneratedAt,
+                message.SentAt,
+                message.ReceivedAt,
+                DateTime.UtcNow.ToEpochTimeMilliseconds());
+
+            var sportEvent = MapSportEvent(
+                string.IsNullOrEmpty(message?.event_id)
+                    ? null
+                    : new URN(message.event_id),
+                cultures);
 
             return new FixtureChange<T>(
                 timestamp: messageTimestamp,

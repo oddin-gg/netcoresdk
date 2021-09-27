@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Oddin.OddsFeedSdkDemoIntegration
@@ -118,7 +119,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Abbreviation: {competitor.GetAbbreviation(CultureEn)}");
             Console.WriteLine($"Country: {competitor.GetCountry(CultureEn)}");
             Console.WriteLine($"Name: {competitor.GetName(CultureEn)}");
-            Console.WriteLine($"Sport: {(await competitor.GetSportAsync())?.GetName(CultureEn)}");
+            Console.WriteLine($"Sport: {competitor.GetSports()?.First().GetName(CultureEn)}");
             Console.WriteLine($"ID: {competitor.Id}");
             Console.WriteLine($"Is virtual: {competitor.IsVirtual}");
             Console.WriteLine($"Name: {competitor.Names[CultureEn]}");
@@ -223,9 +224,13 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
         private static async void OnOddsChangeReceived(object sender, OddsChangeEventArgs<ISportEvent> eventArgs)
         {
+            var oddsChange = eventArgs.GetOddsChange();
+            var oddsChangeOther = eventArgs.GetOddsChange(Feed.AvailableLanguages().Last());
+
             var e = eventArgs.GetOddsChange().Event;
             var match = e as IMatch;
             Console.WriteLine($"Odds changed in {match.Status}");
+            Console.WriteLine($"Raw message: {Encoding.UTF8.GetString(oddsChange.RawMessage.Take(40).ToArray())}...");
             Console.WriteLine($"{string.Join(", ", match.HomeCompetitor?.Abbreviations ?? new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>()))}");
             Console.WriteLine($"{match.LiveOddsAvailability}");
             Console.WriteLine($"{match.Fixture?.Id}");
@@ -235,17 +240,18 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
 
             // Market
-            var market = eventArgs.GetOddsChange().Markets?.FirstOrDefault();
+            var market = oddsChange.Markets?.FirstOrDefault();
             Console.WriteLine($"Odds changed market: {market?.GetName(CultureEn)}");
             Console.WriteLine($"Odds changed market: {market?.Status}");
 
             // Outcome
-            var outcome = eventArgs.GetOddsChange().Markets?.FirstOrDefault()?.OutcomeOdds?.FirstOrDefault();
+            var outcome = oddsChangeOther.Markets?.FirstOrDefault()?.OutcomeOdds?.FirstOrDefault();
             Console.WriteLine($"Odds changed market outcome: {outcome?.GetName(CultureEn)}");
             Console.WriteLine($"Odds changed market outcome: {outcome?.Id} {outcome?.RefId} {outcome?.Probabilities}");
 
             var competitor = match.Competitors.FirstOrDefault();
             Console.WriteLine($"Odds change competitor icon path: {competitor.IconPath}");
+            Console.WriteLine($"Odds change competitor sports: {string.Join(", ", competitor.GetSports()?.Select(s => s.Id) ?? Enumerable.Empty<URN>())}");
         }
 
         private static async void Session_OnFixtureChange(object sender, FixtureChangeEventArgs<ISportEvent> eventArgs)

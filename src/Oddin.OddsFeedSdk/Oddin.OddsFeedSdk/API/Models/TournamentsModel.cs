@@ -490,12 +490,12 @@ namespace Oddin.OddsFeedSdk.API.Models
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     public partial class teamExtended : team
     {
-        private sport sportField;
+        private sport[] sportField;
 
         private string icon_pathField;
 
-        /// <remarks/>
-        public sport sport
+        [System.Xml.Serialization.XmlElementAttribute("sport")]
+        public sport[] sport
         {
             get
             {

@@ -331,7 +331,7 @@ namespace Oddin.OddsFeedSdk
                 Services.GetService<IAmqpClient>(),
                 Services.GetService<IFeedMessageMapper>(),
                 messageInterest,
-                _config.ExceptionHandlingStrategy);
+                _config);
 
             _sessions.Add(session);
             return session;
