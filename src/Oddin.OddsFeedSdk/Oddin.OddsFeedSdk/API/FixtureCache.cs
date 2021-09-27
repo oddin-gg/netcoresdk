@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Caching;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
@@ -55,11 +53,29 @@ namespace Oddin.OddsFeedSdk.API
                     new TvChannel(
                         t.name,
                         t.start_timeSpecified ? t.start_time : default(DateTime?),
-                        t.stream_url)
+                        t.stream_url,
+                        StringToCultureInfoOrDefault(t.language))
                     )
                 );
 
             _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
+        }
+
+        public static CultureInfo StringToCultureInfoOrDefault(string cultureString)
+        {
+            if (string.IsNullOrWhiteSpace(cultureString))
+                return default;
+
+            try
+            {
+                return CultureInfo.GetCultureInfo(cultureString);
+            }
+            catch (CultureNotFoundException)
+            {
+                _log.LogWarning($"Tv Channel with unparsable language received: {cultureString}");
+            }
+
+            return default;
         }
 
         public void ClearCacheItem(URN id)

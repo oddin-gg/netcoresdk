@@ -16,10 +16,10 @@ namespace Oddin.OddsFeedSdk.Common
 
                 var serializer = new XmlSerializer(typeof(T));
 #if DEBUG
-                serializer.UnknownAttribute += (s, args) => Console.WriteLine($"[{typeof(T)}] Unknown attribute {args.Attr.Name}='{args.Attr.Value}'");
-                serializer.UnknownNode += (s, args) => Console.WriteLine($"[{typeof(T)}] Unknown Node:{args.Name}  {args.Text}");
-                serializer.UnknownElement += (s, args) => Console.WriteLine($"[{typeof(T)}] Unknown Element:{args.Element.Name} | {args.Element.InnerXml}");
-                serializer.UnreferencedObject += (s, args) => Console.WriteLine($"[{typeof(T)}] Unreferenced Object:{args.UnreferencedId} | {args.UnreferencedObject}");
+                serializer.UnknownAttribute += (s, args) => Console.WriteLine($"[{typeof(T)}] Unknown attribute {args.Attr.Name}='{args.Attr.Value}' Raw XML:{xml}");
+                serializer.UnknownNode += (s, args) => Console.WriteLine($"[{typeof(T)}] Unknown Node:{args.Name}  {args.Text} Raw XML:{xml}");
+                serializer.UnknownElement += (s, args) => Console.WriteLine($"[{typeof(T)}] Unknown Element:{args.Element.Name} | {args.Element.InnerXml} Raw XML:{xml}");
+                serializer.UnreferencedObject += (s, args) => Console.WriteLine($"[{typeof(T)}] Unreferenced Object:{args.UnreferencedId} | {args.UnreferencedObject} Raw XML:{xml}");
 #endif
                 if (serializer.CanDeserialize(xmlReader) == false)
                 {

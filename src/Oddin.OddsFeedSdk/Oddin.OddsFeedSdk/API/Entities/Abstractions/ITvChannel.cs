@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 {
@@ -9,5 +10,7 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
         DateTime? StartTime { get; }
 
         string StreamUrl { get; }
+
+        CultureInfo Language { get; }
     }
 }

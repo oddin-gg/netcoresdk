@@ -322,7 +322,21 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         private string stream_urlField;
 
-        /// <remarks/>
+        private string languageField;
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string language
+        {
+            get
+            {
+                return this.languageField;
+            }
+            set
+            {
+                this.languageField = value;
+            }
+        }
+
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public string name
         {
@@ -336,7 +350,6 @@ namespace Oddin.OddsFeedSdk.API.Models
             }
         }
 
-        /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public System.DateTime start_time
         {
@@ -350,7 +363,6 @@ namespace Oddin.OddsFeedSdk.API.Models
             }
         }
 
-        /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
         public bool start_timeSpecified
         {
@@ -364,7 +376,6 @@ namespace Oddin.OddsFeedSdk.API.Models
             }
         }
 
-        /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public string stream_url
         {
