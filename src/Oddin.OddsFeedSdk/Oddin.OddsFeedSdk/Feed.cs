@@ -308,15 +308,17 @@ namespace Oddin.OddsFeedSdk
             Dispatch(ConnectionException, new ConnectionExceptionEventArgs(eventArgs.Exception, eventArgs.Detail), nameof(ConnectionException));
         }
 
+        // This method is called when Rabbit library informs that the connection has been shut down
         private void OnConnectionShutdown(object sender, ShutdownEventArgs shutdownEventArgs)
         {
-            _log.LogWarning($"The AMQP connection was shut down. Cause: {shutdownEventArgs.Cause}");
+            _log.LogWarning($"The AMQP connection was shut down. {shutdownEventArgs.ReplyCode} {shutdownEventArgs.ReplyText} Initiator: {shutdownEventArgs.Initiator} Cause: {shutdownEventArgs.Cause}");
             
-            // INFO: this method is called when Rabbit library informs that the connection has been shut down
+            // TODO: handle feed recovery?
 
-            // TODO: handle feed recovery
-
-            Dispatch(Disconnected, new EventArgs(), nameof(Disconnected));
+            if(shutdownEventArgs.Initiator == ShutdownInitiator.Application)
+                Dispatch(Disconnected, new EventArgs(), nameof(Disconnected));
+            else
+                Dispatch(Closed, new FeedCloseEventArgs($"{shutdownEventArgs.ReplyCode} {shutdownEventArgs.ReplyText}"), nameof(Closed));
         }
 
         internal IOddsFeedSession CreateSession(MessageInterest messageInterest)

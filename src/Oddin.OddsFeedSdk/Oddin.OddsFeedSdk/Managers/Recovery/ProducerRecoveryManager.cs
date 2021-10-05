@@ -269,7 +269,10 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             lock(_lockIsRecoveryInProgress)
             {
                 if (_isRecoveryInProgress)
+                {
+                    _log.LogWarning("Recovery already in a progress! Skipping.");
                     return false;
+                }
 
                 _isRecoveryInProgress = true;
                 return true;
@@ -294,15 +297,20 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private bool IgnoreRecovery()
         {
-            return _producer.IsAvailable == false
+            var result = _producer.IsAvailable == false
                 || _producer.IsDisabled == true
                 || _config.Environment == SdkEnvironment.Replay;
+
+            if (result)
+                _log.LogInformation($"Ingoring recovery because: _producer.IsAvailable is {_producer.IsAvailable}(should be false) or _producer.IsDisabled is {_producer.IsDisabled} (should be true) or _config.Environment is {_config.Environment}(should be Replay)");
+
+            return result;
         }
 
         public async Task HandleAliveReceived(alive message)
         {
             if (IgnoreRecovery())
-                return;
+               return;
 
             ResetAliveMessageReceivedTimer();
 

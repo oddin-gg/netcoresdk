@@ -13,7 +13,6 @@ using RabbitMQ.Client.Exceptions;
 using System;
 using System.IO;
 using System.Text;
-using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
 
 namespace Oddin.OddsFeedSdk.AMQP
@@ -47,7 +46,7 @@ namespace Oddin.OddsFeedSdk.AMQP
             IApiClient apiClient,
             EventHandler<CallbackExceptionEventArgs> onCallbackException,
             EventHandler<ShutdownEventArgs> onConnectionShutdown,
-            IExchangeNameProvider ExchangeNameProvider)
+            IExchangeNameProvider exchangeNameProvider)
         {
             _host = config.Host;
             _port = config.Port;
@@ -56,7 +55,7 @@ namespace Oddin.OddsFeedSdk.AMQP
             _apiClient = apiClient;
             _onCallbackException = onCallbackException;
             _onConnectionShutdown = onConnectionShutdown;
-            _exchangeNameProvider = ExchangeNameProvider;
+            _exchangeNameProvider = exchangeNameProvider;
         }
 
         private ConnectionFactory CreateConnectionFactory()
