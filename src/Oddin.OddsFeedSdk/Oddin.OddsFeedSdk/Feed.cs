@@ -312,10 +312,10 @@ namespace Oddin.OddsFeedSdk
         private void OnConnectionShutdown(object sender, ShutdownEventArgs shutdownEventArgs)
         {
             _log.LogWarning($"The AMQP connection was shut down. {shutdownEventArgs.ReplyCode} {shutdownEventArgs.ReplyText} Initiator: {shutdownEventArgs.Initiator} Cause: {shutdownEventArgs.Cause}");
-            
-            // TODO: handle feed recovery?
 
-            if(shutdownEventArgs.Initiator == ShutdownInitiator.Application)
+            // Starting feed recovery is not necessary because if no alive message is received recovery is started anyway.
+
+            if (shutdownEventArgs.Initiator == ShutdownInitiator.Application)
                 Dispatch(Disconnected, new EventArgs(), nameof(Disconnected));
             else
                 Dispatch(Closed, new FeedCloseEventArgs($"{shutdownEventArgs.ReplyCode} {shutdownEventArgs.ReplyText}"), nameof(Closed));
