@@ -189,6 +189,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             catch (CommunicationException e)
             {
                 _log.LogError($"Recovery request to API failed!", e);
+                return;
             }
 
             SetIsRecoveryInProgress(value: true);
