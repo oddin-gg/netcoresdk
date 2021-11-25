@@ -189,14 +189,22 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             catch (CommunicationException e)
             {
                 _log.LogError($"Recovery request to API failed!", e);
+                return;
             }
+
+            SetIsRecoveryInProgress(value: true);
         }
 
         private async Task StartRecovery()
         {
-            if (IgnoreRecovery()
-                || TrySetIsRecoveryInProgress() == false)
+            if (IgnoreRecovery())
                 return;
+
+            if (IsRecoveryInProgress())
+            {
+                _log.LogWarning("Recovery already in a progress! Skipping.");
+                return;
+            }
 
             _log.LogInformation("Starting recovery...");
 
@@ -226,7 +234,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
             _requestId = -1;
 
-            ResetIsRecoveryInProgress();
+            SetIsRecoveryInProgress(value: false);
         }
 
         public void HandleSnapshotCompletedReceived(snapshot_complete message)
@@ -260,31 +268,12 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             return inactivityPeriod > (maxInactivityPeriod + tolerableDelay);
         }
 
-        /// <summary>
-        /// Checks the value of <see cref="_isRecoveryInProgress"/> and sets it to <see langword="true"/> if not already set
-        /// </summary>
-        /// <returns><see langword="false"/> if <see cref="_isRecoveryInProgress"/> is already set to <see langword="true"/>; otherwise returns <see langword="true"/></returns>
-        private bool TrySetIsRecoveryInProgress()
+        private void SetIsRecoveryInProgress(bool value)
         {
             lock(_lockIsRecoveryInProgress)
             {
-                if (_isRecoveryInProgress)
-                {
-                    _log.LogWarning("Recovery already in a progress! Skipping.");
-                    return false;
-                }
-
-                _isRecoveryInProgress = true;
-                return true;
+                _isRecoveryInProgress = value;
             }
-        }
-
-        private void ResetIsRecoveryInProgress()
-        {
-            lock(_lockIsRecoveryInProgress)
-            {
-                _isRecoveryInProgress = false;
-            }    
         }
 
         private bool IsRecoveryInProgress()
