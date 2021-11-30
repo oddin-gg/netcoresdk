@@ -30,10 +30,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         private readonly object _lockIsRecoveryInProgress = new();
         private bool _isRecoveryInProgress;
         private long _requestId;
-        private Timer _recoveryRequestTimer;
-        private readonly ElapsedEventHandler _recoveryRequestDelegate;
         private Timer _aliveMessageReceivedTimer;
-        private readonly ElapsedEventHandler _startRecoveryDelegate;
+        private readonly ElapsedEventHandler _dispatchProducerDownDelegate;
 
         public event EventHandler<FeedCloseEventArgs> Closed;
         public event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
@@ -60,41 +58,12 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             _isRecoveryInProgress = false;
             _requestId = -1;
 
-            _recoveryRequestDelegate = async (sender, eventArgs) => await MakeRecoveryRequestToApi();
-            _startRecoveryDelegate = async (sender, eventArgs) => await StartRecoveryBasedOnReceptionTime();
+            _dispatchProducerDownDelegate = (sender, eventArgs) => DispatchProducerDownBasedOnReceptionTime();
         }
         
         public bool MatchesProducer(int producerId)
         {
             return _producer.Id == producerId;
-        }
-
-        private void RecoveryRequestTimerSetup()
-        {
-            // INFO: _config.MaxRecoveryTime is maximum recovery execution time in seconds
-            _recoveryRequestTimer = new Timer(_config.MaxRecoveryTime * 1000)
-            {
-                AutoReset = true
-            };
-            _recoveryRequestTimer.Elapsed += _recoveryRequestDelegate;
-        }
-
-        private void RecoveryRequestTimerCleanup()
-        {
-            if (_recoveryRequestTimer is null)
-                return;
-
-            _recoveryRequestTimer.Stop();
-            _recoveryRequestTimer.Elapsed -= _recoveryRequestDelegate;
-
-            try
-            {
-                _recoveryRequestTimer.Dispose();
-            }
-            catch (Exception)
-            {
-                _log.LogWarning($"An exception was thrown when disposing {nameof(_recoveryRequestTimer)} on {typeof(ProducerRecoveryManager).Name}!");
-            }
         }
 
         private void AliveMessageReceivedTimerSetup()
@@ -103,7 +72,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             {
                 AutoReset = false
             };
-            _aliveMessageReceivedTimer.Elapsed += _startRecoveryDelegate;
+            _aliveMessageReceivedTimer.Elapsed += _dispatchProducerDownDelegate;
         }
 
         private void AliveMessageReceivedTimerCleanup()
@@ -112,7 +81,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
                 return;
 
             _aliveMessageReceivedTimer.Stop();
-            _aliveMessageReceivedTimer.Elapsed -= _startRecoveryDelegate;
+            _aliveMessageReceivedTimer.Elapsed -= _dispatchProducerDownDelegate;
 
             try
             {
@@ -140,15 +109,11 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
             AliveMessageReceivedTimerSetup();
             _aliveMessageReceivedTimer.Start();
-
-            RecoveryRequestTimerSetup();
         }
 
         public void Close()
         {
             AliveMessageReceivedTimerCleanup();
-
-            RecoveryRequestTimerCleanup();
         }
 
         private ProducerStatusChangeEventArgs CreateProducerStatusChangeEventArgs()
@@ -208,25 +173,28 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
             _log.LogInformation("Starting recovery...");
 
-            ((Producer)_producer).SetProducerDown(true);
-            Dispatch(ProducerDown, CreateProducerStatusChangeEventArgs(), nameof(ProducerDown));
+            DispatchProducerDown();
 
             _requestId = _requestIdFactory.GetNext();
 
             await MakeRecoveryRequestToApi();
-            _recoveryRequestTimer.Start();
         }
 
-        private async Task StartRecoveryBasedOnReceptionTime()
+        private void DispatchProducerDown()
+        {
+            ((Producer)_producer).SetProducerDown(true);
+            Dispatch(ProducerDown, CreateProducerStatusChangeEventArgs(), nameof(ProducerDown));
+        }
+
+        private void DispatchProducerDownBasedOnReceptionTime()
         {
             _log.LogInformation("Alive message wasn't received in time!");
-            await StartRecovery();
+
+            DispatchProducerDown();
         }
 
         private void CompleteRecovery()
         {
-            _recoveryRequestTimer.Stop();
-
             _log.LogInformation($"Recovery was completed (request ID: {_requestId})!");
 
             ((Producer)_producer).SetProducerDown(false);
@@ -311,7 +279,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             else if (AreGeneratedTimestampsTooDistant(message.timestamp.FromEpochTimeMilliseconds()))
             {
                 _log.LogInformation("An alive message with too old timestamp of generation was received!");
-                await StartRecovery();
+                DispatchProducerDown();
             }
             else if (IsRecoveryInProgress() == false)
             {
