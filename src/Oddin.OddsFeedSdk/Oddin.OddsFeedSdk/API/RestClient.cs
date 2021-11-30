@@ -164,6 +164,10 @@ namespace Oddin.OddsFeedSdk.API
 
             var requestResultString = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
+
+            _log.LogTrace($"Http response: {httpResponse}, http response content: {requestResultString}");
+
+
             if (httpResponse.IsSuccessStatusCode == false)
             {
                 if (ignoreUnsuccessufulStatusCode)
