@@ -31,7 +31,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         private bool _isRecoveryInProgress;
         private long _requestId;
         private Timer _aliveMessageReceivedTimer;
-        private readonly ElapsedEventHandler _startRecoveryDelegate;
+        private readonly ElapsedEventHandler _dispatchProducerDownDelegate;
 
         public event EventHandler<FeedCloseEventArgs> Closed;
         public event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
@@ -58,7 +58,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             _isRecoveryInProgress = false;
             _requestId = -1;
 
-            _startRecoveryDelegate = (sender, eventArgs) => DispatchProducerDownBasedOnReceptionTime();
+            _dispatchProducerDownDelegate = (sender, eventArgs) => DispatchProducerDownBasedOnReceptionTime();
         }
         
         public bool MatchesProducer(int producerId)
@@ -72,7 +72,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             {
                 AutoReset = false
             };
-            _aliveMessageReceivedTimer.Elapsed += _startRecoveryDelegate;
+            _aliveMessageReceivedTimer.Elapsed += _dispatchProducerDownDelegate;
         }
 
         private void AliveMessageReceivedTimerCleanup()
@@ -81,7 +81,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
                 return;
 
             _aliveMessageReceivedTimer.Stop();
-            _aliveMessageReceivedTimer.Elapsed -= _startRecoveryDelegate;
+            _aliveMessageReceivedTimer.Elapsed -= _dispatchProducerDownDelegate;
 
             try
             {

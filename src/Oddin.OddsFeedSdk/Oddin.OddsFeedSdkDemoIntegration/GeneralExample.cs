@@ -187,7 +187,6 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var serilogLogger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
-                .WriteTo.File("Logs/OddsFeedSdkDemoIntegration.log")
                 .CreateLogger();
 
             return new LoggerFactory().AddSerilog(serilogLogger);
