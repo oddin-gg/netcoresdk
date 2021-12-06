@@ -190,7 +190,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         {
             lock(_lockHandleProducerDown)
             {
-                // INFO: if producer has already been marked as down and recovery has been marked as needed, don't do that again
+                // INFO: if recovery has already been marked as needed (and producer has been marked as down), don't do that again
                 if (IsRecoveryNeeded())
                     return;
 
