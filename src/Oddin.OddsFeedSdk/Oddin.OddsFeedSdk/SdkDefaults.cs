@@ -1,13 +1,13 @@
 namespace Oddin.OddsFeedSdk
 {
-    internal class SdkDefaults
+    internal static class SdkDefaults
     {
         internal const string ProductionHost = "mq.oddin.gg";
         internal const string ProductionApiHost = "api-mq.oddin.gg";
 
         internal const string IntegrationHost = "mq.integration.oddin.gg";
         internal const string IntegrationApiHost = "api-mq.integration.oddin.gg";
-        
+
         internal const int DefaultPort = 5672;
 
         internal const int UnknownProducerId = 99;

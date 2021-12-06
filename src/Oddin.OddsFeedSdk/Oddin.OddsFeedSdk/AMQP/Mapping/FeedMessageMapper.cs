@@ -147,7 +147,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
             return odds.betting_statusSpecified
                 ? odds.betting_status
-                : null;
+                : (int?) null;
         }
 
         private int? GetBetStopReason(odds_changeOdds odds)
@@ -157,7 +157,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
             return odds.betstop_reasonSpecified
                 ? odds.betstop_reason
-                : null;
+                : (int?) null;
         }
 
         private ISportEvent MapSportEvent(URN id, IEnumerable<CultureInfo> cultures)

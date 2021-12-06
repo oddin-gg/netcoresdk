@@ -4,12 +4,16 @@ namespace Oddin.OddsFeedSdk.Configuration
 {
     internal class ConfigurationBuilder : RecoveryConfigurationBuilder<IConfigurationBuilder>, IConfigurationBuilder
     {
-        private readonly SdkEnvironment _environment;
+        private readonly string _host;
+        private readonly string _apiHost;
+        private readonly int _port;
 
-        public ConfigurationBuilder(string accessToken, IAppConfigurationSectionProvider sectionProvider, SdkEnvironment environment)
+        public ConfigurationBuilder(string accessToken, IAppConfigurationSectionProvider sectionProvider, string host, string apiHost, int port)
             : base(accessToken, sectionProvider)
         {
-            _environment = environment;
+            _host = host;
+            _apiHost = apiHost;
+            _port = port;
         }
 
         public override IFeedConfiguration Build()
@@ -18,11 +22,10 @@ namespace Oddin.OddsFeedSdk.Configuration
 
             return new FeedConfiguration(
                 accessToken: AccessToken,
-                environment: _environment,
                 defaultLocale: DefaultLocale,
-                host: _environment == SdkEnvironment.Production ? SdkDefaults.ProductionHost : SdkDefaults.IntegrationHost,
-                port: SdkDefaults.DefaultPort,
-                apiHost: _environment == SdkEnvironment.Production ? SdkDefaults.ProductionApiHost : SdkDefaults.IntegrationApiHost,
+                host: _host,
+                port: _port,
+                apiHost: _apiHost,
                 useSsl: true,
                 useApiSsl: true,
                 maxInactivitySeconds: MaxInactivitySeconds ?? SdkDefaults.DefaultInactivitySeconds,
@@ -30,7 +33,8 @@ namespace Oddin.OddsFeedSdk.Configuration
                 nodeId: SdkNodeId,
                 exceptionHandlingStrategy: ExceptionHandlingStrategy,
                 httpClientTimeout: HttpClientTimeout ?? SdkDefaults.DefaultHttpClientTimeout,
-                section: Section);
+                section: Section,
+                ignoreRecovery: false);
         }
     }
 }

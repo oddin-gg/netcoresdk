@@ -15,7 +15,6 @@ namespace Oddin.OddsFeedSdk.Configuration
 
             return new FeedConfiguration(
                 accessToken: AccessToken,
-                environment: SdkEnvironment.Replay,
                 defaultLocale: DefaultLocale,
                 host: SdkDefaults.IntegrationHost,
                 port: SdkDefaults.DefaultPort,
@@ -27,7 +26,8 @@ namespace Oddin.OddsFeedSdk.Configuration
                 nodeId: SdkNodeId,
                 exceptionHandlingStrategy: ExceptionHandlingStrategy,
                 httpClientTimeout: HttpClientTimeout ?? SdkDefaults.DefaultHttpClientTimeout,
-                section: Section);
+                section: Section,
+                ignoreRecovery: true);
         }
     }
 }

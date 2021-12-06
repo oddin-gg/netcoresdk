@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.Configuration.Abstractions;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using System;
 
 namespace Oddin.OddsFeedSdk.Configuration
@@ -9,10 +9,7 @@ namespace Oddin.OddsFeedSdk.Configuration
 
         internal TokenSetter(IAppConfigurationSectionProvider configurationProvider)
         {
-            if (configurationProvider is null)
-                throw new ArgumentNullException(nameof(configurationProvider));
-
-            _appConfigurationSectionProvider = configurationProvider;
+            _appConfigurationSectionProvider = configurationProvider ?? throw new ArgumentNullException(nameof(configurationProvider));
         }
 
         public IEnvironmentSelector SetAccessToken(string accessToken)
