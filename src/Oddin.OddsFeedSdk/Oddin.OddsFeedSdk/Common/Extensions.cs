@@ -19,7 +19,7 @@ namespace Oddin.OddsFeedSdk.Common
 
         public static void HandleAccordingToStrategy(this Exception exception, string catcher, ILogger logger, ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
-            logger.LogWarning($"An exception was catched in {catcher}, exception {exception}");
+            logger.LogWarning($"An exception was caught in {catcher}, exception {exception}");
             if (exceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
                 throw exception;
         }

@@ -39,9 +39,9 @@ namespace Oddin.OddsFeedSdk.API.Entities
         {
             get
             {
-                var coutries = FetchCompetitor(_cultures)?.Country;
-                if (coutries is not null)
-                    return new ReadOnlyDictionary<CultureInfo, string>(coutries);
+                var countries = FetchCompetitor(_cultures)?.Country;
+                if (countries is not null)
+                    return new ReadOnlyDictionary<CultureInfo, string>(countries);
 
                 return null;
             }

@@ -24,7 +24,7 @@ namespace Oddin.OddsFeedSdk.Managers.Abstractions
 
         IEnumerable<IFixtureChange> GetFixtureChanges(CultureInfo culture = null);
 
-        IEnumerable<IMatch> GetListOfMatches(int stardIndex, int limit, CultureInfo culture = null);
+        IEnumerable<IMatch> GetListOfMatches(int startIndex, int limit, CultureInfo culture = null);
 
         void DeleteTournamentFromCache(URN id);
         void DeleteCompetitorFromCache(URN id);

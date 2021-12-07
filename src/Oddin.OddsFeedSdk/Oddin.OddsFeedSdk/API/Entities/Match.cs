@@ -24,7 +24,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public URN RefId
             => FetchMatch(_cultures)?.RefId;
 
-        public URN SportId => FetchSport();
+        public URN SportId => FetchSportId();
 
         private URN _localSportId { get; set; }
 
@@ -101,6 +101,9 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public Task<URN> GetSportIdAsync()
             => Task.FromResult(SportId);
 
+        public Task<ISport> GetSportAsync()
+            => Task.FromResult(FetchSport(_cultures));
+
         public LiveOddsAvailability? LiveOddsAvailability
             => FetchMatch(_cultures)?.LiveOddsAvailability;
 
@@ -127,14 +130,14 @@ namespace Oddin.OddsFeedSdk.API.Entities
         private ICompetitor FetchCompetitor(URN id)
         {
             if (id is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
-                throw new ItemNotFoundException(id.ToString(), "Unable to fetch competitor");
+                throw new ItemNotFoundException("null", "Unable to fetch competitor");
             else if (id is null)
                 return null;
             else
                 return _sportDataBuilder.BuildCompetitor(id, _cultures);
         }
 
-        private URN FetchSport()
+        private URN FetchSportId()
         {
             var sportId = _localSportId ?? FetchMatch(_cultures)?.SportId;
 
@@ -156,11 +159,20 @@ namespace Oddin.OddsFeedSdk.API.Entities
             var tournamentId = FetchMatch(_cultures)?.TournamentId;
 
             if (tournamentId is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
-                throw new ItemNotFoundException(tournamentId.ToString(), "Cannot load tournament");
+                throw new ItemNotFoundException("null", "Cannot load tournament");
             else if (tournamentId is null)
                 return null;
             else
                 return _sportDataBuilder.BuildTournament(tournamentId, sportId, _cultures);
+        }
+
+        private ISport FetchSport(IEnumerable<CultureInfo> cultures)
+        {
+            var sportId = SportId;
+            if (sportId is null)
+                return null;
+
+            return _sportDataBuilder.BuildSport(sportId, cultures);
         }
     }
 }

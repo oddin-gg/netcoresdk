@@ -35,10 +35,10 @@ namespace Oddin.OddsFeedSdk.API
         }
 
         public async Task<RequestResult<TData>> SendRequestAsync<TData>(
-            string route, 
+            string route,
             HttpMethod method,
             CultureInfo culture = null,
-            object objectToBeSent = null, 
+            object objectToBeSent = null,
             (string key, object value)[] parameters = default,
             bool deserializeResponse = true,
             bool ignoreUnsuccessfulStatusCode = false
@@ -80,10 +80,10 @@ namespace Oddin.OddsFeedSdk.API
         }
 
         public RequestResult<TData> SendRequest<TData>(
-            string route, 
+            string route,
             HttpMethod method,
             CultureInfo culture = null,
-            object objectToBeSent = null, 
+            object objectToBeSent = null,
             (string key, object value)[] parameters = default,
             bool deserializeResponse = true,
             bool ignoreUnsuccessfulStatusCode = false
@@ -127,13 +127,13 @@ namespace Oddin.OddsFeedSdk.API
         }
 
         private async Task<RequestResult<TData>> SendRequestGetResult<TData>(
-            string route, 
+            string route,
             HttpMethod method,
             CultureInfo culture,
-            object objectToBeSent = null, 
+            object objectToBeSent = null,
             (string key, object value)[] parameters = default,
             bool deserializeResponse = true,
-            bool ignoreUnsuccessufulStatusCode = false
+            bool ignoreUnsuccessfulStatusCode = false
             )
             where TData : class
         {
@@ -168,7 +168,7 @@ namespace Oddin.OddsFeedSdk.API
 
             if (httpResponse.IsSuccessStatusCode == false)
             {
-                if (ignoreUnsuccessufulStatusCode)
+                if (ignoreUnsuccessfulStatusCode)
                     return RequestResult<TData>.Success(
                         data: default,
                         responseCode: httpResponse.StatusCode,
@@ -210,7 +210,7 @@ namespace Oddin.OddsFeedSdk.API
         private async Task<HttpResponseMessage> SendRequestGetHttpResponse(string route, HttpMethod method, string objectToBeSent = default, (string key, object value)[] parameters = default)
         {
             using var content = new StringContent(objectToBeSent, Encoding.UTF8, "application/xml");
-            
+
             var address = CombineAddress(route);
             address = AddParametersToUrl(address, parameters);
 
@@ -219,7 +219,7 @@ namespace Oddin.OddsFeedSdk.API
                 Method = method,
                 RequestUri = new Uri(address)
             };
-            
+
             if (method != HttpMethod.Get)
                 request.Content = content;
 

@@ -324,6 +324,7 @@ namespace Oddin.OddsFeedSdk
                 throw new InvalidOperationException($"Cannot create a session in an already opened feed!");
 
             var session = new OddsFeedSession(
+                this,
                 Services.GetService<IAmqpClient>(),
                 Services.GetService<IFeedMessageMapper>(),
                 messageInterest,

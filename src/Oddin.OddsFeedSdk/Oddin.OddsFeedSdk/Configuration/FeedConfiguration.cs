@@ -10,7 +10,7 @@ namespace Oddin.OddsFeedSdk.Configuration
         public ExceptionHandlingStrategy ExceptionHandlingStrategy { get; }
         public CultureInfo DefaultLocale { get; }
 
-        // Hosting propeties
+        // Hosting properties
         public string AccessToken { get; }
         public int? NodeId { get; }
         public string ApiHost { get; }
