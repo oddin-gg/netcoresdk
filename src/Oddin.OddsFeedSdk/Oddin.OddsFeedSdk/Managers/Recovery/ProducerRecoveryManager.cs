@@ -27,14 +27,17 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         private readonly IProducer _producer;
         private readonly IApiClient _apiClient;
         private readonly IRequestIdFactory _requestIdFactory;
-        private readonly object _lockHandleProducerDown = new();
-        private readonly object _lockIsRecoveryNeeded = new();
-        private readonly object _lockIsRecoveryInProgress = new();
         private bool _isRecoveryNeeded;
+        private bool _isInitialRecoveryNeeded;
         private bool _isRecoveryInProgress;
         private long _requestId;
         private Timer _aliveMessageReceivedTimer;
         private readonly ElapsedEventHandler _handleProducerDownDelegate;
+
+        private readonly object _lockHandleProducerDown = new();
+        private readonly object _lockIsInitialRecoveryNeeded = new();
+        private readonly object _lockIsRecoveryNeeded = new();
+        private readonly object _lockIsRecoveryInProgress = new();
 
         public event EventHandler<FeedCloseEventArgs> Closed;
         public event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
@@ -42,28 +45,17 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         public ProducerRecoveryManager(IFeedConfiguration config, IProducer producer, IApiClient apiClient, IRequestIdFactory requestIdFactory)
         {
-            if (config is null)
-                throw new ArgumentNullException(nameof(config));
-
-            if (producer is null)
-                throw new ArgumentNullException(nameof(producer));
-
-            if (apiClient is null)
-                throw new ArgumentNullException(nameof(apiClient));
-
-            if (requestIdFactory is null)
-                throw new ArgumentNullException(nameof(requestIdFactory));
-
-            _config = config;
-            _producer = producer;
-            _apiClient = apiClient;
-            _requestIdFactory = requestIdFactory;
+            _config = config ?? throw new ArgumentNullException(nameof(config));
+            _producer = producer ?? throw new ArgumentNullException(nameof(producer));
+            _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+            _requestIdFactory = requestIdFactory ?? throw new ArgumentNullException(nameof(requestIdFactory));
             _isRecoveryInProgress = false;
             _requestId = -1;
+            _isInitialRecoveryNeeded = true;
 
             _handleProducerDownDelegate = (sender, eventArgs) => HandleProducerDown("Alive message wasn't received in time!");
         }
-        
+
         public bool MatchesProducer(int producerId)
         {
             return _producer.Id == producerId;
@@ -209,6 +201,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
             _requestId = -1;
 
+            SetIsInitialRecoveryNeeded(false);
             SetIsRecoveryNeeded(value: false);
             SetIsRecoveryInProgress(value: false);
         }
@@ -260,6 +253,22 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             }
         }
 
+        private void SetIsInitialRecoveryNeeded(bool value)
+        {
+            lock(_lockIsInitialRecoveryNeeded)
+            {
+                _isInitialRecoveryNeeded = value;
+            }
+        }
+
+        private bool IsInitialRecoveryNeeded()
+        {
+            lock(_lockIsInitialRecoveryNeeded)
+            {
+                return _isInitialRecoveryNeeded;
+            }
+        }
+
         private void SetIsRecoveryInProgress(bool value)
         {
             lock(_lockIsRecoveryInProgress)
@@ -280,10 +289,10 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         {
             var result = _producer.IsAvailable == false
                 || _producer.IsDisabled == true
-                || _config.Environment == SdkEnvironment.Replay;
+                || _config.IgnoreRecovery == true;
 
             if (result)
-                _log.LogInformation($"Ingoring recovery because: _producer.IsAvailable is {_producer.IsAvailable}(should be false) or _producer.IsDisabled is {_producer.IsDisabled} (should be true) or _config.Environment is {_config.Environment}(should be Replay)");
+                _log.LogInformation($"Ingoring recovery because: _producer.IsAvailable is {_producer.IsAvailable}(should be false) or _producer.IsDisabled is {_producer.IsDisabled} (should be true) or _config.IgnoreRecovery is {_config.IgnoreRecovery}(should be false)");
 
             return result;
         }
@@ -295,7 +304,10 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
             ResetAliveMessageReceivedTimer();
 
-            if (message.subscribed == 0)
+            if (IsInitialRecoveryNeeded()) {
+                HandleProducerDown("Initial recovery is requested!");
+            }
+            else if (message.subscribed == 0)
             {
                 HandleProducerDown("An alive message with subscribed == 0 was received!");
             }

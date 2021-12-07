@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Oddin.OddsFeedSdk.Configuration
 {
-    internal abstract class ConfigurationBuilderBase<T> : IConfigurationBuilderBase<T> 
+    internal abstract class ConfigurationBuilderBase<T> : IConfigurationBuilderBase<T>
         where T : class
     {
         internal readonly IAppConfigurationSectionProvider SectionProvider;
@@ -27,11 +27,8 @@ namespace Oddin.OddsFeedSdk.Configuration
             if (string.IsNullOrEmpty(accessToken))
                 throw new ArgumentException(nameof(accessToken));
 
-            if (sectionProvider is null)
-                throw new ArgumentNullException(nameof(sectionProvider));
-
             AccessToken = accessToken;
-            SectionProvider = sectionProvider;
+            SectionProvider = sectionProvider ?? throw new ArgumentNullException(nameof(sectionProvider));
             ExceptionHandlingStrategy = ExceptionHandlingStrategy.CATCH;
             SdkNodeId = null;
             DefaultLocale = Feed.AvailableLanguages().FirstOrDefault();
@@ -39,10 +36,7 @@ namespace Oddin.OddsFeedSdk.Configuration
 
         internal virtual void LoadFromConfigFile(AppConfigurationSection section)
         {
-            if (section is null)
-                throw new ArgumentNullException(nameof(section));
-
-            Section = section;
+            Section = section ?? throw new ArgumentNullException(nameof(section));
 
             if (string.IsNullOrEmpty(section.DefaultLocale) == false)
                 SetDefaultLocale(new CultureInfo(section.DefaultLocale.Trim()));
@@ -61,10 +55,7 @@ namespace Oddin.OddsFeedSdk.Configuration
 
         public T SetDefaultLocale(CultureInfo culture)
         {
-            if (culture is null)
-                throw new ArgumentNullException(nameof(culture));
-
-            DefaultLocale = culture;
+            DefaultLocale = culture ?? throw new ArgumentNullException(nameof(culture));
             return this as T;
         }
 
@@ -90,9 +81,8 @@ namespace Oddin.OddsFeedSdk.Configuration
 
         protected virtual void PreBuildCheck()
         {
-            if (DefaultLocale == null)
-                DefaultLocale = Feed.AvailableLanguages().First();
-            
+            DefaultLocale ??= Feed.AvailableLanguages().First();
+
             if (string.IsNullOrEmpty(AccessToken))
                 throw new InvalidOperationException("Missing access token");
         }

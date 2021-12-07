@@ -14,8 +14,6 @@ namespace Oddin.OddsFeedSdk.Configuration.Abstractions
 
         public int? NodeId { get; }
 
-        public SdkEnvironment Environment { get; }
-
         public ExceptionHandlingStrategy ExceptionHandlingStrategy { get; }
 
         public string Host { get; }
@@ -29,5 +27,7 @@ namespace Oddin.OddsFeedSdk.Configuration.Abstractions
         public bool UseApiSsl { get; }
 
         public int HttpClientTimeout { get; }
+
+        public bool IgnoreRecovery { get; }
     }
 }

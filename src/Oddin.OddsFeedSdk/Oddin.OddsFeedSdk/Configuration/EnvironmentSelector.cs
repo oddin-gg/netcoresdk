@@ -1,4 +1,4 @@
-﻿using Oddin.OddsFeedSdk.Configuration.Abstractions;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using System;
 
 namespace Oddin.OddsFeedSdk.Configuration
@@ -13,27 +13,30 @@ namespace Oddin.OddsFeedSdk.Configuration
         {
             if (string.IsNullOrEmpty(accessToken))
                 throw new ArgumentException(nameof(accessToken));
-            
-            if (sectionProvider is null)
-                throw new ArgumentNullException(nameof(sectionProvider));
 
             _accessToken = accessToken;
-            _sectionProvider = sectionProvider;
+            _sectionProvider = sectionProvider ?? throw new ArgumentNullException(nameof(sectionProvider));
         }
 
         public IConfigurationBuilder SelectIntegration()
         {
-            return new ConfigurationBuilder(_accessToken, _sectionProvider, SdkEnvironment.Integration);
+            return new ConfigurationBuilder(_accessToken, _sectionProvider, SdkDefaults.IntegrationHost, SdkDefaults.IntegrationApiHost, SdkDefaults.DefaultPort);
         }
 
         public IConfigurationBuilder SelectProduction()
         {
-            return new ConfigurationBuilder(_accessToken, _sectionProvider, SdkEnvironment.Production);
+            return new ConfigurationBuilder(_accessToken, _sectionProvider, SdkDefaults.ProductionHost, SdkDefaults.ProductionApiHost, SdkDefaults.DefaultPort);
         }
 
         public IReplayConfigurationBuilder SelectReplay()
         {
             return new ReplayConfigurationBuilder(_accessToken, _sectionProvider);
         }
+
+        public IConfigurationBuilder SelectEnvironment(string host, string apiHost, int port)
+        {
+            return new ConfigurationBuilder(_accessToken, _sectionProvider, host, apiHost, port);
+        }
+
     }
 }

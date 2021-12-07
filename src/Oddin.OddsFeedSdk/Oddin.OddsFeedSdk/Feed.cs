@@ -33,7 +33,6 @@ namespace Oddin.OddsFeedSdk
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(Feed));
 
         protected readonly IServiceProvider Services;
-        private readonly ILoggerFactory _loggerFactory;
         private readonly IFeedConfiguration _config;
         private bool _isOpened;
         private readonly object _isOpenedLock = new();
@@ -80,16 +79,12 @@ namespace Oddin.OddsFeedSdk
 
         protected Feed(IFeedConfiguration config, bool isReplay, ILoggerFactory loggerFactory = null)
         {
-            if (config is null)
-                throw new ArgumentNullException(nameof(config));
-
-            _config = config;
-            _loggerFactory = loggerFactory;
-            SdkLoggerFactory.Initialize(_loggerFactory);
+            _config = config ?? throw new ArgumentNullException(nameof(config));
+            SdkLoggerFactory.Initialize(loggerFactory);
 
             IExchangeNameProvider exchangeNameProvider = isReplay
-                ? new ReplayExchangeNameProvider()
-                : new ExchangeNameProvider(); 
+                ? (IExchangeNameProvider) new ReplayExchangeNameProvider()
+                : (IExchangeNameProvider) new ExchangeNameProvider();
 
             Services = BuildServices(exchangeNameProvider);
         }
@@ -163,12 +158,11 @@ namespace Oddin.OddsFeedSdk
         {
             return new TokenSetter(new AppConfigurationSectionProvider());
         }
-        
+
         public static IEnumerable<CultureInfo> AvailableLanguages()
         {
             var codes = new[] { "en", "br", "de", "es", "fi", "fr", "pl", "pt", "ru", "th", "vi", "zh" };
-            return codes
-                .Select(c => CultureInfo.GetCultureInfo(c));
+            return codes.Select(CultureInfo.GetCultureInfo);
         }
 
         private void OnEventRecoveryCompleted(object sender, EventRecoveryCompletedEventArgs eventArgs)
@@ -278,7 +272,7 @@ namespace Oddin.OddsFeedSdk
         {
             if (_isDisposed)
                 return;
-            
+
             Close();
 
             if (disposing)
@@ -316,7 +310,7 @@ namespace Oddin.OddsFeedSdk
             // Starting feed recovery is not necessary because if no alive message is received recovery is started anyway.
 
             if (shutdownEventArgs.Initiator == ShutdownInitiator.Application)
-                Dispatch(Disconnected, new EventArgs(), nameof(Disconnected));
+                Dispatch(Disconnected, EventArgs.Empty, nameof(Disconnected));
             else
                 Dispatch(Closed, new FeedCloseEventArgs($"{shutdownEventArgs.ReplyCode} {shutdownEventArgs.ReplyText}"), nameof(Closed));
         }

@@ -7,7 +7,6 @@ namespace Oddin.OddsFeedSdk.Configuration
     internal class FeedConfiguration : IFeedConfiguration
     {
         // General properties
-        public SdkEnvironment Environment { get; }
         public ExceptionHandlingStrategy ExceptionHandlingStrategy { get; }
         public CultureInfo DefaultLocale { get; }
 
@@ -24,12 +23,12 @@ namespace Oddin.OddsFeedSdk.Configuration
         public int MaxRecoveryTime { get; }
         public int MaxInactivitySeconds { get; }
         public int HttpClientTimeout { get; }
+        public bool IgnoreRecovery { get; }
 
         internal AppConfigurationSection Section { get; }
 
         public FeedConfiguration(
             string accessToken,
-            SdkEnvironment environment,
             CultureInfo defaultLocale,
             string host,
             int port,
@@ -41,13 +40,11 @@ namespace Oddin.OddsFeedSdk.Configuration
             int? nodeId,
             ExceptionHandlingStrategy exceptionHandlingStrategy,
             int httpClientTimeout,
-            AppConfigurationSection section)
+            AppConfigurationSection section,
+            bool ignoreRecovery)
         {
             if (string.IsNullOrEmpty(accessToken))
                 throw new ArgumentException(nameof(accessToken));
-            
-            if (defaultLocale is null)
-                throw new ArgumentNullException(nameof(defaultLocale));
 
             if (maxInactivitySeconds < SdkDefaults.MinInactivitySeconds || maxInactivitySeconds > SdkDefaults.MaxInactivitySeconds)
                 throw new ArgumentOutOfRangeException(nameof(maxInactivitySeconds));
@@ -62,8 +59,7 @@ namespace Oddin.OddsFeedSdk.Configuration
                 throw new ArgumentException($"Sdk Node Id is {nodeId}: only positive numbers are allowed");
 
             AccessToken = accessToken;
-            Environment = environment;
-            DefaultLocale = defaultLocale;
+            DefaultLocale = defaultLocale ?? throw new ArgumentNullException(nameof(defaultLocale));
             Host = host;
             Port = port;
             UseSsl = useSsl;
@@ -75,6 +71,7 @@ namespace Oddin.OddsFeedSdk.Configuration
             ExceptionHandlingStrategy = exceptionHandlingStrategy;
             HttpClientTimeout = httpClientTimeout;
             Section = section;
+            IgnoreRecovery = ignoreRecovery;
         }
     }
 }
