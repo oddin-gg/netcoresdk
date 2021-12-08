@@ -8,6 +8,7 @@ using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Dispatch;
 using Oddin.OddsFeedSdk.Sessions.Abstractions;
 using System;
+using Oddin.OddsFeedSdk.Abstractions;
 using Oddin.OddsFeedSdk.Exceptions;
 
 namespace Oddin.OddsFeedSdk.Sessions
@@ -26,27 +27,22 @@ namespace Oddin.OddsFeedSdk.Sessions
 
         public string Name { get; }
 
+        public IOddsFeed Feed { get; }
+
         public OddsFeedSession(
+            IOddsFeed feed,
             IAmqpClient amqpClient,
             IFeedMessageMapper feedMessageMapper,
             MessageInterest messageInterest,
             IFeedConfiguration configuration)
         {
-            if (amqpClient is null)
-                throw new ArgumentNullException(nameof(amqpClient));
-
-            if (feedMessageMapper is null)
-                throw new ArgumentNullException(nameof(feedMessageMapper));
-
-            if (messageInterest is null)
-                throw new ArgumentNullException(nameof(messageInterest));
-
-            _amqpClient = amqpClient;
-            _feedMessageMapper = feedMessageMapper;
-            MessageInterest = messageInterest;
+            _amqpClient = amqpClient ?? throw new ArgumentNullException(nameof(amqpClient));
+            _feedMessageMapper = feedMessageMapper ?? throw new ArgumentNullException(nameof(feedMessageMapper));
+            MessageInterest = messageInterest ?? throw new ArgumentNullException(nameof(messageInterest));
             _configuration = configuration;
 
             Name = messageInterest.Name;
+            Feed = feed;
         }
 
         public event EventHandler<UnparsableMessageEventArgs> OnUnparsableMessageReceived;
@@ -99,7 +95,7 @@ namespace Oddin.OddsFeedSdk.Sessions
 
             Dispatch(OnBetStop, betStopEventArgs, nameof(OnBetStop));
         }
-        
+
         private void CreateAndDispatchBetSettlement(object sender, SimpleMessageEventArgs<bet_settlement> eventArgs)
         {
             var betSettlementEventArgs = new BetSettlementEventArgs<ISportEvent>(
@@ -109,8 +105,8 @@ namespace Oddin.OddsFeedSdk.Sessions
                 eventArgs.RawMessage);
 
             Dispatch(OnBetSettlement, betSettlementEventArgs, nameof(OnBetSettlement));
-        } 
-        
+        }
+
         private void CreateAndDispatchBetCancel(object sender, SimpleMessageEventArgs<bet_cancel> eventArgs)
         {
             var betCancelEventArgs = new BetCancelEventArgs<ISportEvent>(
@@ -121,7 +117,7 @@ namespace Oddin.OddsFeedSdk.Sessions
 
             Dispatch(OnBetCancel, betCancelEventArgs, nameof(OnBetCancel));
         }
-        
+
         private void CreateAndDispatchFixtureChange(object sender, SimpleMessageEventArgs<fixture_change> eventArgs)
         {
             var fixtureChangeEventArgs = new FixtureChangeEventArgs<ISportEvent>(
@@ -137,14 +133,14 @@ namespace Oddin.OddsFeedSdk.Sessions
             => CreateAndDispatchFeedMessageEventArgs<OddsChangeEventArgs<ISportEvent>, odds_change>(CreateAndDispatchOddsChange, sender, eventArgs);
 
         private void HandleBetStopMessageReceived(object sender, SimpleMessageEventArgs<bet_stop> eventArgs)
-            => CreateAndDispatchFeedMessageEventArgs<BetStopEventArgs<ISportEvent>, bet_stop>(CreateAndDispatchBetStop, sender, eventArgs); 
-        
+            => CreateAndDispatchFeedMessageEventArgs<BetStopEventArgs<ISportEvent>, bet_stop>(CreateAndDispatchBetStop, sender, eventArgs);
+
         private void HandleBetSettlementMessageReceived(object sender, SimpleMessageEventArgs<bet_settlement> eventArgs)
             => CreateAndDispatchFeedMessageEventArgs<BetSettlementEventArgs<ISportEvent>, bet_settlement>(CreateAndDispatchBetSettlement, sender, eventArgs);
-        
+
         private void HandleBetCancelMessageReceived(object sender, SimpleMessageEventArgs<bet_cancel> eventArgs)
             => CreateAndDispatchFeedMessageEventArgs<BetCancelEventArgs<ISportEvent>, bet_cancel>(CreateAndDispatchBetCancel, sender, eventArgs);
-         
+
         private void HandleFixtureChangeMessageReceived(object sender, SimpleMessageEventArgs<fixture_change> eventArgs)
             => CreateAndDispatchFeedMessageEventArgs<FixtureChangeEventArgs<ISportEvent>, fixture_change>(CreateAndDispatchFixtureChange, sender, eventArgs);
 

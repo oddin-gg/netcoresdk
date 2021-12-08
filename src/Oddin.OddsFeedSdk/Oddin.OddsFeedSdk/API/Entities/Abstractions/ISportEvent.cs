@@ -15,6 +15,8 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 
         public Task<URN> GetSportIdAsync();
 
+        public Task<ISport> GetSportAsync();
+
         public Task<DateTime?> GetScheduledTimeAsync();
 
         public Task<DateTime?> GetScheduledEndTimeAsync();

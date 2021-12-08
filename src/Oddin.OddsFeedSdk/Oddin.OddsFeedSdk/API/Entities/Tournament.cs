@@ -26,25 +26,28 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string IconPath => FetchTournament(_cultures)?.IconPath;
 
-        public string GetName(CultureInfo culture) 
+        private string GetName(CultureInfo culture)
             => FetchTournament(new[] { culture })
                 ?.Name
                 ?.FirstOrDefault(d => d.Key.Equals(culture))
                 .Value;
 
-        public Task<string> GetNameAsync(CultureInfo culture) 
+        public Task<string> GetNameAsync(CultureInfo culture)
             => Task.FromResult(GetName(culture));
 
-        public Task<DateTime?> GetScheduledTimeAsync() 
+        public Task<DateTime?> GetScheduledTimeAsync()
             => Task.FromResult(FetchTournament(_cultures)?.ScheduledTime);
 
-        public Task<DateTime?> GetScheduledEndTimeAsync() 
+        public Task<DateTime?> GetScheduledEndTimeAsync()
             => Task.FromResult(FetchTournament(_cultures)?.ScheduledEndTime);
 
-        public Task<URN> GetSportIdAsync() 
+        public Task<URN> GetSportIdAsync()
             => Task.FromResult(FetchSport(_cultures).Id);
 
-        public IEnumerable<ICompetitor> GetCompetitors() 
+        public Task<ISport> GetSportAsync()
+            => Task.FromResult(FetchSport(_cultures));
+
+        public IEnumerable<ICompetitor> GetCompetitors()
             => FetchCompetitors(_cultures);
 
         public DateTime? GetStartDate()
@@ -79,7 +82,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         private IEnumerable<ICompetitor> FetchCompetitors(IEnumerable<CultureInfo> cultures)
         {
-            var competitorsIds = FetchTournament(cultures)?.CompetitorIds 
+            var competitorsIds = FetchTournament(cultures)?.CompetitorIds
                 ?? _tournamentsCache.GetTournamentCompetitors(Id, cultures.First());
 
             if (competitorsIds == null && _configuration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)

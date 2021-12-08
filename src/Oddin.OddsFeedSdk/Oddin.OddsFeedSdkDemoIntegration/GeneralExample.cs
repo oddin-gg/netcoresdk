@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk;
 using Oddin.OddsFeedSdk.AMQP.EventArguments;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
@@ -14,6 +14,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Oddin.OddsFeedSdk.Abstractions;
 
 namespace Oddin.OddsFeedSdkDemoIntegration
 {
@@ -54,7 +55,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
                 WorkWithRecovery(feed),
                 WorkWithProducers(feed),
                 WorkWithSportDataProvider(feed),
-                WorkWithMarketDesctiptionManager(feed),
+                WorkWithMarketDescriptionManager(feed),
                 WorkWithBookmakerDetails(feed),
                 ctrlCPressed.Task
             };
@@ -66,7 +67,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             DetachEvents(session);
         }
 
-        private static async Task WorkWithRecovery(Feed feed)
+        private static async Task WorkWithRecovery(IOddsFeed feed)
         {
             var matchUrn = "od:match:36856";
             var producerName = "live";
@@ -80,7 +81,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Event stateful recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventStatefulMessagesAsync(producer, urn)}");
         }
 
-        private static Task WorkWithProducers(Feed feed)
+        private static Task WorkWithProducers(IOddsFeed feed)
         {
             foreach (var producer in feed.ProducerManager.Producers)
                 Console.WriteLine($"Producer name: {producer.Name}, id: {producer.Id}");
@@ -88,7 +89,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             return Task.CompletedTask;
         }
 
-        private async static Task WorkWithSportDataProvider(Feed feed)
+        private static async Task WorkWithSportDataProvider(IOddsFeed feed)
         {
             var provider = feed.SportDataProvider;
 
@@ -156,7 +157,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Tournament ID: {sport.Tournaments.FirstOrDefault()?.Id}");
         }
 
-        private static Task WorkWithMarketDesctiptionManager(Feed feed)
+        private static Task WorkWithMarketDescriptionManager(IOddsFeed feed)
         {
             var manager = feed.MarketDescriptionManager;
             var marketDescriptionsEn = manager.GetMarketDescriptions(CultureEn);
@@ -172,7 +173,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             return Task.CompletedTask;
         }
 
-        private static Task WorkWithBookmakerDetails(Feed feed)
+        private static Task WorkWithBookmakerDetails(IOddsFeed feed)
         {
             var bookmakerDetails = feed.BookmakerDetails;
             Console.WriteLine($"Bookmaker ID: {bookmakerDetails.BookmakerId}");
@@ -192,14 +193,24 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             return new LoggerFactory().AddSerilog(serilogLogger);
         }
 
-        private static void AttachEvents(Feed feed)
+        private static void AttachEvents(IOddsFeed feed)
         {
             feed.EventRecoveryCompleted += OnEventRecoveryComplete;
+            feed.ProducerDown += OnProducerDown;
+            feed.ProducerUp += OnProducerUp;
+            feed.ConnectionException += OnConnectionException;
+            feed.Disconnected += OnDisconnected;
+            feed.Closed += OnClosed;
         }
 
-        private static void DetachEvents(Feed feed)
+        private static void DetachEvents(IOddsFeed feed)
         {
             feed.EventRecoveryCompleted -= OnEventRecoveryComplete;
+            feed.ProducerDown -= OnProducerDown;
+            feed.ProducerUp -= OnProducerUp;
+            feed.ConnectionException -= OnConnectionException;
+            feed.Disconnected -= OnDisconnected;
+            feed.Closed -= OnClosed;
         }
 
         private static void AttachEvents(IOddsFeedSession session)
@@ -272,10 +283,31 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
         private static async void OnBetSettlement(object sender, BetSettlementEventArgs<ISportEvent> eventArgs)
         {
-            var e = eventArgs.GetBetSettlement().Event;
-            Console.WriteLine($"On Bet Settlement in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
-            Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
-            Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
+            var sportEvent = eventArgs.GetBetSettlement().Event;
+            
+            // Match
+            var match = (IMatch) sportEvent;
+            Console.WriteLine($"Match Id: {match.Id}");
+
+            // Tournament
+            var tournament = match.Tournament;
+            Console.WriteLine($"Tournament Id: {tournament.Id}");
+
+            // Get Sport from Match
+            var sport1 = await match.GetSportAsync();
+            var sportId = sport1.Id;
+            Console.WriteLine($"Sport Id: {sportId}");
+            
+            // Get Sport from Tournament
+            var sport2 = await tournament.GetSportAsync();
+            var sportName = sport2.GetName(CultureEn);
+            Console.WriteLine($"Sport Name: {sportName}");
+            
+            // Get Sport Using SportDataProvider
+            var session = (IOddsFeedSession) sender;
+            var provider = session.Feed.SportDataProvider;
+            var sport3 = await provider.GetSportAsync(sportId);
+            Console.WriteLine($"Icon Path: {sport3.IconPath}");
         }
 
         private static async void OnBetStopReceived(object sender, BetStopEventArgs<ISportEvent> eventArgs)
@@ -292,5 +324,31 @@ namespace Oddin.OddsFeedSdkDemoIntegration
         {
             Console.WriteLine($"Event recovery completed [event id: {eventArgs.GetEventId()}, request id: {eventArgs.GetRequestId()}]");
         }
+        
+        private static void OnProducerDown(object sender, ProducerStatusChangeEventArgs eventArgs)
+        {
+            Console.WriteLine($"OnProducerDown: {eventArgs.GetProducerStatusChange().Producer.Name}");
+        }
+        
+        private static void OnProducerUp(object sender, ProducerStatusChangeEventArgs eventArgs)
+        {
+            Console.WriteLine($"OnProducerUp: {eventArgs.GetProducerStatusChange().Producer.Name}");
+        }
+        
+        private static void OnConnectionException(object sender, ConnectionExceptionEventArgs eventArgs)
+        {
+            Console.WriteLine($"OnConnectionException: {eventArgs.Exception}");
+        }
+
+        private static void OnDisconnected(object sender, EventArgs eventArgs)
+        {
+            Console.WriteLine("OnDisconnected");
+        }
+
+        private static void OnClosed(object sender, FeedCloseEventArgs eventArgs)
+        {
+            Console.WriteLine($"OnClosed: {eventArgs.GetReason()}");
+        }
+
     }
 }

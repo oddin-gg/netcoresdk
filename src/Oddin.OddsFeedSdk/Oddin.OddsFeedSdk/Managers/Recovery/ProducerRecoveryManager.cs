@@ -292,7 +292,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
                 || _config.IgnoreRecovery == true;
 
             if (result)
-                _log.LogInformation($"Ingoring recovery because: _producer.IsAvailable is {_producer.IsAvailable}(should be false) or _producer.IsDisabled is {_producer.IsDisabled} (should be true) or _config.IgnoreRecovery is {_config.IgnoreRecovery}(should be false)");
+                _log.LogInformation($"Ignoring recovery because: _producer.IsAvailable is {_producer.IsAvailable}(should be false) or _producer.IsDisabled is {_producer.IsDisabled} (should be true) or _config.IgnoreRecovery is {_config.IgnoreRecovery}(should be false)");
 
             return result;
         }

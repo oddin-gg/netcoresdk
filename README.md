@@ -24,7 +24,15 @@ var session = feed
     .SetMessageInterest(MessageInterest.AllMessages)
     .Build();
 
-// Subscribe to events
+// Subscribe to Feed events 
+feed.EventRecoveryCompleted += OnEventRecoveryComplete; // Your methods
+feed.ProducerDown += OnProducerDown;
+feed.ProducerUp += OnProducerUp;
+feed.ConnectionException += OnConnectionException;
+feed.Disconnected += OnDisconnected;
+feed.Closed += OnClosed;
+
+// Subscribe to Session events
 session.OnOddsChange += OnOddsChangeReceived; // Your methods
 session.OnBetStop += OnBetStopReceived;
 session.OnBetSettlement += OnBetSettlement;

@@ -20,14 +20,14 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             int marketId,
             int refId,
             IDictionary<string, string> specifiers,
-            string extentedSpecifiers,
+            string extendedSpecifiers,
             IEnumerable<string> groups,
             IEnumerable<IOutcomeSettlement> outcomes,
             IMarketDescriptionFactory marketDescriptionFactory,
             ISportEvent sportEvent,
             ExceptionHandlingStrategy exceptionHandlingStrategy,
             int? voidReason)
-            : base(marketId, refId, specifiers, extentedSpecifiers, groups, marketDescriptionFactory, sportEvent, exceptionHandlingStrategy, voidReason)
+            : base(marketId, refId, specifiers, extendedSpecifiers, groups, marketDescriptionFactory, sportEvent, exceptionHandlingStrategy, voidReason)
         {
             MarketStatus = marketStatus;
             OutcomeSettlements = outcomes

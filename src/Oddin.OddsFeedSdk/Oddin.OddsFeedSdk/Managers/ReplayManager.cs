@@ -117,7 +117,7 @@ namespace Oddin.OddsFeedSdk.Managers
             }
             catch (Exception e)
             {
-                _log.LogError($"Failed play replay with errror: { e}");
+                _log.LogError($"Failed play replay with error: {e}");
                 return false;
             }
         }
