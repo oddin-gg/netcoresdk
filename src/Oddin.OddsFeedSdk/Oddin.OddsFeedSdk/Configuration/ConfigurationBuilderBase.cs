@@ -20,6 +20,8 @@ namespace Oddin.OddsFeedSdk.Configuration
 
         internal int? HttpClientTimeout;
 
+        internal int? InitialSnapshotTimeInMinutes;
+
         internal AppConfigurationSection Section { get; private set; }
 
         internal ConfigurationBuilderBase(string accessToken, IAppConfigurationSectionProvider sectionProvider)
@@ -45,6 +47,8 @@ namespace Oddin.OddsFeedSdk.Configuration
             SdkNodeId = section.SdkNodeId;
 
             HttpClientTimeout = section.HttpClientTimeout;
+
+            InitialSnapshotTimeInMinutes = section.InitialSnapshotTimeInMinutes;
         }
 
         public T LoadFromConfigFile()
@@ -74,6 +78,12 @@ namespace Oddin.OddsFeedSdk.Configuration
         public T SetHttpClientTimeout(int httpClientTimeout)
         {
             HttpClientTimeout = httpClientTimeout;
+            return this as T;
+        }
+
+        public T SetInitialSnapshotTimeInMinutes(int initialSnapshotTimeInMinutes)
+        {
+            InitialSnapshotTimeInMinutes = initialSnapshotTimeInMinutes;
             return this as T;
         }
 
