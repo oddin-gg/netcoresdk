@@ -21,7 +21,7 @@ namespace Oddin.OddsFeedSdk.Configuration
             get { return this["DefaultLocale"] as string; }
             set { this["DefaultLocale"] = value; }
         }
-        
+
         [ConfigurationProperty("ExceptionHandlingStrategy", DefaultValue = ExceptionHandlingStrategy.THROW, IsRequired = false)]
         internal ExceptionHandlingStrategy ExceptionHandlingStrategy
         {
@@ -34,29 +34,36 @@ namespace Oddin.OddsFeedSdk.Configuration
         {
             get { return this["SdkNodeId"] as int?; }
             set { this["SdkNodeId"] = value; }
-        }     
-        
+        }
+
         [ConfigurationProperty("HttpClientTimeout", DefaultValue = null, IsRequired = false)]
         internal int? HttpClientTimeout
         {
             get { return this["HttpClientTimeout"] as int?; }
             set { this["HttpClientTimeout"] = value; }
         }
-        
+
         [ConfigurationProperty("MaxInactivitySeconds", DefaultValue = null, IsRequired = false)]
         internal int? MaxInactivitySeconds
         {
             get { return this["MaxInactivitySeconds"] as int?; }
             set { this["MaxInactivitySeconds"] = value; }
         }
-        
+
         [ConfigurationProperty("MaxRecoveryTimeInSeconds", DefaultValue = null, IsRequired = false)]
         internal int? MaxRecoveryTimeInSeconds
         {
             get { return this["MaxRecoveryTimeInSeconds"] as int?; }
             set { this["MaxRecoveryTimeInSeconds"] = value; }
         }
-        
+
+        [ConfigurationProperty("InitialSnapshotTimeInMinutes", DefaultValue = null, IsRequired = false)]
+        internal int? InitialSnapshotTimeInMinutes
+        {
+            get { return this["InitialSnapshotTimeInMinutes"] as int?; }
+            set { this["InitialSnapshotTimeInMinutes"] = value; }
+        }
+
         internal static AppConfigurationSection LoadFromFile()
         {
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);

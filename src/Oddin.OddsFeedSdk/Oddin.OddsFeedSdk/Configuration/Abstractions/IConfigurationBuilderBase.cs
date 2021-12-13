@@ -14,6 +14,8 @@ namespace Oddin.OddsFeedSdk.Configuration.Abstractions
 
         T SetHttpClientTimeout(int httpClientTimeout);
 
+        T SetInitialSnapshotTimeInMinutes(int initialSnapshotTimeInMinutes);
+
         IFeedConfiguration Build();
     }
 

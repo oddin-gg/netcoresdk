@@ -28,6 +28,8 @@ namespace Oddin.OddsFeedSdk.Configuration.Abstractions
 
         public int HttpClientTimeout { get; }
 
+        public int InitialSnapshotTimeInMinutes { get; }
+
         public bool IgnoreRecovery { get; }
     }
 }

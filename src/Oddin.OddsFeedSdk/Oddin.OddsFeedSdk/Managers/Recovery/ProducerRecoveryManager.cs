@@ -305,6 +305,11 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             ResetAliveMessageReceivedTimer();
 
             if (IsInitialRecoveryNeeded()) {
+                if (_config.InitialSnapshotTimeInMinutes != default)
+                {
+                    var timestampFrom = DateTime.Now.Subtract(new TimeSpan(0, _config.InitialSnapshotTimeInMinutes, 0));
+                    SetLastTimestampBeforeDisconnect(timestampFrom);
+                }
                 HandleProducerDown("Initial recovery is requested!");
             }
             else if (message.subscribed == 0)

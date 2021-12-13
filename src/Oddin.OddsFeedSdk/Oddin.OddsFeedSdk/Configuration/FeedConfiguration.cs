@@ -23,6 +23,7 @@ namespace Oddin.OddsFeedSdk.Configuration
         public int MaxRecoveryTime { get; }
         public int MaxInactivitySeconds { get; }
         public int HttpClientTimeout { get; }
+        public int InitialSnapshotTimeInMinutes { get; }
         public bool IgnoreRecovery { get; }
 
         internal AppConfigurationSection Section { get; }
@@ -40,6 +41,7 @@ namespace Oddin.OddsFeedSdk.Configuration
             int? nodeId,
             ExceptionHandlingStrategy exceptionHandlingStrategy,
             int httpClientTimeout,
+            int initialSnapshotTimeInMinutes,
             AppConfigurationSection section,
             bool ignoreRecovery)
         {
@@ -70,6 +72,7 @@ namespace Oddin.OddsFeedSdk.Configuration
             NodeId = nodeId;
             ExceptionHandlingStrategy = exceptionHandlingStrategy;
             HttpClientTimeout = httpClientTimeout;
+            InitialSnapshotTimeInMinutes = initialSnapshotTimeInMinutes;
             Section = section;
             IgnoreRecovery = ignoreRecovery;
         }

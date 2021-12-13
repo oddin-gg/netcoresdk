@@ -33,6 +33,7 @@ namespace Oddin.OddsFeedSdk.Configuration
                 nodeId: SdkNodeId,
                 exceptionHandlingStrategy: ExceptionHandlingStrategy,
                 httpClientTimeout: HttpClientTimeout ?? SdkDefaults.DefaultHttpClientTimeout,
+                InitialSnapshotTimeInMinutes ?? default,
                 section: Section,
                 ignoreRecovery: false);
         }

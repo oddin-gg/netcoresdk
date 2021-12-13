@@ -31,8 +31,10 @@ namespace Oddin.OddsFeedSdkDemoIntegration
                 .GetConfigurationBuilder()
                 .SetAccessToken(token)
                 .SelectIntegration()
+                .SetInitialSnapshotTimeInMinutes(60)
+                // or .LoadFromConfigFile()
                 .Build();
-
+            
             // Create Feed
             var feed = new Feed(config, loggerFactory);
 
