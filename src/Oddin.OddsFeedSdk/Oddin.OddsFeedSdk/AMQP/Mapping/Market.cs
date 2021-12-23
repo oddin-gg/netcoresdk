@@ -24,11 +24,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
 
         public int RefId { get; }
 
-        private readonly IDictionary<string, string> _specifiers;
-        public IReadOnlyDictionary<string, string> Specifiers
-            => _specifiers is null
-                ? null
-                : new ReadOnlyDictionary<string, string>(_specifiers);
+        public IReadOnlyDictionary<string, string> Specifiers { get; }
 
         public string ExtendedSpecifiers { get; }
 
@@ -37,7 +33,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         public Market(
             int id,
             int refId,
-            IDictionary<string, string> specifiers,
+            IReadOnlyDictionary<string, string> specifiers,
             string extendedSpecifiers,
             IEnumerable<string> groups,
             IMarketDescriptionFactory marketDescriptionFactory,
@@ -46,7 +42,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         {
             Id = id;
             RefId = refId;
-            _specifiers = specifiers;
+            Specifiers = specifiers;
             ExtendedSpecifiers = extendedSpecifiers;
             Groups = groups;
             _marketDescriptionFactory = marketDescriptionFactory;
@@ -58,7 +54,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         {
             try
             {
-                var marketDescription = _marketDescriptionFactory.GetMarketDescription(Id, _specifiers, new[] { culture });
+                var marketDescription = _marketDescriptionFactory.GetMarketDescription(Id, Specifiers, new[] { culture });
                 var marketName = marketDescription?.GetName(culture);
 
                 if (marketName is null)

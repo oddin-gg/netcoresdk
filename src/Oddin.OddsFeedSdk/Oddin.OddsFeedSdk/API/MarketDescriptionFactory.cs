@@ -19,7 +19,7 @@ namespace Oddin.OddsFeedSdk.API
             _marketDescriptionCache = marketDescriptionCache;
         }
 
-        public IMarketDescription GetMarketDescription(int marketId, IDictionary<string, string> specifiers, IEnumerable<CultureInfo> cultures)
+        public IMarketDescription GetMarketDescription(int marketId, IReadOnlyDictionary<string, string> specifiers, IEnumerable<CultureInfo> cultures)
         {
             return new MarketDescription(
                 marketId,
