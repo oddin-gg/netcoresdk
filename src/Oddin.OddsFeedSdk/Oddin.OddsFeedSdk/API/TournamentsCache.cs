@@ -72,7 +72,7 @@ namespace Oddin.OddsFeedSdk.API
         {
             var id = string.IsNullOrEmpty(e?.FeedMessage?.event_id) ? null : new URN(e.FeedMessage.event_id);
 
-            if (id.Type == "match")
+            if (id?.Type == "match")
             {
                 _log.LogDebug($"Invalidating Tournament cache from FEED for: {id}");
                 _cache.Remove(id.ToString());
@@ -177,7 +177,7 @@ namespace Oddin.OddsFeedSdk.API
                     SportId = string.IsNullOrEmpty(model?.sport?.id) ? null : new URN(model.sport.id),
                     ScheduledTime = model?.scheduled,
                     ScheduledEndTime = model?.scheduled_end
-                    
+
                 };
             }
 

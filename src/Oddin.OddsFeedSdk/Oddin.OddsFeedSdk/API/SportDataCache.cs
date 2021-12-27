@@ -22,7 +22,7 @@ namespace Oddin.OddsFeedSdk.API
         private readonly IList<CultureInfo> _loadedLocales = new List<CultureInfo>();
 
         private readonly Semaphore _semaphore = new(1, 1);
-        private readonly TimeSpan _cacheTTL = TimeSpan.FromDays(1);
+        private readonly CacheItemPolicy _cachePolicy = new CacheItemPolicy() {Priority = CacheItemPriority.NotRemovable};
 
         private readonly IDisposable _subscription;
 
@@ -65,6 +65,8 @@ namespace Oddin.OddsFeedSdk.API
                 var tournamentId = string.IsNullOrEmpty(tournament.Key) ? null : new URN(tournament.Key);
                 var sportId = string.IsNullOrEmpty(tournament.Key) ? null : new URN(tournament.Value.id);
 
+                if (sportId is null) continue;
+
                 RefreshOrInsertItem(sportId, culture, tournament.Value);
                 var sport = _cache.Get(sportId.ToString()) as LocalizedSport;
                 if (sport is not null)
@@ -88,7 +90,7 @@ namespace Oddin.OddsFeedSdk.API
                 return _cache.Select(item =>
                 {
                     var sport = item.Value as LocalizedSport;
-                    return sport.Id;
+                    return sport?.Id;
                 });
             }
             finally
@@ -189,25 +191,20 @@ namespace Oddin.OddsFeedSdk.API
         {
             var localizedSportItem = _cache.Get(id.ToString());
 
-            LocalizedSport localizedSport;
-            if (localizedSportItem is null)
-                localizedSport = new LocalizedSport(id);
-            else
-                localizedSport = localizedSportItem as LocalizedSport;
-
+            LocalizedSport localizedSport = localizedSportItem as LocalizedSport ?? new LocalizedSport(id);
             if (sport != null)
             {
-                localizedSport.RefId = string.IsNullOrEmpty(sport?.refid) ? null : new URN(sport.refid);
+                localizedSport.RefId = string.IsNullOrEmpty(sport.refid) ? null : new URN(sport.refid);
                 localizedSport.Name[culture] = sport.name;
             }
 
             if(sport is sportExtended sportExtended)
                 localizedSport.IconPath = sportExtended.icon_path;
-            
+
             if(tournamentId != null)
                 localizedSport.TournamentIds ??= new List<URN>();
 
-            _cache.Set(id.ToString(), localizedSport, _cacheTTL.AsCachePolicy());
+            _cache.Set(id.ToString(), localizedSport, _cachePolicy);
         }
 
         public void Dispose() => _subscription.Dispose();

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Runtime.Caching;
 using System.Threading;
 using Microsoft.Extensions.Logging;
@@ -71,7 +70,7 @@ namespace Oddin.OddsFeedSdk.API
                 ? null
                 : new URN(e.FeedMessage.event_id);
 
-            if (id.Type == "match")
+            if (id?.Type == "match")
             {
                 _log.LogDebug($"Invalidating Tournament cache from FEED for: {id}");
                 _cache.Remove(id.ToString());
