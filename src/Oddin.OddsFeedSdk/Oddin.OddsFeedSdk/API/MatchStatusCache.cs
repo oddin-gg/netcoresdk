@@ -197,7 +197,9 @@ namespace Oddin.OddsFeedSdk.API
                     s.home_won_rounds,
                     s.away_won_rounds,
                     s.home_kills,
-                    s.away_kills))
+                    s.away_kills,
+                    s.home_goals,
+                    s.away_goals))
                 .OrderBy(s => s.PeriodNumber)
                 .ToList();
 
@@ -212,7 +214,9 @@ namespace Oddin.OddsFeedSdk.API
                     s.home_won_rounds,
                     s.away_won_rounds,
                     s.home_kills,
-                    s.away_kills))
+                    s.away_kills,
+                    s.home_goals,
+                    s.away_goals))
                 .OrderBy(s => s.PeriodNumber)
                 .ToList();
 
