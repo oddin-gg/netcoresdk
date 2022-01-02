@@ -19,7 +19,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             MarketStatus marketStatus,
             int marketId,
             int refId,
-            IDictionary<string, string> specifiers,
+            IReadOnlyDictionary<string, string> specifiers,
             string extendedSpecifiers,
             IEnumerable<string> groups,
             IEnumerable<IOutcomeSettlement> outcomes,

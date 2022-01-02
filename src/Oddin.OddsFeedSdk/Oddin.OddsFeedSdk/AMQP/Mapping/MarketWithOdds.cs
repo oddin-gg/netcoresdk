@@ -20,7 +20,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         public MarketWithOdds(
             int marketId,
             int refId,
-            IDictionary<string, string> specifiers,
+            IReadOnlyDictionary<string, string> specifiers,
             string extendedSpecifiers,
             IEnumerable<string> groups,
             IMarketDescriptionFactory marketDescriptionFactory,

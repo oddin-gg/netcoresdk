@@ -35,9 +35,9 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             _configuration = configuration;
         }
 
-        private IDictionary<string, string> GetSpecifiers(string specifiersString)
+        private IReadOnlyDictionary<string, string> GetSpecifiers(string specifiersString)
         {
-            var result = new Dictionary<string, string>();
+            var result = new SortedDictionary<string, string>();
             if (string.IsNullOrEmpty(specifiersString))
                 return new ReadOnlyDictionary<string, string>(result);
 
@@ -65,7 +65,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 result[key] = value;
             }
 
-            return new ReadOnlyDictionary<string, string>(result);
+            return result;
         }
 
         private IAdditionalProbabilities GetAdditionalProbabilities(oddsChangeMarketOutcome outcome)
@@ -93,7 +93,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         private IOutcomeOdds GetOutcomeOdds(
             oddsChangeMarketOutcome outcome,
             int marketId,
-            IDictionary<string, string> marketSpecifiers,
+            IReadOnlyDictionary<string, string> marketSpecifiers,
             ISportEvent sportEvent)
         {
             if (outcome is null)
@@ -282,7 +282,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         private IEnumerable<IOutcomeSettlement> GetOutcomeSettlements(
             betSettlementMarketOutcome[] betSettlementMarkets,
             int marketId,
-            IDictionary<string, string> marketSpecifiers,
+            IReadOnlyDictionary<string, string> marketSpecifiers,
             ISportEvent sportEvent)
         {
             return betSettlementMarkets.Select(b =>

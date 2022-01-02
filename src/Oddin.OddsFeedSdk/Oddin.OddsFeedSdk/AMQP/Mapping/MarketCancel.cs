@@ -13,7 +13,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         internal MarketCancel(
             int id,
             int refId,
-            IDictionary<string, string> specifiers,
+            IReadOnlyDictionary<string, string> specifiers,
             string extendedSpecifiers,
             IEnumerable<string> groups,
             IMarketDescriptionFactory marketDescriptionFactory,
