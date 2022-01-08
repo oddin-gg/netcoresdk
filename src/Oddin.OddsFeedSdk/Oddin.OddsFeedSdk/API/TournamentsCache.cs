@@ -40,12 +40,12 @@ namespace Oddin.OddsFeedSdk.API
                     var tournaments = response.Data switch
                     {
                         FixturesEndpointModel f => new tournament[] { f.fixture.tournament },
-                        TournamentsModel t => t.tournaments?.ToArray() ?? new tournament[0],
+                        TournamentsModel t => t.tournaments?.ToArray() ?? Array.Empty<tournament>(),
                         MatchSummaryModel m => new tournament[] { m.sport_event.tournament },
                         ScheduleEndpointModel s => s.sport_event.Select(t => t.tournament).ToArray(),
                         TournamentScheduleModel t => t.tournament.ToArray(),
-                        SportTournamentsModel s => s.tournaments?.ToArray() ?? new tournament[0],
-                        _ => new tournament[0]
+                        SportTournamentsModel s => s.tournaments?.ToArray() ?? Array.Empty<tournament>(),
+                        _ => Array.Empty<tournament>()
                     };
 
 
@@ -166,6 +166,7 @@ namespace Oddin.OddsFeedSdk.API
                 item.SportId = string.IsNullOrEmpty(model?.sport?.id) ? null : new URN(model.sport.id);
                 item.ScheduledTime = model?.scheduled;
                 item.ScheduledEndTime = model?.scheduled_end;
+                item.RiskTier = model?.riskTier;
             }
             else
             {
@@ -176,8 +177,8 @@ namespace Oddin.OddsFeedSdk.API
                     EndDate = model?.tournament_length?.end_date,
                     SportId = string.IsNullOrEmpty(model?.sport?.id) ? null : new URN(model.sport.id),
                     ScheduledTime = model?.scheduled,
-                    ScheduledEndTime = model?.scheduled_end
-
+                    ScheduledEndTime = model?.scheduled_end,
+                    RiskTier = model?.riskTier
                 };
             }
 

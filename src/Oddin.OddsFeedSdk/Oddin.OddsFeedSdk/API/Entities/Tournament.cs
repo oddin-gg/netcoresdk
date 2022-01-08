@@ -56,6 +56,9 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public DateTime? GetEndDate()
             => FetchTournament(_cultures)?.EndDate;
 
+        public int? RiskTier()
+            => FetchTournament(_cultures)?.RiskTier;
+
         public Tournament(URN id, URN sportId, ITournamentsCache tournamentsCache, ISportDataBuilder sportDataBuilder, IFeedConfiguration configuration, IEnumerable<CultureInfo> cultures)
         {
             Id = id;

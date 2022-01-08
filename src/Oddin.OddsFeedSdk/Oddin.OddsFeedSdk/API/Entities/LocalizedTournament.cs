@@ -15,20 +15,22 @@ namespace Oddin.OddsFeedSdk.API.Entities
         internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
 
         public IEnumerable<CultureInfo> LoadedLocals => Name.Keys;
-    
+
         public DateTime? StartDate { get; set; }
-        
+
         public DateTime? EndDate { get; set; }
-        
+
         public URN SportId { get; set; }
-        
+
         public DateTime? ScheduledTime { get; set; }
-        
+
         public DateTime? ScheduledEndTime { get; set; }
 
         public IEnumerable<URN> CompetitorIds { get; set; } = null;
 
         public string IconPath { get; set; }
+
+        public int? RiskTier { get; set; }
 
         public LocalizedTournament(URN id)
         {

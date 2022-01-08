@@ -114,7 +114,8 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Sport ID: {await act.GetSportIdAsync()}");
             Console.WriteLine($"Start date: {act.GetStartDate()}");
             Console.WriteLine($"ID: {act.Id}");
-
+            Console.WriteLine($"Risk Tier: {act.RiskTier()}");
+            
             var competitor = provider.GetCompetitor(competitorUrn, CultureEn);
             Console.WriteLine($"Abbreviation: {competitor.Abbreviations.First()}");
             Console.WriteLine($"Country: {competitor.Countries.FirstOrDefault()}");
@@ -265,6 +266,11 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var competitor = match.Competitors.FirstOrDefault();
             Console.WriteLine($"Odds change competitor icon path: {competitor.IconPath}");
             Console.WriteLine($"Odds change competitor sports: {string.Join(", ", competitor.GetSports()?.Select(s => s.Id) ?? Enumerable.Empty<URN>())}");
+            
+            // Tournament
+            var tournament = match.Tournament;
+            Console.WriteLine($"Tournament Id: {tournament.Id}");
+            Console.WriteLine($"Risk Tier: {tournament.RiskTier()}");
         }
 
         private static async void Session_OnFixtureChange(object sender, FixtureChangeEventArgs<ISportEvent> eventArgs)
@@ -294,7 +300,8 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             // Tournament
             var tournament = match.Tournament;
             Console.WriteLine($"Tournament Id: {tournament.Id}");
-
+            Console.WriteLine($"Risk Tier: {tournament.RiskTier()}");
+            
             // Get Sport from Match
             var sport1 = await match.GetSportAsync();
             var sportId = sport1.Id;
