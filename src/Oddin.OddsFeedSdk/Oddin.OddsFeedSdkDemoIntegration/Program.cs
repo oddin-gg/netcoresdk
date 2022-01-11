@@ -3,10 +3,10 @@ using System.Threading.Tasks;
 
 namespace Oddin.OddsFeedSdkDemoIntegration
 {
-    class Program
+    public static class Program
     {
         // Put you token here:
-        internal const string TOKEN = "your-token";
+        private const string TOKEN = "your-token";
 
         static async Task Main(string[] _)
         {

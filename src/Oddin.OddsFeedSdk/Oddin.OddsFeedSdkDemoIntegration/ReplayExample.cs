@@ -8,9 +8,9 @@ using Oddin.OddsFeedSdk.Sessions;
 using Oddin.OddsFeedSdk.Sessions.Abstractions;
 using Serilog;
 using System;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Oddin.OddsFeedSdk.Abstractions;
 
 namespace Oddin.OddsFeedSdkDemoIntegration
 {
@@ -91,12 +91,12 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             return new LoggerFactory().AddSerilog(serilogLogger);
         }
 
-        private static void AttachEvents(Feed feed)
+        private static void AttachEvents(IOddsFeed feed)
         {
             feed.EventRecoveryCompleted += OnEventRecoveryComplete;
         }
 
-        private static void DetachEvents(Feed feed)
+        private static void DetachEvents(IOddsFeed feed)
         {
             feed.EventRecoveryCompleted -= OnEventRecoveryComplete;
         }

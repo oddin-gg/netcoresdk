@@ -18,7 +18,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
         private readonly IMarketDescriptionFactory _marketDescriptionFactory;
         private readonly IFeedConfiguration _configuration;
         private readonly int _marketId;
-        private readonly IDictionary<string, string> _marketSpecifiers;
+        private readonly IReadOnlyDictionary<string, string> _marketSpecifiers;
         private readonly ISportEvent _sportEvent;
 
         public long Id { get; }
@@ -31,8 +31,8 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             IMarketDescriptionFactory marketDescriptionFactory,
             IFeedConfiguration configuration,
             int marketId,
-            IDictionary<string, string> marketSpecifiers,
-            ISportEvent sportEvent)  
+            IReadOnlyDictionary<string, string> marketSpecifiers,
+            ISportEvent sportEvent)
         {
             Id = id;
             RefId = refId;

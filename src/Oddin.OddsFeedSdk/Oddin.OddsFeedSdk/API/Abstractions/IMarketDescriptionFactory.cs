@@ -6,7 +6,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
 {
     internal interface IMarketDescriptionFactory
     {
-        IMarketDescription GetMarketDescription(int marketId, IDictionary<string, string> specifiers, IEnumerable<CultureInfo> cultures);
+        IMarketDescription GetMarketDescription(int marketId, IReadOnlyDictionary<string, string> specifiers, IEnumerable<CultureInfo> cultures);
 
         IEnumerable<IMarketDescription> GetMarketDescriptions(CultureInfo culture);
     }

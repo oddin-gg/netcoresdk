@@ -24,7 +24,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
             IMarketDescriptionFactory marketDescriptionFactory,
             IFeedConfiguration configuration,
             int marketId,
-            IDictionary<string, string> marketSpecifiers,
+            IReadOnlyDictionary<string, string> marketSpecifiers,
             ISportEvent sportEvent)
             : base(outcomeId, outcomeRefId, marketDescriptionFactory, configuration, marketId, marketSpecifiers, sportEvent)
         {

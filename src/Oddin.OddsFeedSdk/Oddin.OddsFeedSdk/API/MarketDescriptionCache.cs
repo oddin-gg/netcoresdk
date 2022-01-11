@@ -37,8 +37,7 @@ namespace Oddin.OddsFeedSdk.API
 
                 var items = _cache.Where(c =>
                 {
-                    var localizedItem = c.Value as LocalizedMarketDescription;
-                    return localizedItem.LoadedLocals.Any(i => i.Equals(culture));
+                    return c.Value is LocalizedMarketDescription localizedItem && localizedItem.LoadedLocals.Any(i => i.Equals(culture));
                 });
 
                 return items
@@ -74,7 +73,7 @@ namespace Oddin.OddsFeedSdk.API
 
         public void ClearCacheItem(int marketId, string variant)
             => _cache.Remove(new CompositeKey(marketId, variant).ToString());
-    
+
         private void LoadAndCacheItem(IEnumerable<CultureInfo> cultures)
         {
             foreach(var culture in cultures)
