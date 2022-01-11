@@ -37,8 +37,7 @@ namespace Oddin.OddsFeedSdk.Managers
 
         public async Task<IEnumerable<ISport>> GetSportsAsync(CultureInfo culture = null)
         {
-            if (culture is null)
-                culture = _feedConfiguration.DefaultLocale;
+            culture ??= _feedConfiguration.DefaultLocale;
 
             return await _exceptionWrapper.Wrap(async () => await _builder.BuildSports(new[] { culture }));
         }
@@ -51,8 +50,7 @@ namespace Oddin.OddsFeedSdk.Managers
 
         public IEnumerable<ITournament> GetActiveTournaments(CultureInfo culture = null)
         {
-            if (culture is null)
-                culture = _feedConfiguration.DefaultLocale;
+            culture ??= _feedConfiguration.DefaultLocale;
 
             var sports = GetSportsAsync(culture).ConfigureAwait(false).GetAwaiter().GetResult();
             var sportTournaments = sports.SelectMany(s => s.Tournaments);
@@ -62,18 +60,16 @@ namespace Oddin.OddsFeedSdk.Managers
 
         public IEnumerable<ITournament> GetActiveTournaments(string name, CultureInfo culture = null)
         {
-            if (culture is null)
-                culture = _feedConfiguration.DefaultLocale;
+            culture ??= _feedConfiguration.DefaultLocale;
 
             var sports = GetSportsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             var sport = sports?.FirstOrDefault(s => s.GetName(culture).Equals(name));
-            return sport.Tournaments ?? new List<ITournament>();
+            return sport?.Tournaments ?? new List<ITournament>();
         }
 
         public IEnumerable<ITournament> GetAvailableTournaments(URN sportId, CultureInfo culture = null)
         {
-            if (culture is null)
-                culture = _feedConfiguration.DefaultLocale;
+            culture ??= _feedConfiguration.DefaultLocale;
 
             var result = _exceptionWrapper.Wrap(()
                 => _apiClient.GetTournaments(sportId, culture));
@@ -100,8 +96,7 @@ namespace Oddin.OddsFeedSdk.Managers
 
         public ICompetitor GetCompetitor(URN id, CultureInfo culture = null)
         {
-            if (culture is null)
-                culture = _feedConfiguration.DefaultLocale;
+            culture ??= _feedConfiguration.DefaultLocale;
 
             return _exceptionWrapper.Wrap(()
                 => _builder.BuildCompetitor(id, new[] { culture }));
@@ -109,8 +104,7 @@ namespace Oddin.OddsFeedSdk.Managers
 
         public IMatch GetMatch(URN id, CultureInfo culture = null)
         {
-            if (culture is null)
-                culture = _feedConfiguration.DefaultLocale;
+            culture ??= _feedConfiguration.DefaultLocale;
 
             return _exceptionWrapper.Wrap(()
                 => _builder.BuildMatch(id, new[] { culture }));
@@ -118,8 +112,7 @@ namespace Oddin.OddsFeedSdk.Managers
 
         public IEnumerable<IMatch> GetMatchesFor(DateTime dateTime, CultureInfo culture = null)
         {
-            if (culture is null)
-                culture = _feedConfiguration.DefaultLocale;
+            culture ??= _feedConfiguration.DefaultLocale;
 
             return _exceptionWrapper.Wrap(() =>
             {
@@ -131,8 +124,7 @@ namespace Oddin.OddsFeedSdk.Managers
 
         public IEnumerable<IMatch> GetLiveMatches(CultureInfo culture = null)
         {
-            if (culture is null)
-                culture = _feedConfiguration.DefaultLocale;
+            culture ??= _feedConfiguration.DefaultLocale;
 
             return _exceptionWrapper.Wrap(() =>
             {
@@ -144,14 +136,13 @@ namespace Oddin.OddsFeedSdk.Managers
 
         public IEnumerable<IMatch> GetListOfMatches(int startIndex, int limit, CultureInfo culture = null)
         {
-            if (startIndex < 0) 
+            if (startIndex < 0)
                 throw new ArgumentException("Requires startIndex >= 0", nameof(startIndex));
 
-            if (limit > 1000 || limit < 1)
+            if (limit is > 1000 or < 1)
                 throw new ArgumentException("Requires limit <= 1000 && limit >= 1", nameof(limit));
 
-            if (culture is null)
-                culture = _feedConfiguration.DefaultLocale;
+            culture ??= _feedConfiguration.DefaultLocale;
 
             return _exceptionWrapper.Wrap(() =>
             {
@@ -164,8 +155,7 @@ namespace Oddin.OddsFeedSdk.Managers
 
         public IEnumerable<IFixtureChange> GetFixtureChanges(CultureInfo culture = null)
         {
-            if (culture is null)
-                culture = _feedConfiguration.DefaultLocale;
+            culture ??= _feedConfiguration.DefaultLocale;
 
             return _exceptionWrapper.Wrap(() =>
             {

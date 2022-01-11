@@ -12,5 +12,7 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
         DateTime? GetEndDate();
 
         DateTime? GetStartDate();
+
+        int? RiskTier();
     }
 }
