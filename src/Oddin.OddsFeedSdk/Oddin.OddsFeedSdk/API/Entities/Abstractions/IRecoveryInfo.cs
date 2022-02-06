@@ -8,10 +8,8 @@
 
         public long RequestId { get; }
 
-        public int ResponseCode { get; }
+        public bool Successful { get; }
 
-        public string ResponseMessage { get; }
-
-        public int NodeId { get; }
+        public int? NodeId { get; }
     }
 }

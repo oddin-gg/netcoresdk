@@ -6,7 +6,7 @@ namespace Oddin.OddsFeedSdk.Configuration
     internal abstract class RecoveryConfigurationBuilder<T> : ConfigurationBuilderBase<T>, IRecoveryConfigurationBuilder<T> where T : class
     {
         protected int? MaxInactivitySeconds;
-        protected int? MaxRecoveryTimeInSeconds;
+        protected int? MaxRecoveryExecutionMinutes;
 
         internal RecoveryConfigurationBuilder(string accessToken, IAppConfigurationSectionProvider sectionProvider)
             : base(accessToken, sectionProvider)
@@ -18,30 +18,18 @@ namespace Oddin.OddsFeedSdk.Configuration
             base.LoadFromConfigFile(section);
 
             MaxInactivitySeconds = section.MaxInactivitySeconds;
-            MaxRecoveryTimeInSeconds = section.MaxRecoveryTimeInSeconds;
+            MaxRecoveryExecutionMinutes = section.MaxRecoveryExecutionMinutes;
         }
 
         public T SetMaxInactivitySeconds(int inactivitySeconds)
         {
-            if (inactivitySeconds < SdkDefaults.MinInactivitySeconds)
-                throw new ArgumentException($"Value must be at least {SdkDefaults.MinInactivitySeconds}.");
-
-            if (inactivitySeconds > SdkDefaults.MaxInactivitySeconds)
-                throw new ArgumentException($"Value must be less than or equal to {SdkDefaults.MaxInactivitySeconds}.");
-
             MaxInactivitySeconds = inactivitySeconds;
             return this as T;
         }
 
-        public T SetMaxRecoveryTime(int maxRecoveryTimeInSeconds)
+        public T SetMaxRecoveryExecutionMinutes(int maxRecoveryExecutionMinutes)
         {
-            if (maxRecoveryTimeInSeconds < SdkDefaults.MinRecoveryExecutionInSeconds)
-                throw new ArgumentException($"Value must be at least {SdkDefaults.MinRecoveryExecutionInSeconds}.");
-
-            if (maxRecoveryTimeInSeconds > SdkDefaults.MaxRecoveryExecutionInSeconds)
-                throw new ArgumentException($"Value must be less than or equal to {SdkDefaults.MaxRecoveryExecutionInSeconds}.");
-
-            MaxRecoveryTimeInSeconds = maxRecoveryTimeInSeconds;
+            MaxRecoveryExecutionMinutes = maxRecoveryExecutionMinutes;
             return this as T;
         }
     }

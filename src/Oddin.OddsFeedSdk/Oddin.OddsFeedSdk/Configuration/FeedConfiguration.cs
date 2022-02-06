@@ -20,11 +20,10 @@ namespace Oddin.OddsFeedSdk.Configuration
         public bool UseApiSsl { get; }
 
         // Recovery properties
-        public int MaxRecoveryTime { get; }
+        public int MaxRecoveryExecutionMinutes { get; }
         public int MaxInactivitySeconds { get; }
         public int HttpClientTimeout { get; }
         public int InitialSnapshotTimeInMinutes { get; }
-        public bool IgnoreRecovery { get; }
 
         internal AppConfigurationSection Section { get; }
 
@@ -37,24 +36,17 @@ namespace Oddin.OddsFeedSdk.Configuration
             bool useSsl,
             bool useApiSsl,
             int maxInactivitySeconds,
-            int maxRecoveryExecutionInSeconds,
+            int maxRecoveryExecutionMinutes,
             int? nodeId,
             ExceptionHandlingStrategy exceptionHandlingStrategy,
             int httpClientTimeout,
             int initialSnapshotTimeInMinutes,
-            AppConfigurationSection section,
-            bool ignoreRecovery)
+            AppConfigurationSection section)
         {
             if (string.IsNullOrEmpty(accessToken))
                 throw new ArgumentException(nameof(accessToken));
 
-            if (maxInactivitySeconds < SdkDefaults.MinInactivitySeconds || maxInactivitySeconds > SdkDefaults.MaxInactivitySeconds)
-                throw new ArgumentOutOfRangeException(nameof(maxInactivitySeconds));
-
-            if (maxRecoveryExecutionInSeconds < SdkDefaults.MinRecoveryExecutionInSeconds)
-                throw new ArgumentOutOfRangeException(nameof(maxRecoveryExecutionInSeconds));
-
-            if (httpClientTimeout < SdkDefaults.MinHttpClientTimeout || httpClientTimeout > SdkDefaults.MaxHttpClientTimeout)
+            if (httpClientTimeout is < SdkDefaults.MinHttpClientTimeout or > SdkDefaults.MaxHttpClientTimeout)
                 throw new ArgumentOutOfRangeException(nameof(httpClientTimeout));
 
             if (nodeId < 0)
@@ -68,13 +60,12 @@ namespace Oddin.OddsFeedSdk.Configuration
             ApiHost = apiHost;
             UseApiSsl = useApiSsl;
             MaxInactivitySeconds = maxInactivitySeconds;
-            MaxRecoveryTime = maxRecoveryExecutionInSeconds;
+            MaxRecoveryExecutionMinutes = maxRecoveryExecutionMinutes;
             NodeId = nodeId;
             ExceptionHandlingStrategy = exceptionHandlingStrategy;
             HttpClientTimeout = httpClientTimeout;
             InitialSnapshotTimeInMinutes = initialSnapshotTimeInMinutes;
             Section = section;
-            IgnoreRecovery = ignoreRecovery;
         }
     }
 }

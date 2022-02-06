@@ -178,7 +178,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 message.GeneratedAt,
                 message.SentAt,
                 message.ReceivedAt,
-                DateTime.UtcNow.ToEpochTimeMilliseconds());
+                Timestamp.Now());
 
             var sportEvent = MapSportEvent(
                 string.IsNullOrEmpty(message?.event_id)
@@ -207,7 +207,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 message.GeneratedAt,
                 message.SentAt,
                 message.ReceivedAt,
-                DateTime.UtcNow.ToEpochTimeMilliseconds());
+                Timestamp.Now());
 
             var sportEvent = MapSportEvent(
                 string.IsNullOrEmpty(message?.event_id)
@@ -239,7 +239,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 message.GeneratedAt,
                 message.SentAt,
                 message.ReceivedAt,
-                DateTime.UtcNow.ToEpochTimeMilliseconds());
+                Timestamp.Now());
 
             var sportEvent = MapSportEvent(
                 string.IsNullOrEmpty(message?.event_id)
@@ -311,7 +311,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 message.GeneratedAt,
                 message.SentAt,
                 message.ReceivedAt,
-                DateTime.UtcNow.ToEpochTimeMilliseconds());
+                Timestamp.Now());
 
             var sportEvent = MapSportEvent(
                 string.IsNullOrEmpty(message?.event_id)
@@ -357,7 +357,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 message.GeneratedAt,
                 message.SentAt,
                 message.ReceivedAt,
-                DateTime.UtcNow.ToEpochTimeMilliseconds());
+                Timestamp.Now());
 
             var sportEvent = MapSportEvent(
                 string.IsNullOrEmpty(message?.event_id)

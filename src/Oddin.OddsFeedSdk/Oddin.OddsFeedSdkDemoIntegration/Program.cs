@@ -21,7 +21,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             {
                 case 'R':
                 {
-                    await ReplayExample.Run(TOKEN);
+                    await ReplayExample.Run(TOKEN, "od:match:61695");
                     break;
                 }
                 default:

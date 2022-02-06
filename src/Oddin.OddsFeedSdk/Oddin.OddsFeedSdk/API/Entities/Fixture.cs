@@ -29,7 +29,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
                 if(fixtures is not null)
                     return new ReadOnlyDictionary<string, string>(fixtures);
 
-                return null;
+                return new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
             }
         }
 

@@ -23,7 +23,7 @@ namespace Oddin.OddsFeedSdk.Configuration.Abstractions
     {
         T SetMaxInactivitySeconds(int inactivitySeconds);
 
-        T SetMaxRecoveryTime(int maxRecoveryTimeInSeconds);
+        T SetMaxRecoveryExecutionMinutes(int maxRecoveryExecutionMinutes);
     }
 
     public interface IConfigurationBuilder : IRecoveryConfigurationBuilder<IConfigurationBuilder>

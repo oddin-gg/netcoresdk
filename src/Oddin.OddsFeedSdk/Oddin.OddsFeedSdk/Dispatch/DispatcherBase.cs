@@ -16,7 +16,6 @@ namespace Oddin.OddsFeedSdk.Dispatch
         {
             if (handler is null)
             {
-                _log.LogWarning($"{GetType()} was unable to dispatch an event through {eventHandlerName} event handler, because there were no listeners subscribed to it!");
                 return;
             }
 

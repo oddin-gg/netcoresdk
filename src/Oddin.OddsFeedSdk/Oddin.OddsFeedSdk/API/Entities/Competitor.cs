@@ -31,7 +31,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
                 if(names is not null)
                     return new ReadOnlyDictionary<CultureInfo, string>(names);
 
-                return null;
+                return new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>());
             }
         }
 
@@ -43,7 +43,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
                 if (countries is not null)
                     return new ReadOnlyDictionary<CultureInfo, string>(countries);
 
-                return null;
+                return new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>());
             }
         }
 
@@ -55,7 +55,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
                 if (abbreviations is not null)
                     return new ReadOnlyDictionary<CultureInfo, string>(abbreviations);
 
-                return null;
+                return new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>());
             }
         }
 

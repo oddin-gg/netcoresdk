@@ -14,7 +14,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public IReadOnlyDictionary<CultureInfo, string> Descriptions
             => _descriptionMap is null
-            ? null
+            ? new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>())
             : new ReadOnlyDictionary<CultureInfo, string>(_descriptionMap);
 
         public string Description => _descriptionMap.Values.FirstOrDefault();

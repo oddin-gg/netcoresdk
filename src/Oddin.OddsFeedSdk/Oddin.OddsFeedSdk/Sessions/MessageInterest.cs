@@ -40,14 +40,14 @@ namespace Oddin.OddsFeedSdk.Sessions
 
         public static readonly MessageInterest LowPriorityMessages = new MessageInterest("low_priority", MessageInterestType.LowPriority, "lo.*.*.*.*.*.*");
 
-        public static readonly MessageInterest SystemAliveOnlyMessages = new MessageInterest("system_alive", MessageInterestType.SystemAlive, "-.-.-.alive.#");
+        public static readonly MessageInterest SystemAliveOnlyMessages = new("system_alive", MessageInterestType.SystemAlive, "-.-.-.alive.#");
 
         public static MessageInterest SpecificEventsOnly(IEnumerable<URN> eventIds)
         {
             if (eventIds is null)
                 throw new ArgumentNullException($"{nameof(eventIds)} argument cannot be null!");
 
-            if (eventIds.Count() <= 0)
+            if (!eventIds.Any())
                 throw new ArgumentException($"{nameof(eventIds)} argument cannot be empty!");
 
             return new MessageInterest("specific_events", MessageInterestType.SpecificEvents, BuildRoutingKeysFromEvents(eventIds.Distinct()));
@@ -56,6 +56,16 @@ namespace Oddin.OddsFeedSdk.Sessions
         private static IEnumerable<string> BuildRoutingKeysFromEvents(IEnumerable<URN> eventIds)
             => eventIds.Select(eid => $"#.{eid.Prefix}:{eid.Type}.{eid.Id}");
 
+        protected bool Equals(MessageInterest other) => MessageInterestType == other.MessageInterestType;
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return obj.GetType() == this.GetType() && Equals((MessageInterest) obj);
+        }
+
+        public override int GetHashCode() => (int) MessageInterestType;
     }
 
     internal enum MessageInterestType

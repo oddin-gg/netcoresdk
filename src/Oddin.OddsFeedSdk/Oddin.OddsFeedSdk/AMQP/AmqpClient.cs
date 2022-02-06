@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Oddin.OddsFeedSdk.API.Abstractions;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 
 namespace Oddin.OddsFeedSdk.AMQP
 {
@@ -42,6 +43,8 @@ namespace Oddin.OddsFeedSdk.AMQP
         public event EventHandler<SimpleMessageEventArgs<bet_settlement>> BetSettlementMessageReceived;
         public event EventHandler<SimpleMessageEventArgs<bet_cancel>> BetCancelMessageReceived;
         public event EventHandler<SimpleMessageEventArgs<fixture_change>> FixtureChangeMessageReceived;
+        public event EventHandler<SimpleMessageEventArgs<MessageProcessingEventArgs>> MessageProcessingStarted;
+        public event EventHandler<SimpleMessageEventArgs<MessageProcessingEventArgs>> MessageProcessingEnded;
 
         public AmqpClient(IFeedConfiguration config,
             IApiClient apiClient,
@@ -197,41 +200,60 @@ namespace Oddin.OddsFeedSdk.AMQP
 
         private void OnReceived(object sender, BasicDeliverEventArgs eventArgs)
         {
-            var receivedAt = DateTime.UtcNow.ToEpochTimeMilliseconds();
+            var receivedAt = Timestamp.Now();
             var body = eventArgs.Body.ToArray();
             var xml = Encoding.UTF8.GetString(body);
             var success = FeedMessageDeserializer.TryDeserializeMessage(xml, out var message);
 
-            if (success == false || message is null)
+            if (success == false)
             {
                 HandleUnparsableMessage(body, eventArgs.RoutingKey);
                 return;
             }
 
+            var producerId = message.ProducerId;
+
+            Dispatch(MessageProcessingStarted,
+                new SimpleMessageEventArgs<MessageProcessingEventArgs>(new MessageProcessingEventArgs(producerId, receivedAt), body),
+                nameof(MessageProcessingStarted)
+            );
+
             SetMessageTimes(message, eventArgs, receivedAt);
+
+            long? timestamp = null;
 
             switch (message)
             {
                 case alive aliveMessage:
-                    Dispatch(AliveMessageReceived, new SimpleMessageEventArgs<alive>(aliveMessage, body), nameof(AliveMessageReceived));
+                    var aliveMessageArgs = new SimpleMessageEventArgs<alive>(aliveMessage, body);
+                    timestamp = aliveMessageArgs.FeedMessage.GeneratedAt;
+                    Dispatch(AliveMessageReceived, aliveMessageArgs, nameof(AliveMessageReceived));
                     break;
                 case snapshot_complete snapshotComplete:
-                    Dispatch(SnapshotCompleteMessageReceived, new SimpleMessageEventArgs<snapshot_complete>(snapshotComplete, body), nameof(SnapshotCompleteMessageReceived));
+                    var snapshotCompleteMessageArgs = new SimpleMessageEventArgs<snapshot_complete>(snapshotComplete, body);
+                    Dispatch(SnapshotCompleteMessageReceived, snapshotCompleteMessageArgs, nameof(SnapshotCompleteMessageReceived));
                     break;
                 case odds_change oddsChangeMessage:
-                    Dispatch(OddsChangeMessageReceived, new SimpleMessageEventArgs<odds_change>(oddsChangeMessage, body), nameof(OddsChangeMessageReceived));
+                    var oddsChangeMessageArgs = new SimpleMessageEventArgs<odds_change>(oddsChangeMessage, body);
+                    timestamp = oddsChangeMessageArgs.FeedMessage.GeneratedAt;
+                    Dispatch(OddsChangeMessageReceived, oddsChangeMessageArgs, nameof(OddsChangeMessageReceived));
                     break;
                 case bet_stop betStopMessage:
-                    Dispatch(BetStopMessageReceived, new SimpleMessageEventArgs<bet_stop>(betStopMessage, body), nameof(BetStopMessageReceived));
+                    var betStopMessageArgs = new SimpleMessageEventArgs<bet_stop>(betStopMessage, body);
+                    timestamp = betStopMessageArgs.FeedMessage.GeneratedAt;
+                    Dispatch(BetStopMessageReceived, betStopMessageArgs, nameof(BetStopMessageReceived));
                     break;
                 case bet_settlement betSettlement:
-                    Dispatch(BetSettlementMessageReceived, new SimpleMessageEventArgs<bet_settlement>(betSettlement, body), nameof(BetSettlementMessageReceived));
+                    var betSettlementMessageArgs = new SimpleMessageEventArgs<bet_settlement>(betSettlement, body);
+                    Dispatch(BetSettlementMessageReceived, betSettlementMessageArgs, nameof(BetSettlementMessageReceived));
                     break;
                 case bet_cancel betCancel:
-                    Dispatch(BetCancelMessageReceived, new SimpleMessageEventArgs<bet_cancel>(betCancel, body), nameof(BetCancelMessageReceived));
+                    var betCancelMessageArgs = new SimpleMessageEventArgs<bet_cancel>(betCancel, body);
+                    Dispatch(BetCancelMessageReceived, betCancelMessageArgs, nameof(BetCancelMessageReceived));
                     break;
                 case fixture_change fixtureChange:
-                    Dispatch(FixtureChangeMessageReceived, new SimpleMessageEventArgs<fixture_change>(fixtureChange, body), nameof(FixtureChangeMessageReceived));
+                    var fixtureChangeMessageArgs = new SimpleMessageEventArgs<fixture_change>(fixtureChange, body);
+                    Dispatch(FixtureChangeMessageReceived, fixtureChangeMessageArgs, nameof(FixtureChangeMessageReceived));
                     break;
 
                 default:
@@ -239,6 +261,11 @@ namespace Oddin.OddsFeedSdk.AMQP
                     _log.LogError(errorMessage);
                     throw new InvalidOperationException(errorMessage);
             }
+
+            Dispatch(MessageProcessingEnded,
+                new SimpleMessageEventArgs<MessageProcessingEventArgs>(new MessageProcessingEventArgs(producerId, timestamp), body),
+                nameof(MessageProcessingEnded)
+                );
         }
 
         public void Disconnect()

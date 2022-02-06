@@ -25,6 +25,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
     public class odds_change : FeedMessageModel
     {
         public override long GeneratedAt => timestamp;
+        public override int ProducerId => product;
 
         // ----------------------------------------------------------
 

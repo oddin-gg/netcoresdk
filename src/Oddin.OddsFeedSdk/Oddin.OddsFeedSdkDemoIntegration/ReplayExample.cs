@@ -8,6 +8,7 @@ using Oddin.OddsFeedSdk.Sessions;
 using Oddin.OddsFeedSdk.Sessions.Abstractions;
 using Serilog;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Oddin.OddsFeedSdk.Abstractions;
@@ -16,7 +17,9 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 {
     internal static class ReplayExample
     {
-        internal static async Task Run(string token)
+        private static readonly CultureInfo CultureEn = CultureInfo.GetCultureInfoByIetfLanguageTag("en");
+
+        internal static async Task Run(string token, string matchId)
         {
             var loggerFactory = CreateLoggerFactory();
 
@@ -41,8 +44,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
             var replayManager = feed.ReplayManager;
 
-            var match1 = new URN("od:match:32496");
-            var match2 = new URN("od:match:32497");
+            var match1 = new URN(matchId);
             
             // Stop replay
             await replayManager.StopReplay();
@@ -56,10 +58,6 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             // If match1 is not in queue add it
             if (eventsInQueue.Any(q => q == match1) == false)
                 await replayManager.AddMessagesToReplayQueue(match1);
-
-            // If match2 is not in queue add it
-            if (eventsInQueue.Any(q => q == match2) == false)
-                await replayManager.AddMessagesToReplayQueue(match2);
 
             // Get URNs of events already in queue
             var eventsInQueueAfter = await replayManager.GetEventsInQueue();
