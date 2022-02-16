@@ -30,13 +30,16 @@ namespace Oddin.OddsFeedSdk
 {
     public class Feed : DispatcherBase, IOddsFeed
     {
+        private const string SNAPSHOT_COMPLETE_ROUTING_KEY_TEMPLATE = "-.-.-.snapshot_complete.-.-.-.{0}";
+
+
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(Feed));
 
         protected readonly IServiceProvider Services;
         private readonly IFeedConfiguration _config;
         private bool _isOpened;
         private readonly object _isOpenedLock = new();
-        private readonly IList<IOpenable> _sessions = new List<IOpenable>();
+        private readonly IList<OddsFeedSession> _sessions = new List<OddsFeedSession>();
         private bool _isDisposed;
 
         public event EventHandler<ConnectionExceptionEventArgs> ConnectionException;
@@ -203,11 +206,13 @@ namespace Oddin.OddsFeedSdk
 
         private void ValidateMessageInterestsCombination()
         {
-            if (_sessions.Count == 0)
-                throw new InvalidOperationException("Cannot open the feed when there are no sessions created!");
-
-            if (_sessions.Count == 1)
-                return;
+            switch (_sessions.Count)
+            {
+                case 0:
+                    throw new InvalidOperationException("Cannot open the feed when there are no sessions created!");
+                case 1:
+                    return;
+            }
 
             var allMessageInterests = _sessions.Select(s => ((OddsFeedSession)s).MessageInterest.MessageInterestType);
             if (allMessageInterests.Count() != allMessageInterests.Distinct().Count())
@@ -224,20 +229,26 @@ namespace Oddin.OddsFeedSdk
 
         public void Open()
         {
-            _log.LogInformation($"Opening {typeof(Feed).Name}...");
-
-            ValidateMessageInterestsCombination();
-
             if (TrySetAsOpened() == false)
                 throw new InvalidOperationException($"{nameof(Open)} cannot be called when the feed is already opened!");
+
+            _log.LogInformation($"Opening {nameof(Feed)}...");
+
+            ValidateMessageInterestsCombination();
 
             AttachToEvents();
             ProducerManager.Lock();
 
+            var sessionRoutingKeys = GenerateKeys(_sessions, _config);
+
             try
             {
                 foreach (var session in _sessions)
-                    session.Open();
+                {
+                    var found = sessionRoutingKeys.TryGetValue(session.Id, out var routingKeys);
+                    if (!found) throw new InvalidOperationException("Missing routing keys for session");
+                    session.Open(routingKeys);
+                }
             }
             catch (Exception)
             {
@@ -251,6 +262,59 @@ namespace Oddin.OddsFeedSdk
 
             _feedRecoveryManager.Open();
             ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).Open();
+        }
+
+        private static IDictionary<Guid, IEnumerable<string>> GenerateKeys(IEnumerable<OddsFeedSession> sessions, IFeedConfiguration config)
+        {
+            var bothLowAndHigh = sessions.Count(s =>
+                                     s.MessageInterest.MessageInterestType is
+                                         MessageInterestType.LowPriority or MessageInterestType.HighPriority
+                                         )
+                                    == 2;
+
+            var snapshotRoutingKey = string.Format(SNAPSHOT_COMPLETE_ROUTING_KEY_TEMPLATE, config.NodeId?.ToString() ?? "-");
+
+            var result = new Dictionary<Guid, IEnumerable<string>>();
+            foreach (var session in sessions)
+            {
+                var sessionRoutingKeys = new List<string>();
+
+                var basicRoutingKeys = session.MessageInterest.RoutingKeys.ToList();
+
+                foreach (var key in basicRoutingKeys)
+                {
+                    string basicRoutingKey;
+                    if (config.NodeId != null)
+                    {
+                        sessionRoutingKeys.Add($"{key}.{config.NodeId?.ToString()}.#");
+                        basicRoutingKey = $"{key}.-.#";
+                    }
+                    else
+                    {
+                        basicRoutingKey = $"{key}.#";
+                    }
+
+                    if (bothLowAndHigh &&
+                        session.MessageInterest.MessageInterestType == MessageInterestType.LowPriority)
+                    {
+                        sessionRoutingKeys.Add(basicRoutingKey);
+                    }
+                    else
+                    {
+                        sessionRoutingKeys.Add(snapshotRoutingKey);
+                        sessionRoutingKeys.Add(basicRoutingKey);
+                    }
+                }
+
+                if (session.MessageInterest.MessageInterestType != MessageInterestType.SystemAlive)
+                {
+                    sessionRoutingKeys.AddRange(MessageInterest.SystemAliveOnlyMessages.RoutingKeys);
+                }
+
+                result[session.Id] = sessionRoutingKeys.Distinct();
+            }
+
+            return result;
         }
 
         public void Close()

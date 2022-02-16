@@ -11,6 +11,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Oddin.OddsFeedSdk.API.Abstractions;
@@ -97,9 +98,9 @@ namespace Oddin.OddsFeedSdk.AMQP
             }
         }
 
-        public void Connect(MessageInterest messageInterest)
+        public void Connect(MessageInterest messageInterest, IEnumerable<string> routingKeys)
         {
-            _log.LogInformation($"Connecting {typeof(AmqpClient).Name} with message interest {messageInterest.Name}...");
+            _log.LogInformation($"Connecting {nameof(AmqpClient)} with message interest {messageInterest.Name}...");
 
             try
             {
@@ -115,13 +116,13 @@ namespace Oddin.OddsFeedSdk.AMQP
                     queue: "", // should be left blank
                     durable: false,
                     exclusive: true);
-                
+
                 _channel.ExchangeDeclare(
                     exchange: _exchangeNameProvider.ExchangeName,
                     type: ExchangeType.Topic,
                     durable: true);
 
-                foreach (var routingKey in messageInterest.RoutingKeys)
+                foreach (var routingKey in routingKeys)
                     _channel.QueueBind(queueInfo.QueueName, _exchangeNameProvider.ExchangeName, routingKey);
 
                 _consumer = new EventingBasicConsumer(_channel);

@@ -30,15 +30,15 @@ namespace Oddin.OddsFeedSdk.Sessions
             RoutingKeys = routingKeys.ToList().AsReadOnly();
         }
 
-        public static readonly MessageInterest AllMessages = new MessageInterest("all", MessageInterestType.All, "*.*.*.*.*.*.*.*");
+        public static readonly MessageInterest AllMessages = new MessageInterest("all", MessageInterestType.All, "*.*.*.*.*.*.*");
 
-        public static readonly MessageInterest LiveMessagesOnly = new MessageInterest("live", MessageInterestType.Live, "*.*.live.*.*.*.*.*");
+        public static readonly MessageInterest LiveMessagesOnly = new MessageInterest("live", MessageInterestType.Live, "*.*.live.*.*.*.*");
 
-        public static readonly MessageInterest PrematchMessagesOnly = new MessageInterest("prematch", MessageInterestType.Prematch, "*.pre.*.*.*.*.*.*");
+        public static readonly MessageInterest PrematchMessagesOnly = new MessageInterest("prematch", MessageInterestType.Prematch, "*.pre.*.*.*.*.*");
 
-        public static readonly MessageInterest HighPriorityMessages = new MessageInterest("high_priority", MessageInterestType.HighPriority, "hi.*.*.*.*.*.*.*");
+        public static readonly MessageInterest HighPriorityMessages = new MessageInterest("high_priority", MessageInterestType.HighPriority, "hi.*.*.*.*.*.*");
 
-        public static readonly MessageInterest LowPriorityMessages = new MessageInterest("low_priority", MessageInterestType.LowPriority, "lo.*.*.*.*.*.*.*");
+        public static readonly MessageInterest LowPriorityMessages = new MessageInterest("low_priority", MessageInterestType.LowPriority, "lo.*.*.*.*.*.*");
 
         public static readonly MessageInterest SystemAliveOnlyMessages = new MessageInterest("system_alive", MessageInterestType.SystemAlive, "-.-.-.alive.#");
 
@@ -54,8 +54,8 @@ namespace Oddin.OddsFeedSdk.Sessions
         }
 
         private static IEnumerable<string> BuildRoutingKeysFromEvents(IEnumerable<URN> eventIds)
-            => eventIds.Select(eid => $"#.{eid.Prefix}:{eid.Type}.{eid.Id}.*");
- 
+            => eventIds.Select(eid => $"#.{eid.Prefix}:{eid.Type}.{eid.Id}");
+
     }
 
     internal enum MessageInterestType

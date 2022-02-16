@@ -8,14 +8,17 @@ using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Dispatch;
 using Oddin.OddsFeedSdk.Sessions.Abstractions;
 using System;
+using System.Collections.Generic;
 using Oddin.OddsFeedSdk.Abstractions;
 using Oddin.OddsFeedSdk.Exceptions;
 
 namespace Oddin.OddsFeedSdk.Sessions
 {
-    internal class OddsFeedSession : DispatcherBase, IOddsFeedSession, IOpenable
+    internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
     {
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(OddsFeedSession));
+
+        internal readonly Guid Id = Guid.NewGuid();
 
         private readonly IAmqpClient _amqpClient;
         private readonly IFeedMessageMapper _feedMessageMapper;
@@ -193,7 +196,7 @@ namespace Oddin.OddsFeedSdk.Sessions
             }
         }
 
-        public void Open()
+        public void Open(IEnumerable<string> routingKeys)
         {
             if (TrySetAsOpened() == false)
                 throw new InvalidOperationException($"Cannot open an instance of {typeof(OddsFeedSession).Name} that is already opened!");
@@ -201,7 +204,7 @@ namespace Oddin.OddsFeedSdk.Sessions
             AttachAmqpClientEvents();
             try
             {
-                _amqpClient.Connect(MessageInterest);
+                _amqpClient.Connect(MessageInterest, routingKeys);
             }
             catch (CommunicationException)
             {
