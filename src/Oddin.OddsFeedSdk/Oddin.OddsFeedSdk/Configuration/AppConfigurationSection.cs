@@ -11,57 +11,57 @@ namespace Oddin.OddsFeedSdk.Configuration
         [ConfigurationProperty("AccessToken", IsRequired = true)]
         internal string AccessToken
         {
-            get { return this["AccessToken"] as string; }
-            set { this["AccessToken"] = value; }
+            get => (string) this["AccessToken"];
+            set => this["AccessToken"] = value;
         }
 
         [ConfigurationProperty("DefaultLocale", DefaultValue = "en", IsRequired = false)]
         internal string DefaultLocale
         {
-            get { return this["DefaultLocale"] as string; }
-            set { this["DefaultLocale"] = value; }
+            get => (string) this["DefaultLocale"];
+            set => this["DefaultLocale"] = value;
         }
 
         [ConfigurationProperty("ExceptionHandlingStrategy", DefaultValue = ExceptionHandlingStrategy.THROW, IsRequired = false)]
         internal ExceptionHandlingStrategy ExceptionHandlingStrategy
         {
-            get { return (ExceptionHandlingStrategy)this["ExceptionHandlingStrategy"]; }
-            set { this["ExceptionHandlingStrategy"] = value; }
+            get => (ExceptionHandlingStrategy)this["ExceptionHandlingStrategy"];
+            set => this["ExceptionHandlingStrategy"] = value;
         }
 
         [ConfigurationProperty("SdkNodeId", DefaultValue = null, IsRequired = false)]
         internal int? SdkNodeId
         {
-            get { return this["SdkNodeId"] as int?; }
-            set { this["SdkNodeId"] = value; }
+            get => (int?) this["SdkNodeId"];
+            set => this["SdkNodeId"] = value;
         }
 
         [ConfigurationProperty("HttpClientTimeout", DefaultValue = null, IsRequired = false)]
         internal int? HttpClientTimeout
         {
-            get { return this["HttpClientTimeout"] as int?; }
-            set { this["HttpClientTimeout"] = value; }
+            get => (int?) this["HttpClientTimeout"];
+            set => this["HttpClientTimeout"] = value;
         }
 
         [ConfigurationProperty("MaxInactivitySeconds", DefaultValue = null, IsRequired = false)]
         internal int? MaxInactivitySeconds
         {
-            get { return this["MaxInactivitySeconds"] as int?; }
-            set { this["MaxInactivitySeconds"] = value; }
+            get => (int?) this["MaxInactivitySeconds"];
+            set => this["MaxInactivitySeconds"] = value;
         }
 
-        [ConfigurationProperty("MaxRecoveryTimeInSeconds", DefaultValue = null, IsRequired = false)]
-        internal int? MaxRecoveryTimeInSeconds
+        [ConfigurationProperty("MaxRecoveryExecutionMinutes", DefaultValue = null, IsRequired = false)]
+        internal int? MaxRecoveryExecutionMinutes
         {
-            get { return this["MaxRecoveryTimeInSeconds"] as int?; }
-            set { this["MaxRecoveryTimeInSeconds"] = value; }
+            get => (int?) this["MaxRecoveryExecutionMinutes"];
+            set => this["MaxRecoveryExecutionMinutes"] = value;
         }
 
         [ConfigurationProperty("InitialSnapshotTimeInMinutes", DefaultValue = null, IsRequired = false)]
         internal int? InitialSnapshotTimeInMinutes
         {
-            get { return this["InitialSnapshotTimeInMinutes"] as int?; }
-            set { this["InitialSnapshotTimeInMinutes"] = value; }
+            get => (int?) this["InitialSnapshotTimeInMinutes"];
+            set => this["InitialSnapshotTimeInMinutes"] = value;
         }
 
         internal static AppConfigurationSection LoadFromFile()

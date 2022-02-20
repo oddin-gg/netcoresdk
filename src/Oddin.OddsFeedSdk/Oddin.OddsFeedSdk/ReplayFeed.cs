@@ -8,10 +8,9 @@ namespace Oddin.OddsFeedSdk
 {
     public class ReplayFeed : Feed, IReplayOddsFeed
     {
-        public IReplayManager ReplayManager
-            => Services.GetService<IReplayManager>();
+        public IReplayManager? ReplayManager => Services.GetService<IReplayManager>();
 
-        public ReplayFeed(IFeedConfiguration config, ILoggerFactory loggerFactory = null)
+        public ReplayFeed(IFeedConfiguration config, ILoggerFactory? loggerFactory = null)
             : base(config, true, loggerFactory)
         {
         }

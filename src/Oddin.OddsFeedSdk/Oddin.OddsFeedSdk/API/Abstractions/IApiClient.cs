@@ -4,6 +4,7 @@ using Oddin.OddsFeedSdk.Common;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Oddin.OddsFeedSdk.API.Abstractions
@@ -22,11 +23,11 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
 
         Task<MarketDescriptionsModel> GetMarketDescriptionsAsync(CultureInfo culture = null);
 
-        Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId);
+        Task<HttpStatusCode> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId);
 
-        Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId);
+        Task<HttpStatusCode> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId);
 
-        Task PostRecoveryRequest(string producerName, long requestId, int? nodeId, DateTime timestamp = default);
+        Task<bool> PostRecoveryRequest(string producerName, long requestId, int? nodeId, long timestamp = default);
 
         TournamentInfoModel GetTournament(URN id, CultureInfo culture = null);
 
@@ -45,7 +46,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         ScheduleEndpointModel GetSchedule(int startIndex, int limit, CultureInfo culture);
 
         fixtureChangesEndpoint GetFixtureChanges(CultureInfo culture);
-        
+
         IObservable<T> SubscribeForClass<T>();
 
         Task<bool> PostReplayClear(int? nodeId);

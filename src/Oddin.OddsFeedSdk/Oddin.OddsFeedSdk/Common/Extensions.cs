@@ -1,21 +1,13 @@
 using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using System;
+using System.Net;
 using System.Runtime.Caching;
 
 namespace Oddin.OddsFeedSdk.Common
 {
     internal static class Extensions
     {
-        public static long ToEpochTimeMilliseconds(this DateTime dateTime)
-        {
-            return new DateTimeOffset(dateTime).ToUnixTimeMilliseconds();
-        }
-
-        public static DateTime FromEpochTimeMilliseconds(this long timestamp)
-        {
-            return DateTimeOffset.FromUnixTimeMilliseconds(timestamp).UtcDateTime;
-        }
 
         public static void HandleAccordingToStrategy(this Exception exception, string catcher, ILogger logger, ExceptionHandlingStrategy exceptionHandlingStrategy)
         {
@@ -24,7 +16,11 @@ namespace Oddin.OddsFeedSdk.Common
                 throw exception;
         }
 
-        public static CacheItemPolicy AsCachePolicy(this TimeSpan cacheTTL)
-            => new CacheItemPolicy() { AbsoluteExpiration = DateTimeOffset.Now.Add(cacheTTL) };
+        public static CacheItemPolicy AsCachePolicy(this TimeSpan cacheTtl)
+            => new CacheItemPolicy() { AbsoluteExpiration = DateTimeOffset.Now.Add(cacheTtl) };
+
+        public static bool IsSuccessStatusCode(this HttpStatusCode statusCode)
+            => (int)statusCode >= 200 && (int)statusCode <= 299;
+
     }
 }

@@ -6,11 +6,11 @@ namespace Oddin.OddsFeedSdk.Configuration.Abstractions
     {
         public string AccessToken { get; }
 
-        public int MaxInactivitySeconds { get; }
-
         public CultureInfo DefaultLocale { get; }
 
-        public int MaxRecoveryTime { get; }
+        public int MaxInactivitySeconds { get; }
+
+        public int MaxRecoveryExecutionMinutes { get; }
 
         public int? NodeId { get; }
 
@@ -30,6 +30,5 @@ namespace Oddin.OddsFeedSdk.Configuration.Abstractions
 
         public int InitialSnapshotTimeInMinutes { get; }
 
-        public bool IgnoreRecovery { get; }
     }
 }

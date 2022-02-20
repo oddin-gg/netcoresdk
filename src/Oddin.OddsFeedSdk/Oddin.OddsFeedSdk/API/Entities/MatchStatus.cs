@@ -45,7 +45,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
                 if(properties is not null)
                     return new ReadOnlyDictionary<string, object>(properties);
 
-                return null;
+                return new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());;
             }
         }
 

@@ -1,14 +1,16 @@
-using System;
+using System.Collections.Generic;
 
 namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 {
     public interface IProducer
-    { 
+    {
         public int Id { get; }
 
         public string Name { get; }
 
         public string Description { get; }
+
+        public long LastMessageTimestamp { get; }
 
         public bool IsAvailable { get; }
 
@@ -16,11 +18,17 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
 
         public bool IsProducerDown { get; }
 
-        public DateTime LastTimestampBeforeDisconnect { get; }
+        public string ApiUrl { get; }
 
-        public int MaxRecoveryTime { get; }
+        public IEnumerable<ProducerScope> ProducerScopes { get; }
 
-        public int MaxInactivitySeconds { get; }
+        public long LastProcessedMessageGenTimestamp { get; }
+
+        public long ProcessingQueDelay { get; }
+
+        public long TimestampForRecovery { get;  }
+
+        public int StatefulRecoveryWindowInMinutes { get; }
 
         public IRecoveryInfo RecoveryInfo { get; }
     }

@@ -32,7 +32,6 @@ namespace Oddin.OddsFeedSdk
     {
         private const string SNAPSHOT_COMPLETE_ROUTING_KEY_TEMPLATE = "-.-.-.snapshot_complete.-.-.-.{0}";
 
-
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(Feed));
 
         protected readonly IServiceProvider Services;
@@ -40,6 +39,7 @@ namespace Oddin.OddsFeedSdk
         private bool _isOpened;
         private readonly object _isOpenedLock = new();
         private readonly IList<OddsFeedSession> _sessions = new List<OddsFeedSession>();
+        private OddsFeedSession possibleAliveSession;
         private bool _isDisposed;
 
         public event EventHandler<ConnectionExceptionEventArgs> ConnectionException;
@@ -49,20 +49,12 @@ namespace Oddin.OddsFeedSdk
         public event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
         public event EventHandler<ProducerStatusChangeEventArgs> ProducerUp;
 
-        private IFeedRecoveryManager _feedRecoveryManager
-            => Services.GetService<IFeedRecoveryManager>();
-
-        public IEventRecoveryRequestIssuer EventRecoveryRequestIssuer
-            => Services.GetService<IEventRecoveryRequestIssuer>();
-
-        public IProducerManager ProducerManager
-            => Services.GetService<IProducerManager>();
-
-        public ISportDataProvider SportDataProvider
-            => Services.GetService<ISportDataProvider>();
-
-        public IMarketDescriptionManager MarketDescriptionManager
-            => Services.GetService<IMarketDescriptionManager>();
+        private ISdkRecoveryManager _recoveryManager => Services.GetService<ISdkRecoveryManager>() ?? throw new NullReferenceException();
+        public IRecoveryManager RecoveryManager => Services.GetService<ISdkRecoveryManager>() ?? throw new NullReferenceException();
+        public IProducerManager ProducerManager => Services.GetService<IProducerManager>() ?? throw new NullReferenceException();
+        public ISportDataProvider SportDataProvider => Services.GetService<ISportDataProvider>() ?? throw new NullReferenceException();
+        public IMarketDescriptionManager MarketDescriptionManager => Services.GetService<IMarketDescriptionManager>() ?? throw new NullReferenceException();
+        private IApiClient _apiClient => Services.GetService<IApiClient>() ?? throw new NullReferenceException();
 
         public IBookmakerDetails BookmakerDetails
         {
@@ -70,7 +62,7 @@ namespace Oddin.OddsFeedSdk
             {
                 try
                 {
-                    return Services.GetService<IApiClient>().GetBookmakerDetails();
+                    return _apiClient.GetBookmakerDetails();
                 }
                 catch (SdkException e)
                 {
@@ -105,11 +97,10 @@ namespace Oddin.OddsFeedSdk
                 .AddSingleton<IApiClient, ApiClient>()
                 .AddSingleton<IAmqpClient, AmqpClient>()
                 .AddSingleton<IProducerManager, ProducerManager>()
-                .AddSingleton<IFeedRecoveryManager, FeedRecoveryManager>()
                 .AddSingleton<EventHandler<CallbackExceptionEventArgs>>(OnAmqpCallbackException)
                 .AddSingleton<EventHandler<ShutdownEventArgs>>(OnConnectionShutdown)
                 .AddSingleton<IRequestIdFactory, RequestIdFactory>()
-                .AddSingleton<IEventRecoveryRequestIssuer, EventRecoveryRequestIssuer>()
+                .AddSingleton<ISdkRecoveryManager, RecoveryManager>()
                 .AddSingleton<IRestClient, RestClient>()
                 .AddSingleton<ISportDataProvider, SportDataProvider>()
                 .AddSingleton<ISportDataBuilder, SportDataBuilder>()
@@ -173,11 +164,6 @@ namespace Oddin.OddsFeedSdk
             Dispatch(EventRecoveryCompleted, eventArgs, nameof(EventRecoveryCompleted));
         }
 
-        private void OnClosed(object sender, FeedCloseEventArgs eventArgs)
-        {
-            Dispatch(Closed, eventArgs, nameof(Closed));
-        }
-
         private void OnProducerDown(object sender, ProducerStatusChangeEventArgs eventArgs)
         {
             Dispatch(ProducerDown, eventArgs, nameof(ProducerDown));
@@ -190,18 +176,33 @@ namespace Oddin.OddsFeedSdk
 
         private void AttachToEvents()
         {
-            ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).EventRecoveryCompleted += OnEventRecoveryCompleted;
-            ((FeedRecoveryManager)_feedRecoveryManager).Closed += OnClosed;
-            ((FeedRecoveryManager)_feedRecoveryManager).ProducerDown += OnProducerDown;
-            ((FeedRecoveryManager)_feedRecoveryManager).ProducerUp += OnProducerUp;
+            ((RecoveryManager)_recoveryManager).EventProducerDown += OnProducerDown;
+            ((RecoveryManager)_recoveryManager).EventProducerUp += OnProducerUp;
+            ((RecoveryManager)_recoveryManager).EventRecoveryCompleted += OnEventRecoveryCompleted;
+
+            foreach (var s in _sessions)
+            {
+                s.OnSnapshotComplete += _recoveryManager.OnSnapshotCompleteReceived;
+                s.OnAliveReceived += _recoveryManager.OnAliveReceived;
+                s.OnMessageProcessingEnded += _recoveryManager.OnMessageProcessingEnded;
+                s.OnMessageProcessingStarted += _recoveryManager.OnMessageProcessingStarted;
+            }
+
         }
 
         private void DetachFromEvents()
         {
-            ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).EventRecoveryCompleted -= OnEventRecoveryCompleted;
-            ((FeedRecoveryManager)_feedRecoveryManager).Closed -= OnClosed;
-            ((FeedRecoveryManager)_feedRecoveryManager).ProducerDown -= OnProducerDown;
-            ((FeedRecoveryManager)_feedRecoveryManager).ProducerUp -= OnProducerUp;
+            ((RecoveryManager)_recoveryManager).EventRecoveryCompleted -= OnEventRecoveryCompleted;
+            ((RecoveryManager)_recoveryManager).EventProducerDown -= OnProducerDown;
+            ((RecoveryManager)_recoveryManager).EventProducerUp -= OnProducerUp;
+
+            foreach (var s in _sessions)
+            {
+                s.OnSnapshotComplete -= _recoveryManager.OnSnapshotCompleteReceived;
+                s.OnAliveReceived -= _recoveryManager.OnAliveReceived;
+                s.OnMessageProcessingEnded -= _recoveryManager.OnMessageProcessingEnded;
+                s.OnMessageProcessingStarted -= _recoveryManager.OnMessageProcessingStarted;
+            }
         }
 
         private void ValidateMessageInterestsCombination()
@@ -214,15 +215,15 @@ namespace Oddin.OddsFeedSdk
                     return;
             }
 
-            var allMessageInterests = _sessions.Select(s => ((OddsFeedSession)s).MessageInterest.MessageInterestType);
+            var allMessageInterests = _sessions.Select(s => s.MessageInterest.MessageInterestType).ToList();
             if (allMessageInterests.Count() != allMessageInterests.Distinct().Count())
                 throw new InvalidOperationException("There are duplicate message interests across created sessions!");
 
             if (allMessageInterests.Contains(MessageInterestType.All))
                 throw new InvalidOperationException("AllMessages interest can be used only if it's there is a single session created!");
 
-            var hasPriority = allMessageInterests.Any(mi => mi == MessageInterestType.HighPriority || mi == MessageInterestType.LowPriority);
-            var hasMessages = allMessageInterests.Any(mi => mi == MessageInterestType.Prematch || mi == MessageInterestType.Live);
+            var hasPriority = allMessageInterests.Any(mi => mi is MessageInterestType.HighPriority or MessageInterestType.LowPriority);
+            var hasMessages = allMessageInterests.Any(mi => mi is MessageInterestType.Prematch or MessageInterestType.Live);
             if (hasPriority && hasMessages)
                 throw new InvalidOperationException("Cannot combine priority message interest (high priority / low priority) with other types (prematch / live)!");
         }
@@ -232,20 +233,40 @@ namespace Oddin.OddsFeedSdk
             if (TrySetAsOpened() == false)
                 throw new InvalidOperationException($"{nameof(Open)} cannot be called when the feed is already opened!");
 
+            if (!_sessions.Any())
+            {
+                throw new InvalidOperationException("Feed created without sessions");
+            }
+
             _log.LogInformation($"Opening {nameof(Feed)}...");
 
-            ValidateMessageInterestsCombination();
+            var hasReplay = _sessions.Any(s => s.Feed is ReplayFeed);
+            var replayOnly = hasReplay && _sessions.Count == 1;
+            var hasAliveMessageInterest = _sessions.Any(s =>
+                s.MessageInterest.MessageInterestType == MessageInterest.SystemAliveOnlyMessages.MessageInterestType);
+
+            if (!hasAliveMessageInterest && !replayOnly)
+            {
+                possibleAliveSession = new OddsFeedSession(
+                    this,
+                    Services.GetService<IAmqpClient>(),
+                    Services.GetService<IFeedMessageMapper>(),
+                    MessageInterest.SystemAliveOnlyMessages,
+                    _config
+                );
+                possibleAliveSession.Open(MessageInterest.SystemAliveOnlyMessages.RoutingKeys);
+            }
+
+            var sessionRoutingKeys = GenerateKeys(_sessions, _config);
 
             AttachToEvents();
             ProducerManager.Lock();
-
-            var sessionRoutingKeys = GenerateKeys(_sessions, _config);
 
             try
             {
                 foreach (var session in _sessions)
                 {
-                    var found = sessionRoutingKeys.TryGetValue(session.Id, out var routingKeys);
+                    var found = sessionRoutingKeys.TryGetValue(session.SessionId, out var routingKeys);
                     if (!found) throw new InvalidOperationException("Missing routing keys for session");
                     session.Open(routingKeys);
                 }
@@ -260,12 +281,13 @@ namespace Oddin.OddsFeedSdk
                 throw;
             }
 
-            _feedRecoveryManager.Open();
-            ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).Open();
+            _recoveryManager.Open(replayOnly);
         }
 
-        private static IDictionary<Guid, IEnumerable<string>> GenerateKeys(IEnumerable<OddsFeedSession> sessions, IFeedConfiguration config)
+        private IDictionary<Guid, IEnumerable<string>> GenerateKeys(IEnumerable<OddsFeedSession> sessions, IFeedConfiguration config)
         {
+            ValidateMessageInterestsCombination();
+
             var bothLowAndHigh = sessions.Count(s =>
                                      s.MessageInterest.MessageInterestType is
                                          MessageInterestType.LowPriority or MessageInterestType.HighPriority
@@ -311,7 +333,7 @@ namespace Oddin.OddsFeedSdk
                     sessionRoutingKeys.AddRange(MessageInterest.SystemAliveOnlyMessages.RoutingKeys);
                 }
 
-                result[session.Id] = sessionRoutingKeys.Distinct();
+                result[session.SessionId] = sessionRoutingKeys.Distinct();
             }
 
             return result;
@@ -324,11 +346,9 @@ namespace Oddin.OddsFeedSdk
             foreach (var session in _sessions)
                 session.Close();
 
-            _feedRecoveryManager.Close();
-            ((IEventRecoveryCompletedDispatcher)EventRecoveryRequestIssuer).Close();
+            ((RecoveryManager)_recoveryManager).Close();
 
             DetachFromEvents();
-
             SetAsClosed();
         }
 
@@ -348,7 +368,7 @@ namespace Oddin.OddsFeedSdk
                 }
                 catch (Exception ex)
                 {
-                    _log.LogWarning($"An exception has occurred while disposing the {typeof(Feed).Name} instance. Exception: ", ex);
+                    _log.LogWarning($"An exception has occurred while disposing the {nameof(Feed)} instance. Exception: ", ex);
                 }
             }
 
@@ -392,7 +412,8 @@ namespace Oddin.OddsFeedSdk
                 Services.GetService<IAmqpClient>(),
                 Services.GetService<IFeedMessageMapper>(),
                 messageInterest,
-                _config);
+                _config
+            );
 
             _sessions.Add(session);
             return session;

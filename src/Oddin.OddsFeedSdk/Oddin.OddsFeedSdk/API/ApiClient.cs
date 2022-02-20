@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Reactive.Subjects;
@@ -115,12 +116,12 @@ namespace Oddin.OddsFeedSdk.API
 
             culture ??= _defaultCulture;
             ValidateCulture(culture);
-            
+
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/tournaments/{id}/info";
             var result = _restClient.SendRequest<TournamentInfoModel>(route, HttpMethod.Get, culture);
             return result.Data;
         }
-        
+
         public TournamentsModel GetTournaments(URN sportId, CultureInfo culture = null)
         {
             if (sportId is null)
@@ -128,7 +129,7 @@ namespace Oddin.OddsFeedSdk.API
 
             culture ??= _defaultCulture;
             ValidateCulture(culture);
-            
+
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sports/{sportId}/tournaments";
             var result = _restClient.SendRequest<TournamentsModel>(route, HttpMethod.Get, culture);
             return result.Data;
@@ -138,7 +139,7 @@ namespace Oddin.OddsFeedSdk.API
         {
             culture ??= _defaultCulture;
             ValidateCulture(culture);
-            
+
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/sports";
             var result = await _restClient.SendRequestAsync<SportsModel>(route, HttpMethod.Get, culture);
             return result.Data;
@@ -189,7 +190,7 @@ namespace Oddin.OddsFeedSdk.API
             return response.Data;
         }
 
-        public async Task<long> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId)
+        public async Task<HttpStatusCode> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId)
         {
             var route = $"v1/{producerName}/odds/events/{sportEventId}/initiate_request";
             var parameters = new List<(string key, object value)>
@@ -201,10 +202,10 @@ namespace Oddin.OddsFeedSdk.API
                 parameters.Add(("node_id", nodeId));
 
             var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters.ToArray(), deserializeResponse: false, ignoreUnsuccessfulStatusCode: true);
-            return (long)response.ResponseCode;
+            return response.ResponseCode;
         }
 
-        public async Task<long> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId)
+        public async Task<HttpStatusCode> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId)
         {
             var route = $"v1/{producerName}/stateful_messages/events/{sportEventId}/initiate_request";
             var parameters = new List<(string key, object value)>
@@ -216,26 +217,26 @@ namespace Oddin.OddsFeedSdk.API
                 parameters.Add(("node_id", nodeId));
 
             var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters.ToArray(), deserializeResponse: false, ignoreUnsuccessfulStatusCode: true);
-            return (long)response.ResponseCode;
+            return response.ResponseCode;
         }
 
-        public async Task PostRecoveryRequest(string producerName, long requestId, int? nodeId, DateTime timestamp = default)
+        public async Task<bool> PostRecoveryRequest(string producerName, long requestId, int? nodeId, long timestamp = default)
         {
             var route = $"v1/{producerName}/recovery/initiate_request";
-            List<(string key, object value)> parameters;
 
-            parameters = new List<(string key, object value)>
+            var parameters = new List<(string key, object value)>
             {
                 ("request_id", requestId)
             };
 
             if (timestamp != default)
-                parameters.Add(("after", timestamp.ToEpochTimeMilliseconds()));
+                parameters.Add(("after", timestamp));
 
             if (nodeId != null)
                 parameters.Add(("node_id", nodeId));
 
-            await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters.ToArray(), deserializeResponse: false);
+            var result = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post, parameters: parameters.ToArray(), deserializeResponse: false);
+            return result.Successful;
         }
 
         public IObservable<T> SubscribeForClass<T>() => _restClient.SubscribeForClass<T>();

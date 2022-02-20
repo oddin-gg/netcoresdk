@@ -9,12 +9,12 @@ using Oddin.OddsFeedSdk.Sessions.Abstractions;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Oddin.OddsFeedSdk.Abstractions;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdkDemoIntegration
 {
@@ -22,12 +22,12 @@ namespace Oddin.OddsFeedSdkDemoIntegration
     {
         private static readonly CultureInfo CultureEn = CultureInfo.GetCultureInfoByIetfLanguageTag("en");
 
-        internal static async Task Run(string token)
+        internal static async Task Run(string token, IFeedConfiguration config = null)
         {
             var loggerFactory = CreateLoggerFactory();
 
             // Build configuration
-            var config = Feed
+            config ??= Feed
                 .GetConfigurationBuilder()
                 .SetAccessToken(token)
                 .SelectIntegration()
@@ -69,18 +69,20 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             DetachEvents(session);
         }
 
-        private static async Task WorkWithRecovery(IOddsFeed feed)
+        private static Task WorkWithRecovery(IOddsFeed feed)
         {
-            var matchUrn = "od:match:36856";
-            var producerName = "live";
+            const string matchUrn = "od:match:32109";
+            const string producerName = "live";
 
             var producer = feed.ProducerManager.Get(producerName);
             var urn = new URN(matchUrn);
 
             // if the match is too old, 404 will be returned
-            Console.WriteLine($"Event recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventMessagesAsync(producer, urn)}");
+            // you can use HttpStatusCode.IsSuccessStatusCode to check validity of response
+            Console.WriteLine($"Event recovery request: {feed.RecoveryManager.InitiateEventOddsMessagesRecovery(producer, urn)}");
+            Console.WriteLine($"Event stateful recovery request: {feed.RecoveryManager.InitiateEventStatefulMessagesRecovery(producer, urn)}");
             
-            Console.WriteLine($"Event stateful recovery request response: {await feed.EventRecoveryRequestIssuer.RecoverEventStatefulMessagesAsync(producer, urn)}");
+            return Task.CompletedTask;
         }
 
         private static Task WorkWithProducers(IOddsFeed feed)
@@ -123,7 +125,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Abbreviation: {competitor.GetAbbreviation(CultureEn)}");
             Console.WriteLine($"Country: {competitor.GetCountry(CultureEn)}");
             Console.WriteLine($"Name: {competitor.GetName(CultureEn)}");
-            Console.WriteLine($"Sport: {competitor.GetSports()?.First().GetName(CultureEn)}");
+            Console.WriteLine($"Sport: {competitor.GetSports().First().GetName(CultureEn)}");
             Console.WriteLine($"ID: {competitor.Id}");
             Console.WriteLine($"Is virtual: {competitor.IsVirtual}");
             Console.WriteLine($"Name: {competitor.Names[CultureEn]}");
@@ -140,9 +142,9 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var m = listOfMatches.First();
             Console.WriteLine($"Away competitor name: {m.AwayCompetitor.GetName(CultureEn)}");
             Console.WriteLine($"Fixture ID: {m.Fixture.Id}");
-            Console.WriteLine($"Fixture extra info: {string.Join(", ", m.Fixture?.ExtraInfo ?? new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()))}");
+            Console.WriteLine($"Fixture extra info: {string.Join(", ", m.Fixture.ExtraInfo)}");
             Console.WriteLine($"Name: {await m.GetNameAsync(CultureEn)}");
-            Console.WriteLine($"Properties: {string.Join(", ", m.Status?.Properties ?? new ReadOnlyDictionary<string, object>(new Dictionary<string, object>()))}");
+            Console.WriteLine($"Properties: {string.Join(", ", m.Status.Properties)}");
             Console.WriteLine($"Scheduled end time: {await m.GetScheduledEndTimeAsync()}");
             Console.WriteLine($"Scheduled time: {await m.GetScheduledTimeAsync()}");
             Console.WriteLine($"Sport ID: {await m.GetSportIdAsync()}");
@@ -152,7 +154,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
             var sport = await provider.GetSportAsync(sportUrn, CultureEn);
             Console.WriteLine($"Name: {sport.GetName(CultureEn)}");
-            Console.WriteLine($"Names: {string.Join(", ", sport?.Names ?? new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>()))}");
+            Console.WriteLine($"Names: {string.Join(", ", sport.Names)}");
             Console.WriteLine($"ID: {sport.Id}");
             Console.WriteLine($"Icon Path: {sport.IconPath}");
             Console.WriteLine($"Name: {sport.Names.FirstOrDefault()}");
@@ -179,9 +181,9 @@ namespace Oddin.OddsFeedSdkDemoIntegration
         private static Task WorkWithBookmakerDetails(IOddsFeed feed)
         {
             var bookmakerDetails = feed.BookmakerDetails;
-            Console.WriteLine($"Bookmaker ID: {bookmakerDetails.BookmakerId}");
-            Console.WriteLine($"Expire at: {bookmakerDetails.ExpireAt}");
-            Console.WriteLine($"Virtual host: {bookmakerDetails.VirtualHost}");
+            Console.WriteLine($"Bookmaker ID: {bookmakerDetails?.BookmakerId}");
+            Console.WriteLine($"Expire at: {bookmakerDetails?.ExpireAt}");
+            Console.WriteLine($"Virtual host: {bookmakerDetails?.VirtualHost}");
 
             return Task.CompletedTask;
         }
@@ -242,12 +244,12 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var oddsChangeOther = eventArgs.GetOddsChange(Feed.AvailableLanguages().Last());
 
             var e = eventArgs.GetOddsChange().Event;
-            var match = e as IMatch;
+            var match = (IMatch) e;
             Console.WriteLine($"Odds changed in {match.Status}");
             Console.WriteLine($"Raw message: {Encoding.UTF8.GetString(oddsChange.RawMessage.Take(40).ToArray())}...");
-            Console.WriteLine($"{string.Join(", ", match.HomeCompetitor?.Abbreviations ?? new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>()))}");
+            Console.WriteLine($"{string.Join(", ", match.HomeCompetitor.Abbreviations)}");
             Console.WriteLine($"{match.LiveOddsAvailability}");
-            Console.WriteLine($"{match.Fixture?.Id}");
+            Console.WriteLine($"{match.Fixture.Id}");
             Console.WriteLine($"{await match.GetNameAsync(CultureEn)}");
             Console.WriteLine($"{await match.GetScheduledTimeAsync()}");
             Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
@@ -259,13 +261,13 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Odds changed market: {market?.Status}");
 
             // Outcome
-            var outcome = oddsChangeOther.Markets?.FirstOrDefault()?.OutcomeOdds?.FirstOrDefault();
+            var outcome = oddsChangeOther.Markets?.FirstOrDefault()?.OutcomeOdds.FirstOrDefault();
             Console.WriteLine($"Odds changed market outcome: {outcome?.GetName(CultureEn)}");
             Console.WriteLine($"Odds changed market outcome: {outcome?.Id} {outcome?.RefId} {outcome?.Probabilities}");
 
             var competitor = match.Competitors.FirstOrDefault();
-            Console.WriteLine($"Odds change competitor icon path: {competitor.IconPath}");
-            Console.WriteLine($"Odds change competitor sports: {string.Join(", ", competitor.GetSports()?.Select(s => s.Id) ?? Enumerable.Empty<URN>())}");
+            Console.WriteLine($"Odds change competitor icon path: {competitor?.IconPath}");
+            Console.WriteLine($"Odds change competitor sports: {string.Join(", ", competitor?.GetSports().Select(s => s.Id) ?? Enumerable.Empty<URN>())}");
             
             // Tournament
             var tournament = match.Tournament;
@@ -358,6 +360,5 @@ namespace Oddin.OddsFeedSdkDemoIntegration
         {
             Console.WriteLine($"OnClosed: {eventArgs.GetReason()}");
         }
-
     }
 }

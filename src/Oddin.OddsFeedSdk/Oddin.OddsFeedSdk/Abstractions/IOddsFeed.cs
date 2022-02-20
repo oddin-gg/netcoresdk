@@ -12,7 +12,7 @@ namespace Oddin.OddsFeedSdk.Abstractions
 
         ISportDataProvider SportDataProvider { get; }
 
-        IEventRecoveryRequestIssuer EventRecoveryRequestIssuer { get; }
+        IRecoveryManager RecoveryManager { get; }
 
         IBookmakerDetails BookmakerDetails { get; }
 

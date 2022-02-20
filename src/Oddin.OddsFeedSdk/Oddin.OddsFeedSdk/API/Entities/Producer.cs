@@ -1,86 +1,104 @@
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API.Entities
 {
-    internal class Producer : IProducer
+    public enum ProducerScope
     {
-        public int Id { get; }
+        Prematch = 0,
+        Live = 1
+    }
 
-        public string Name { get; }
+    class ProducerData
+    {
+        internal readonly int Id;
+        internal readonly string Name;
+        internal readonly string Description;
+        internal readonly bool Active;
+        internal bool Enabled;
+        internal readonly string ApiUrl;
+        internal readonly int StatefulRecoveryInMinutes;
+        internal readonly IEnumerable<ProducerScope>? ProducerScopes;
 
-        public string Description { get; }
+        internal long LastMessageTimestamp = 0;
+        internal bool FlaggedDown = true;
+        internal long LastProcessedMessageGenTimestamp = 0;
+        internal long LastAliveReceivedGenTimestamp = 0;
+        internal long RecoveryFromTimestamp = 0;
+        internal IRecoveryInfo? LastRecoveryInfo = null;
 
-        public bool IsAvailable { get; }
-
-        public bool IsDisabled { get; private set; }
-
-        public bool IsProducerDown { get; private set; }
-
-        public DateTime LastTimestampBeforeDisconnect { get; private set; }
-
-        public int MaxRecoveryTime { get; }
-
-        public int MaxInactivitySeconds { get; }
-
-        public IRecoveryInfo RecoveryInfo { get; internal set; }
-
-        public IEnumerable<string> Scope { get; }
-
-        public Producer(
-            int id,
-            string name,
-            string description,
-            bool active,
-            string scope,
-            int maxInactivitySeconds,
-            int statefulRecoveryWindowInMinutes
-            )
+        internal ProducerData(int id, string name, string description, bool active, string apiUrl, string producerScopes, int statefulRecoveryInMinutes)
         {
-            if (name is null)
-                throw new ArgumentNullException(nameof(name));
-
-            if (name == string.Empty)
-                throw new ArgumentException($"Argument {nameof(name)} cannot be empty!");
-
-            if (description is null)
-                throw new ArgumentNullException(nameof(description));
-
-            if (description == string.Empty)
-                throw new ArgumentException($"Argument {nameof(description)} cannot be empty!");
-
-            if (maxInactivitySeconds <= 0)
-                throw new ArgumentException($"Argument {nameof(maxInactivitySeconds)} has to be positive!");
-
-            if (statefulRecoveryWindowInMinutes <= 0)
-                throw new ArgumentException($"Argument {nameof(statefulRecoveryWindowInMinutes)} has to be positive!");
-
             Id = id;
             Name = name;
             Description = description;
-            IsAvailable = active;
-            IsProducerDown = true;
-            IsDisabled = false;
-            LastTimestampBeforeDisconnect = DateTime.MinValue;
-            Scope = scope?.Split("|");
-            MaxInactivitySeconds = maxInactivitySeconds;
-            MaxRecoveryTime = statefulRecoveryWindowInMinutes;
+            Active = active;
+            Enabled = active;
+            ApiUrl = apiUrl;
+            StatefulRecoveryInMinutes = statefulRecoveryInMinutes;
+
+            ProducerScopes = producerScopes.Split("|")?.Select(s =>
+            {
+                return s switch
+                {
+                    "prematch" => ProducerScope.Prematch as ProducerScope?,
+                    "live" => ProducerScope.Live,
+                    _ => null
+                };
+            }).OfType<ProducerScope>();
         }
 
-        internal void SetDisabled(bool disabled)
+        public override string ToString() => $"{Id}-{Name}";
+    }
+
+
+    internal class Producer : IProducer
+    {
+        public ProducerData ProducerData;
+
+        public int Id => ProducerData.Id;
+
+        public string Name => ProducerData.Name;
+
+        public string Description => ProducerData.Description;
+
+        public long LastMessageTimestamp => ProducerData.LastMessageTimestamp;
+
+        public bool IsAvailable => ProducerData.Active;
+
+        public bool IsDisabled => !ProducerData.Enabled;
+
+        public bool IsProducerDown => ProducerData.FlaggedDown;
+
+        public string ApiUrl => ProducerData.ApiUrl;
+
+        public IEnumerable<ProducerScope>? ProducerScopes => ProducerData.ProducerScopes;
+
+        public long LastProcessedMessageGenTimestamp => ProducerData.LastProcessedMessageGenTimestamp;
+
+        public long ProcessingQueDelay => Timestamp.Now() -
+                                          LastProcessedMessageGenTimestamp;
+
+        public long TimestampForRecovery
         {
-            IsDisabled = disabled;
+            get
+            {
+                var lastAliveReceivedGenTimestamp = ProducerData.LastAliveReceivedGenTimestamp;
+                return lastAliveReceivedGenTimestamp == 0
+                    ?  ProducerData.RecoveryFromTimestamp
+                    : lastAliveReceivedGenTimestamp;
+            }
         }
 
-        internal void SetProducerDown(bool down)
-        {
-            IsProducerDown = down;
-        }
+        public int StatefulRecoveryWindowInMinutes => ProducerData.StatefulRecoveryInMinutes;
 
-        internal void SetLastTimestampBeforeDisconnect(DateTime timestamp)
-        {
-            LastTimestampBeforeDisconnect = timestamp;
+        public IRecoveryInfo RecoveryInfo => ProducerData.LastRecoveryInfo;
+
+        public Producer(ProducerData producerData) {
+            ProducerData = producerData;
         }
     }
 }

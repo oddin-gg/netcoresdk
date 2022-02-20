@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
@@ -14,41 +13,26 @@ namespace Oddin.OddsFeedSdk.Managers
 {
     internal class ProducerManager : IProducerManager
     {
-        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(ProducerManager));
-
-        private readonly IApiClient _apiClient;
-        private readonly ExceptionHandlingStrategy _exceptionHandlingStrategy;
+        private readonly IFeedConfiguration _configuration;
         private readonly IReadOnlyCollection<IProducer> _producers;
-        private bool _locked = false;
+        private bool _locked;
 
         public IReadOnlyCollection<IProducer> Producers => _producers;
 
         public ProducerManager(IApiClient apiClient, IFeedConfiguration configuration)
         {
-            if (apiClient is null)
-                throw new ArgumentNullException(nameof(apiClient));
-
-            _apiClient = apiClient;
-            _exceptionHandlingStrategy = configuration.ExceptionHandlingStrategy;
-
-            try
-            {
-                _producers = _apiClient
-                    .GetProducers()
-                    .ToList();
-            }
-            catch (SdkException e)
-            {
-                e.HandleAccordingToStrategy(GetType().Name, _log, _exceptionHandlingStrategy);
-            }
+            _configuration = configuration;
+            _producers = apiClient
+                .GetProducers()
+                .ToList();
         }
 
         void IProducerManager.Lock()
         {
             if (_producers == null)
                 throw new CommunicationException("No producer available!");
-            
-            if (_producers.Any() == false 
+
+            if (_producers.Any() == false
                 || _producers.Count(c => c.IsAvailable && c.IsDisabled == false) == 0)
             {
                 throw new InvalidOperationException("No producer available or all are disabled.");
@@ -56,10 +40,10 @@ namespace Oddin.OddsFeedSdk.Managers
 
             foreach (var producer in _producers)
             {
-                if (producer.LastTimestampBeforeDisconnect != DateTime.MinValue 
-                    && producer.LastTimestampBeforeDisconnect < DateTime.Now.Subtract(TimeSpan.FromMinutes(producer.MaxRecoveryTime)))
+                if (producer.LastProcessedMessageGenTimestamp != 0
+                    && producer.LastProcessedMessageGenTimestamp < Timestamp.Now() - Timestamp.FromMinutes(producer.StatefulRecoveryWindowInMinutes))
                 {
-                    var err = $"Recovery timestamp for producer {producer.Name} is too far in the past. TimeStamp={producer.LastTimestampBeforeDisconnect}";
+                    var err = $"Recovery timestamp for producer {producer.Name} is too far in the past. TimeStamp={producer.LastProcessedMessageGenTimestamp}";
                     throw new InvalidOperationException(err);
                 }
             }
@@ -80,11 +64,11 @@ namespace Oddin.OddsFeedSdk.Managers
             if (timestamp > DateTime.Now)
                 throw new ArgumentOutOfRangeException(nameof(timestamp), $"The value {timestamp} specifies the time in the future");
 
-            var oldestBearableTimestampBeforeDisconnect = DateTime.Now.Subtract(TimeSpan.FromMinutes(producer.MaxRecoveryTime));
+            var oldestBearableTimestampBeforeDisconnect = DateTime.Now.Subtract(TimeSpan.FromMinutes(producer.StatefulRecoveryWindowInMinutes));
             if (timestamp < oldestBearableTimestampBeforeDisconnect)
                 throw new ArgumentOutOfRangeException(nameof(timestamp), $"The value {timestamp} specifies the time too far in the past. Timestamp must be greater then {oldestBearableTimestampBeforeDisconnect}");
 
-            producer.SetLastTimestampBeforeDisconnect(timestamp);
+            producer.ProducerData.LastAliveReceivedGenTimestamp = timestamp.ToEpochTimeMilliseconds();
         }
 
         public void RemoveTimestampBeforeDisconnect(int id)
@@ -96,7 +80,7 @@ namespace Oddin.OddsFeedSdk.Managers
                 throw new ArgumentException($"Producer id must be a positive integer!");
 
             var producer = (Producer)Get(id);
-            producer.SetLastTimestampBeforeDisconnect(DateTime.MinValue);
+            producer.ProducerData.LastAliveReceivedGenTimestamp = 0;
         }
 
         public void DisableProducer(int id)
@@ -105,28 +89,32 @@ namespace Oddin.OddsFeedSdk.Managers
                 throw new InvalidOperationException("Producers cannot be changed after the feed was opened!");
 
             var producer = (Producer)Get(id);
-            producer.SetDisabled(true);
+            producer.ProducerData.Enabled = false;
         }
 
         private bool TryGet(int id, out IProducer result)
         {
-            result = _producers?.FirstOrDefault(p => p.Id == id);
-            if (result == default)
+            var it = _producers.FirstOrDefault(p => p.Id == id);
+            if (it == null)
             {
                 result = CreateUnknownProducer();
                 return false;
             }
+
+            result = it;
             return true;
         }
 
         private bool TryGet(string name, out IProducer result)
         {
-            result = _producers?.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.InvariantCultureIgnoreCase));
-            if (result == default)
+            var it = _producers.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.InvariantCultureIgnoreCase));
+            if (it == null)
             {
                 result = CreateUnknownProducer();
                 return false;
             }
+
+            result = it;
             return true;
         }
 
@@ -150,12 +138,15 @@ namespace Oddin.OddsFeedSdk.Managers
 
         private Producer CreateUnknownProducer()
             => new Producer(
-                SdkDefaults.UnknownProducerId,
-                "Unknown",
-                "Unknown producer",
-                false,
-                "live|prematch",
-                SdkDefaults.DefaultInactivitySeconds,
-                SdkDefaults.StatefulRecoveryWindowInMinutes);
+                //string apiUrl, string producerScopes, int statefulRecoveryInMinutes)
+                new ProducerData(
+                    SdkDefaults.UnknownProducerId,
+                    "Unknown",
+                    "Unknown producer",
+                    true,
+                    _configuration.ApiHost,
+                    "live|prematch",
+                    SdkDefaults.StatefulRecoveryWindowInMinutes
+                ));
     }
 }

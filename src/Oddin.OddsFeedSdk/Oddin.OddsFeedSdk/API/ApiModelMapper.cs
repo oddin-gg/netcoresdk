@@ -2,7 +2,6 @@ using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
-using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using System;
 using System.Collections.Generic;
 using Oddin.OddsFeedSdk.Exceptions;
@@ -13,13 +12,7 @@ namespace Oddin.OddsFeedSdk.API
 {
     internal class ApiModelMapper : IApiModelMapper
     {
-        private readonly int _maxInactivitySeconds;
 
-        public ApiModelMapper(IFeedConfiguration config)
-        {
-            _maxInactivitySeconds = config.MaxInactivitySeconds;
-        }
-        
         public IBookmakerDetails MapBookmakerDetails(BookmakerDetailsModel model)
         {
             try
@@ -67,13 +60,15 @@ namespace Oddin.OddsFeedSdk.API
                 throw new ArgumentNullException($"{typeof(producer).Name} argument cannot be null!");
 
             return new Producer(
-                model.id,
-                model.name,
-                model.description,
-                model.active,
-                model.scope,
-                _maxInactivitySeconds,
-                model.stateful_recovery_window_in_minutes);
+                new ProducerData(
+                    model.id,
+                    model.name,
+                    model.description,
+                    model.active,
+                    model.api_url,
+                    model.scope,
+                    model.stateful_recovery_window_in_minutes
+                    ));
         }
 
         public IEnumerable<IProducer> MapProducersList(ProducersModel model)

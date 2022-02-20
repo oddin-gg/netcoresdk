@@ -28,14 +28,13 @@ namespace Oddin.OddsFeedSdk.Configuration
                 apiHost: _apiHost,
                 useSsl: true,
                 useApiSsl: true,
-                maxInactivitySeconds: MaxInactivitySeconds ?? SdkDefaults.DefaultInactivitySeconds,
-                maxRecoveryExecutionInSeconds: MaxRecoveryTimeInSeconds ?? SdkDefaults.MaxRecoveryExecutionInSeconds,
+                maxInactivitySeconds: MaxInactivitySeconds ?? SdkDefaults.MaxInactivitySeconds,
+                maxRecoveryExecutionMinutes: MaxRecoveryExecutionMinutes ?? SdkDefaults.MaxRecoveryExecutionMinutes,
                 nodeId: SdkNodeId,
                 exceptionHandlingStrategy: ExceptionHandlingStrategy,
                 httpClientTimeout: HttpClientTimeout ?? SdkDefaults.DefaultHttpClientTimeout,
                 InitialSnapshotTimeInMinutes ?? default,
-                section: Section,
-                ignoreRecovery: false);
+                section: Section);
         }
     }
 }
