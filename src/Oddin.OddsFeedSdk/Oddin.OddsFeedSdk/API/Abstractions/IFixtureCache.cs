@@ -10,5 +10,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         void ClearCacheItem(URN id);
 
         LocalizedFixture GetFixture(URN id, CultureInfo culture);
+
+        void OnFeedMessageReceived(fixture_change e);
     }
 }

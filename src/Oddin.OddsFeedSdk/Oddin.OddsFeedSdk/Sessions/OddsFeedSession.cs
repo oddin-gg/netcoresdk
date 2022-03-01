@@ -9,8 +9,16 @@ using Oddin.OddsFeedSdk.Dispatch;
 using Oddin.OddsFeedSdk.Sessions.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Oddin.OddsFeedSdk.Abstractions;
+using Oddin.OddsFeedSdk.AMQP;
+using Oddin.OddsFeedSdk.API;
+using Oddin.OddsFeedSdk.API.Entities;
+using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Exceptions;
+using Oddin.OddsFeedSdk.Managers.Abstractions;
+using Oddin.OddsFeedSdk.Managers.Recovery;
+using RabbitMQ.Client.Events;
 
 namespace Oddin.OddsFeedSdk.Sessions
 {
@@ -25,6 +33,9 @@ namespace Oddin.OddsFeedSdk.Sessions
         private readonly IFeedConfiguration _configuration;
         private bool _isOpened;
         private readonly object _isOpenedLock = new object();
+        private readonly IProducerManager _producerManager;
+        private readonly RecoveryManager _recoveryMessageProcessor;
+        private readonly CacheManager _cacheManager;
 
         internal MessageInterest MessageInterest { get; }
 
@@ -36,12 +47,19 @@ namespace Oddin.OddsFeedSdk.Sessions
             IAmqpClient amqpClient,
             IFeedMessageMapper feedMessageMapper,
             MessageInterest messageInterest,
-            IFeedConfiguration configuration)
+            IFeedConfiguration configuration,
+            IProducerManager producerManager,
+            RecoveryManager recoveryMessageProcessor,
+            CacheManager cacheManager
+            )
         {
             _amqpClient = amqpClient ?? throw new ArgumentNullException(nameof(amqpClient));
             _feedMessageMapper = feedMessageMapper ?? throw new ArgumentNullException(nameof(feedMessageMapper));
             MessageInterest = messageInterest ?? throw new ArgumentNullException(nameof(messageInterest));
             _configuration = configuration;
+            _producerManager = producerManager;
+            _recoveryMessageProcessor = recoveryMessageProcessor;
+            _cacheManager = cacheManager;
 
             Name = messageInterest.Name;
             Feed = feed;
@@ -53,15 +71,6 @@ namespace Oddin.OddsFeedSdk.Sessions
         public event EventHandler<BetSettlementEventArgs<ISportEvent>> OnBetSettlement;
         public event EventHandler<BetCancelEventArgs<ISportEvent>> OnBetCancel;
         public event EventHandler<FixtureChangeEventArgs<ISportEvent>> OnFixtureChange;
-        public event EventHandler<SnapshotCompleteEventArgs> OnSnapshotComplete;
-        public event EventHandler<AliveEventArgs> OnAliveReceived;
-        public event EventHandler<MessageProcessingEventArgs> OnMessageProcessingEnded;
-        public event EventHandler<MessageProcessingEventArgs> OnMessageProcessingStarted;
-
-        private void HandleUnparsableMessageReceived(object sender, UnparsableMessageEventArgs eventArgs)
-        {
-            Dispatch(OnUnparsableMessageReceived, eventArgs, nameof(OnUnparsableMessageReceived));
-        }
 
         private void CreateAndDispatchFeedMessageEventArgs<TMessageEventArgs, TMessage>(Action<object, SimpleMessageEventArgs<TMessage>> createAndDispatch, object sender, SimpleMessageEventArgs<TMessage> eventArgs)
         {
@@ -133,103 +142,174 @@ namespace Oddin.OddsFeedSdk.Sessions
             Dispatch(OnFixtureChange, fixtureChangeEventArgs, nameof(OnFixtureChange));
         }
 
-        private void CreateAndDispatchSnapshotComplete(object sender, SimpleMessageEventArgs<snapshot_complete> eventArgs)
+        private void PublishUnparsableMessage(byte[] messageBody, string messageRoutingKey)
         {
-
-            var snapshotCompleteEventArgs = new SnapshotCompleteEventArgs(
-                eventArgs.FeedMessage,
-                MessageInterest
-                );
-
-            Dispatch(OnSnapshotComplete, snapshotCompleteEventArgs, nameof(OnSnapshotComplete));
+            MessageType messageType = MessageType.UNKNOWN;
+            string producer = string.Empty;
+            string eventId = string.Empty;
+            try
+            {
+                messageType = TopicParsingHelper.GetMessageType(messageRoutingKey);
+                producer = TopicParsingHelper.GetProducer(messageRoutingKey);
+                eventId = TopicParsingHelper.GetEventId(messageRoutingKey);
+            }
+            catch (ArgumentException)
+            {
+                if (_configuration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
+                    throw;
+            }
+            Dispatch(OnUnparsableMessageReceived, new UnparsableMessageEventArgs(messageType, producer, eventId, messageBody), nameof(OnUnparsableMessageReceived));
         }
 
-        private void CreateAndDispatchAlive(object sender, SimpleMessageEventArgs<alive> eventArgs)
+        private bool TryGetMessageSentTime(BasicDeliverEventArgs eventArgs, out long sentTime)
         {
+            sentTime = 0;
 
-            var aliveEventArgs = new AliveEventArgs(
-                eventArgs.FeedMessage,
-                MessageInterest
+            var headers = eventArgs?.BasicProperties?.Headers;
+            if (headers is null)
+                return false;
+
+            var sentAtHeader = "timestamp_in_ms";
+            if (headers.ContainsKey(sentAtHeader) == false)
+                return false;
+
+            var value = headers[sentAtHeader].ToString();
+            if (long.TryParse(value, out var parseResult) == false)
+                return false;
+
+            sentTime = parseResult;
+            return true;
+        }
+
+        private void SetMessageTimes(FeedMessageModel message, BasicDeliverEventArgs eventArgs, long receivedAt)
+        {
+            message.ReceivedAt = receivedAt;
+            message.SentAt = TryGetMessageSentTime(eventArgs, out var sentTime) == false ? message.GeneratedAt : sentTime;
+        }
+
+        private bool FilterFeedMessage(FeedMessageModel feedMessage, MessageInterest messageInterest)
+        {
+            var producerId = feedMessage.ProducerId;
+            var producer = (Producer) _producerManager.Get(producerId);
+            if (producer == null)
+            {
+                _log.LogDebug($"Unknown producer {producerId} sending message - {feedMessage}");
+                return false;
+            }
+            if (producer.IsDisabled || !producer.IsAvailable)
+            {
+                return false;
+            }
+            return messageInterest.IsProducerInScope(producer);
+        }
+
+        private bool FilterFixtureChanges(FeedMessageModel message)
+        {
+            switch (message)
+            {
+                case fixture_change fixtureChange:
+                    var messageKey = fixtureChange.Key();
+                    return _cacheManager.DispatchedFixtureChanges.Contains(messageKey) == false;
+            }
+            return true;
+        }
+
+        private void OnReceived(object sender, BasicDeliverEventArgs eventArgs)
+        {
+            var receivedAt = Timestamp.Now();
+            var body = eventArgs.Body.ToArray();
+            var xml = Encoding.UTF8.GetString(body);
+            var success = FeedMessageDeserializer.TryDeserializeMessage(xml, out var message);
+
+            if (success == false)
+            {
+                PublishUnparsableMessage(body, eventArgs.RoutingKey);
+                return;
+            }
+
+            SetMessageTimes(message, eventArgs, receivedAt);
+
+            if (!FilterFeedMessage(message, MessageInterest) || !FilterFixtureChanges(message))
+            {
+                return;
+            }
+
+            var producerId = message.ProducerId;
+            _recoveryMessageProcessor.OnMessageProcessingStarted(
+                SessionId,
+                producerId,
+                receivedAt
             );
 
-            Dispatch(OnAliveReceived, aliveEventArgs, nameof(OnAliveReceived));
-        }
+            _cacheManager.OnFeedMessageReceived(message);
 
+            long? timestamp = null;
 
-        private void CreateAndDispatchMessageProcessingEnded(object sender, SimpleMessageEventArgs<MessageProcessingEventArgs> eventArgs)
-        {
-            var message = new MessageProcessingEventArgs(
-                eventArgs.FeedMessage.ProducerId,
-                eventArgs.FeedMessage.Timestamp,
-                SessionId
-                );
-            Dispatch(OnMessageProcessingEnded, message, nameof(OnMessageProcessingEnded));
-        }
+            switch (message)
+            {
+                case fixture_change fixtureChange:
+                    var messageKey = fixtureChange.Key();
+                    _cacheManager.DispatchedFixtureChanges.Add(messageKey);
+                    break;
+                case alive aliveMessage:
+                    timestamp = aliveMessage.GeneratedAt;
+                    _recoveryMessageProcessor.OnAliveReceived(sender, new AliveEventArgs(aliveMessage, MessageInterest));
+                    break;
+                case snapshot_complete snapshotComplete:
+                    _recoveryMessageProcessor.OnSnapshotCompleteReceived(sender, new SnapshotCompleteEventArgs(snapshotComplete, MessageInterest));
+                    break;
+            }
 
-        private void CreateAndDispatchMessageProcessingStarted(object sender, SimpleMessageEventArgs<MessageProcessingEventArgs> eventArgs)
-        {
-            var message = new MessageProcessingEventArgs(
-                eventArgs.FeedMessage.ProducerId,
-                eventArgs.FeedMessage.Timestamp,
-                SessionId
+            switch (message)
+            {
+                case alive:
+                    break;
+                case snapshot_complete:
+                    break;
+                case bet_stop betStopMessage:
+                    timestamp = betStopMessage.GeneratedAt;
+                    var betStopMessageArgs = new SimpleMessageEventArgs<bet_stop>(betStopMessage, body);
+                    CreateAndDispatchFeedMessageEventArgs<BetStopEventArgs<ISportEvent>, bet_stop>(CreateAndDispatchBetStop, sender, betStopMessageArgs);
+                    break;
+                case bet_cancel betCancel:
+                    var betCancelMessageArgs = new SimpleMessageEventArgs<bet_cancel>(betCancel, body);
+                    CreateAndDispatchFeedMessageEventArgs<BetCancelEventArgs<ISportEvent>, bet_cancel>(CreateAndDispatchBetCancel, sender, betCancelMessageArgs);
+                    break;
+                case bet_settlement betSettlement:
+                    var betSettlementMessageArgs = new SimpleMessageEventArgs<bet_settlement>(betSettlement, body);
+                    CreateAndDispatchFeedMessageEventArgs<BetSettlementEventArgs<ISportEvent>, bet_settlement>(CreateAndDispatchBetSettlement, sender, betSettlementMessageArgs);
+                    break;
+                case fixture_change fixtureChange:
+                    var fixtureChangeMessageArgs = new SimpleMessageEventArgs<fixture_change>(fixtureChange, body);
+                    CreateAndDispatchFeedMessageEventArgs<FixtureChangeEventArgs<ISportEvent>, fixture_change>(CreateAndDispatchFixtureChange, sender, fixtureChangeMessageArgs);
+                    break;
+
+                case odds_change oddsChangeMessage:
+                    timestamp = oddsChangeMessage.GeneratedAt;
+                    var oddsChangeMessageArgs = new SimpleMessageEventArgs<odds_change>(oddsChangeMessage, body);
+                    CreateAndDispatchFeedMessageEventArgs<OddsChangeEventArgs<ISportEvent>, odds_change>(CreateAndDispatchOddsChange, sender, oddsChangeMessageArgs);
+                    break;
+                default:
+                    PublishUnparsableMessage(body, eventArgs.RoutingKey);
+                    break;
+            }
+
+            _recoveryMessageProcessor.OnMessageProcessingEnded(
+                SessionId,
+                producerId,
+                timestamp
             );
-            Dispatch(OnMessageProcessingStarted, message, nameof(OnMessageProcessingStarted));
+
         }
-
-        private void HandleOddsChangeMessageReceived(object sender, SimpleMessageEventArgs<odds_change> eventArgs)
-            => CreateAndDispatchFeedMessageEventArgs<OddsChangeEventArgs<ISportEvent>, odds_change>(CreateAndDispatchOddsChange, sender, eventArgs);
-
-        private void HandleBetStopMessageReceived(object sender, SimpleMessageEventArgs<bet_stop> eventArgs)
-            => CreateAndDispatchFeedMessageEventArgs<BetStopEventArgs<ISportEvent>, bet_stop>(CreateAndDispatchBetStop, sender, eventArgs);
-
-        private void HandleBetSettlementMessageReceived(object sender, SimpleMessageEventArgs<bet_settlement> eventArgs)
-            => CreateAndDispatchFeedMessageEventArgs<BetSettlementEventArgs<ISportEvent>, bet_settlement>(CreateAndDispatchBetSettlement, sender, eventArgs);
-
-        private void HandleBetCancelMessageReceived(object sender, SimpleMessageEventArgs<bet_cancel> eventArgs)
-            => CreateAndDispatchFeedMessageEventArgs<BetCancelEventArgs<ISportEvent>, bet_cancel>(CreateAndDispatchBetCancel, sender, eventArgs);
-
-        private void HandleFixtureChangeMessageReceived(object sender, SimpleMessageEventArgs<fixture_change> eventArgs)
-            => CreateAndDispatchFeedMessageEventArgs<FixtureChangeEventArgs<ISportEvent>, fixture_change>(CreateAndDispatchFixtureChange, sender, eventArgs);
-
-        private void HandleSnapshotCompleteReceived(object sender, SimpleMessageEventArgs<snapshot_complete> eventArgs)
-            => CreateAndDispatchFeedMessageEventArgs<SnapshotCompleteEventArgs, snapshot_complete>(CreateAndDispatchSnapshotComplete, sender, eventArgs);
-
-
-        private void HandleAliveReceived(object sender, SimpleMessageEventArgs<alive> eventArgs)
-            => CreateAndDispatchFeedMessageEventArgs<AliveEventArgs, alive>(CreateAndDispatchAlive, sender, eventArgs);
-
-        private void HandleMessageProcessingStarted(object sender, SimpleMessageEventArgs<MessageProcessingEventArgs> eventArgs)
-            => CreateAndDispatchFeedMessageEventArgs<AliveEventArgs, MessageProcessingEventArgs>(CreateAndDispatchMessageProcessingStarted, sender, eventArgs);
-
-        private void HandleMessageProcessingEnded(object sender, SimpleMessageEventArgs<MessageProcessingEventArgs> eventArgs)
-            => CreateAndDispatchFeedMessageEventArgs<AliveEventArgs, MessageProcessingEventArgs>(CreateAndDispatchMessageProcessingEnded, sender, eventArgs);
 
         private void AttachEvents()
         {
-            _amqpClient.UnparsableMessageReceived += HandleUnparsableMessageReceived;
-            _amqpClient.OddsChangeMessageReceived += HandleOddsChangeMessageReceived;
-            _amqpClient.BetStopMessageReceived += HandleBetStopMessageReceived;
-            _amqpClient.BetSettlementMessageReceived += HandleBetSettlementMessageReceived;
-            _amqpClient.BetCancelMessageReceived += HandleBetCancelMessageReceived;
-            _amqpClient.FixtureChangeMessageReceived += HandleFixtureChangeMessageReceived;
-            _amqpClient.SnapshotCompleteMessageReceived += HandleSnapshotCompleteReceived;
-            _amqpClient.AliveMessageReceived += HandleAliveReceived;
-            _amqpClient.MessageProcessingStarted += HandleMessageProcessingStarted;
-            _amqpClient.MessageProcessingEnded += HandleMessageProcessingEnded;
+            _amqpClient.OnReceived += OnReceived;
         }
 
         private void DetachEvents()
         {
-            _amqpClient.UnparsableMessageReceived -= HandleUnparsableMessageReceived;
-            _amqpClient.OddsChangeMessageReceived -= HandleOddsChangeMessageReceived;
-            _amqpClient.BetStopMessageReceived -= HandleBetStopMessageReceived;
-            _amqpClient.BetSettlementMessageReceived -= HandleBetSettlementMessageReceived;
-            _amqpClient.BetCancelMessageReceived -= HandleBetCancelMessageReceived;
-            _amqpClient.FixtureChangeMessageReceived -= HandleFixtureChangeMessageReceived;
-            _amqpClient.SnapshotCompleteMessageReceived -= HandleSnapshotCompleteReceived;
-            _amqpClient.AliveMessageReceived -= HandleAliveReceived;
-            _amqpClient.MessageProcessingStarted -= HandleMessageProcessingStarted;
-            _amqpClient.MessageProcessingEnded -= HandleMessageProcessingEnded;
+            _amqpClient.OnReceived -= OnReceived;
         }
 
         private bool TrySetAsOpened()

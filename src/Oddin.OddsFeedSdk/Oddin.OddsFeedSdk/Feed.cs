@@ -25,6 +25,7 @@ using Oddin.OddsFeedSdk.Managers.Recovery;
 using Oddin.OddsFeedSdk.Exceptions;
 using Oddin.OddsFeedSdk.Common;
 using Microsoft.Extensions.DependencyInjection;
+using Oddin.OddsFeedSdk.API.Entities;
 
 namespace Oddin.OddsFeedSdk
 {
@@ -39,7 +40,7 @@ namespace Oddin.OddsFeedSdk
         private bool _isOpened;
         private readonly object _isOpenedLock = new();
         private readonly IList<OddsFeedSession> _sessions = new List<OddsFeedSession>();
-        private OddsFeedSession possibleAliveSession;
+        private OddsFeedSession _possibleAliveSession;
         private bool _isDisposed;
 
         public event EventHandler<ConnectionExceptionEventArgs> ConnectionException;
@@ -55,6 +56,7 @@ namespace Oddin.OddsFeedSdk
         public ISportDataProvider SportDataProvider => Services.GetService<ISportDataProvider>() ?? throw new NullReferenceException();
         public IMarketDescriptionManager MarketDescriptionManager => Services.GetService<IMarketDescriptionManager>() ?? throw new NullReferenceException();
         private IApiClient _apiClient => Services.GetService<IApiClient>() ?? throw new NullReferenceException();
+        private CacheManager _cacheManager => (CacheManager) Services.GetService<ICacheManager>() ?? throw new NullReferenceException();
 
         public IBookmakerDetails BookmakerDetails
         {
@@ -77,9 +79,9 @@ namespace Oddin.OddsFeedSdk
             _config = config ?? throw new ArgumentNullException(nameof(config));
             SdkLoggerFactory.Initialize(loggerFactory);
 
-            IExchangeNameProvider exchangeNameProvider = isReplay
+            var exchangeNameProvider = isReplay
                 ? (IExchangeNameProvider) new ReplayExchangeNameProvider()
-                : (IExchangeNameProvider) new ExchangeNameProvider();
+                : new ExchangeNameProvider();
 
             Services = BuildServices(exchangeNameProvider);
         }
@@ -179,15 +181,6 @@ namespace Oddin.OddsFeedSdk
             ((RecoveryManager)_recoveryManager).EventProducerDown += OnProducerDown;
             ((RecoveryManager)_recoveryManager).EventProducerUp += OnProducerUp;
             ((RecoveryManager)_recoveryManager).EventRecoveryCompleted += OnEventRecoveryCompleted;
-
-            foreach (var s in _sessions)
-            {
-                s.OnSnapshotComplete += _recoveryManager.OnSnapshotCompleteReceived;
-                s.OnAliveReceived += _recoveryManager.OnAliveReceived;
-                s.OnMessageProcessingEnded += _recoveryManager.OnMessageProcessingEnded;
-                s.OnMessageProcessingStarted += _recoveryManager.OnMessageProcessingStarted;
-            }
-
         }
 
         private void DetachFromEvents()
@@ -195,14 +188,6 @@ namespace Oddin.OddsFeedSdk
             ((RecoveryManager)_recoveryManager).EventRecoveryCompleted -= OnEventRecoveryCompleted;
             ((RecoveryManager)_recoveryManager).EventProducerDown -= OnProducerDown;
             ((RecoveryManager)_recoveryManager).EventProducerUp -= OnProducerUp;
-
-            foreach (var s in _sessions)
-            {
-                s.OnSnapshotComplete -= _recoveryManager.OnSnapshotCompleteReceived;
-                s.OnAliveReceived -= _recoveryManager.OnAliveReceived;
-                s.OnMessageProcessingEnded -= _recoveryManager.OnMessageProcessingEnded;
-                s.OnMessageProcessingStarted -= _recoveryManager.OnMessageProcessingStarted;
-            }
         }
 
         private void ValidateMessageInterestsCombination()
@@ -240,6 +225,25 @@ namespace Oddin.OddsFeedSdk
 
             _log.LogInformation($"Opening {nameof(Feed)}...");
 
+            var availableProducers = ProducerManager.Producers;
+            var requestedProducers = new HashSet<int>();
+            foreach (var s in _sessions)
+            {
+                var producers = s.MessageInterest.GetPossibleSourceProducers(availableProducers);
+                requestedProducers.UnionWith(producers);
+            }
+
+            foreach (var producer in availableProducers)
+            {
+                if (!requestedProducers.Contains(producer.Id))
+                {
+                    var p = (Producer) ProducerManager.Get(producer.Id);
+                    p.ProducerData.Enabled = false;
+                }
+            }
+
+            var sessionRoutingKeys = GenerateKeys(_sessions, _config);
+
             var hasReplay = _sessions.Any(s => s.Feed is ReplayFeed);
             var replayOnly = hasReplay && _sessions.Count == 1;
             var hasAliveMessageInterest = _sessions.Any(s =>
@@ -247,17 +251,18 @@ namespace Oddin.OddsFeedSdk
 
             if (!hasAliveMessageInterest && !replayOnly)
             {
-                possibleAliveSession = new OddsFeedSession(
+                _possibleAliveSession = new OddsFeedSession(
                     this,
                     Services.GetService<IAmqpClient>(),
                     Services.GetService<IFeedMessageMapper>(),
                     MessageInterest.SystemAliveOnlyMessages,
-                    _config
+                    _config,
+                    ProducerManager,
+                    (RecoveryManager) _recoveryManager,
+                    _cacheManager
                 );
-                possibleAliveSession.Open(MessageInterest.SystemAliveOnlyMessages.RoutingKeys);
+                _possibleAliveSession.Open(MessageInterest.SystemAliveOnlyMessages.RoutingKeys);
             }
-
-            var sessionRoutingKeys = GenerateKeys(_sessions, _config);
 
             AttachToEvents();
             ProducerManager.Lock();
@@ -284,7 +289,7 @@ namespace Oddin.OddsFeedSdk
             _recoveryManager.Open(replayOnly);
         }
 
-        private IDictionary<Guid, IEnumerable<string>> GenerateKeys(IEnumerable<OddsFeedSession> sessions, IFeedConfiguration config)
+        private IDictionary<Guid, IEnumerable<string>> GenerateKeys(IList<OddsFeedSession> sessions, IFeedConfiguration config)
         {
             ValidateMessageInterestsCombination();
 
@@ -412,7 +417,10 @@ namespace Oddin.OddsFeedSdk
                 Services.GetService<IAmqpClient>(),
                 Services.GetService<IFeedMessageMapper>(),
                 messageInterest,
-                _config
+                _config,
+                ProducerManager,
+                (RecoveryManager) _recoveryManager,
+                _cacheManager
             );
 
             _sessions.Add(session);

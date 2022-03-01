@@ -17,11 +17,10 @@ namespace Oddin.OddsFeedSdk.Managers.Abstractions
     {
         void Open(bool replayOnly);
 
-        void OnMessageProcessingStarted(object sender, MessageProcessingEventArgs eventArgs);
-        public void OnMessageProcessingEnded(object sender, MessageProcessingEventArgs eventArgs);
+        void OnMessageProcessingStarted(Guid sessionId, int producerId, long timestamp);
+        public void OnMessageProcessingEnded(Guid sessionId, int producerId, long? timestamp);
         void OnAliveReceived(object sender, AliveEventArgs eventArgs);
         void OnSnapshotCompleteReceived(object sender, SnapshotCompleteEventArgs eventArgs);
-
 
         public event EventHandler<EventRecoveryCompletedEventArgs> EventRecoveryCompleted;
         public event EventHandler<ProducerStatusChangeEventArgs> EventProducerDown;

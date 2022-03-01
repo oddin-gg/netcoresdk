@@ -2,6 +2,8 @@ using Oddin.OddsFeedSdk.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Oddin.OddsFeedSdk.API.Entities;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 
 namespace Oddin.OddsFeedSdk.Sessions
 {
@@ -16,14 +18,14 @@ namespace Oddin.OddsFeedSdk.Sessions
 
         public IReadOnlyCollection<string> RoutingKeys { get; }
 
-        internal MessageInterest(string name, MessageInterestType messageInterestType, string routingKey)
+        private MessageInterest(string name, MessageInterestType messageInterestType, string routingKey)
         {
             Name = name;
             MessageInterestType = messageInterestType;
             RoutingKeys = new List<string>() { routingKey };
         }
 
-        internal MessageInterest(string name, MessageInterestType messageInterestType, IEnumerable<string> routingKeys)
+        private MessageInterest(string name, MessageInterestType messageInterestType, IEnumerable<string> routingKeys)
         {
             Name = name;
             MessageInterestType = messageInterestType;
@@ -56,7 +58,7 @@ namespace Oddin.OddsFeedSdk.Sessions
         private static IEnumerable<string> BuildRoutingKeysFromEvents(IEnumerable<URN> eventIds)
             => eventIds.Select(eid => $"#.{eid.Prefix}:{eid.Type}.{eid.Id}");
 
-        protected bool Equals(MessageInterest other) => MessageInterestType == other.MessageInterestType;
+        private bool Equals(MessageInterest other) => MessageInterestType == other.MessageInterestType;
 
         public override bool Equals(object obj)
         {
@@ -66,6 +68,54 @@ namespace Oddin.OddsFeedSdk.Sessions
         }
 
         public override int GetHashCode() => (int) MessageInterestType;
+
+        internal bool IsProducerInScope(Producer producer)
+        {
+            if (MessageInterestType == LiveMessagesOnly.MessageInterestType)
+            {
+                return producer.ProducerScopes.Contains(ProducerScope.Live);
+            }
+
+            if (MessageInterestType == PrematchMessagesOnly.MessageInterestType)
+            {
+                return producer.ProducerScopes.Contains(ProducerScope.Prematch);
+            }
+
+            return true;
+        }
+
+        internal IEnumerable<int> GetPossibleSourceProducers(IEnumerable<IProducer> availableProducers)
+        {
+            var possibleProducers = new HashSet<int>();
+            if (MessageInterestType == LiveMessagesOnly.MessageInterestType)
+            {
+                foreach (var producer in availableProducers)
+                {
+                    if (producer.ProducerScopes.Contains(ProducerScope.Live))
+                    {
+                        possibleProducers.Add(producer.Id);
+                    }
+                }
+            } else  if (MessageInterestType == PrematchMessagesOnly.MessageInterestType)
+            {
+                foreach (var producer in availableProducers)
+                {
+                    if (producer.ProducerScopes.Contains(ProducerScope.Prematch))
+                    {
+                        possibleProducers.Add(producer.Id);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var producer in availableProducers)
+                {
+                    possibleProducers.Add(producer.Id);
+                }
+            }
+
+            return possibleProducers;
+        }
     }
 
     internal enum MessageInterestType

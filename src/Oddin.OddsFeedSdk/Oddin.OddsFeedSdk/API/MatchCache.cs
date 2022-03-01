@@ -5,9 +5,7 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using Oddin.OddsFeedSdk.AMQP.Abstractions;
 using Oddin.OddsFeedSdk.AMQP.Enums;
-using Oddin.OddsFeedSdk.AMQP.EventArguments;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Models;
@@ -20,16 +18,14 @@ namespace Oddin.OddsFeedSdk.API
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(MatchCache));
 
         private readonly IApiClient _apiClient;
-        private readonly IAmqpClient _amqpClient;
         private readonly MemoryCache _cache = new(nameof(MatchCache));
         private readonly Semaphore _semaphore = new(1, 1);
         private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(12);
         private readonly IDisposable _subscription;
 
-        public MatchCache(IApiClient apiClient, IAmqpClient amqpClient)
+        public MatchCache(IApiClient apiClient)
         {
             _apiClient = apiClient;
-            _amqpClient = amqpClient;
 
             _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
                 .Subscribe(response =>
@@ -37,7 +33,7 @@ namespace Oddin.OddsFeedSdk.API
                     if (response.Culture is null || response.Data is null)
                         return;
 
-                    var tournaments = response.Data switch
+                    var matches = response.Data switch
                     {
                         FixturesEndpointModel f => new List<sportEvent> { f.fixture },
                         ScheduleEndpointModel s => s.sport_event.ToList(),
@@ -46,13 +42,13 @@ namespace Oddin.OddsFeedSdk.API
                     };
 
 
-                    if (tournaments.Any())
+                    if (matches.Any())
                     {
                         _semaphore.WaitOne();
                         try
                         {
                             _log.LogDebug($"Updating Match cache from API: {response.Data.GetType()}");
-                            HandleMatchData(response.Culture, tournaments);
+                            HandleMatchData(response.Culture, matches);
                         }
                         finally
                         {
@@ -60,15 +56,13 @@ namespace Oddin.OddsFeedSdk.API
                         }
                     }
                 });
-
-            amqpClient.FixtureChangeMessageReceived += MatchFixtureChangeInvalidatesCache;
         }
 
-        private void MatchFixtureChangeInvalidatesCache(object sender, SimpleMessageEventArgs<fixture_change> e)
+        public void OnFeedMessageReceived(fixture_change e)
         {
-            var id = string.IsNullOrEmpty(e?.FeedMessage?.event_id)
+            var id = string.IsNullOrEmpty(e?.event_id)
                 ? null
-                : new URN(e.FeedMessage.event_id);
+                : new URN(e.event_id);
 
             if (id?.Type == "match")
             {
@@ -97,7 +91,7 @@ namespace Oddin.OddsFeedSdk.API
             }
         }
 
-        internal void LoadAndCacheItem(URN id, IEnumerable<CultureInfo> cultures)
+        private void LoadAndCacheItem(URN id, IEnumerable<CultureInfo> cultures)
         {
             foreach (var culture in cultures)
             {
@@ -122,7 +116,7 @@ namespace Oddin.OddsFeedSdk.API
             }
         }
 
-        internal void RefreshOrInsertItem(URN id, CultureInfo culture, sportEvent model)
+        private void RefreshOrInsertItem(URN id, CultureInfo culture, sportEvent model)
         {
             var homeTeamId = model.competitors?.FirstOrDefault()?.id;
             var homeTeamQualifier = model.competitors?.FirstOrDefault()?.qualifier;
@@ -134,8 +128,8 @@ namespace Oddin.OddsFeedSdk.API
                 item.RefId = string.IsNullOrEmpty(model.refid) ? null : new URN(model.refid);
                 item.ScheduledTime = model.scheduledSpecified ? model.scheduled : default(DateTime?);
                 item.ScheduledEndTime = model.scheduled_endSpecified ? model.scheduled_end : default(DateTime?);
-                item.SportId = string.IsNullOrEmpty(model?.tournament?.sport?.id) ? null : new URN(model.tournament.sport.id);
-                item.TournamentId = string.IsNullOrEmpty(model?.tournament?.id) ? null : new URN(model.tournament.id);
+                item.SportId = string.IsNullOrEmpty(model.tournament?.sport?.id) ? null : new URN(model.tournament.sport.id);
+                item.TournamentId = string.IsNullOrEmpty(model.tournament?.id) ? null : new URN(model.tournament.id);
                 item.HomeTeamId = string.IsNullOrEmpty(homeTeamId) ? null : new URN(homeTeamId);
                 item.AwayTeamId = string.IsNullOrEmpty(awayTeamId) ? null : new URN(awayTeamId);
                 item.LiveOddsAvailability = model.liveodds.ParseToLiveOddsAvailability();
@@ -149,8 +143,8 @@ namespace Oddin.OddsFeedSdk.API
                     RefId = string.IsNullOrEmpty(model.refid) ? null : new URN(model.refid),
                     ScheduledTime = model.scheduledSpecified ? model.scheduled : default(DateTime?),
                     ScheduledEndTime = model.scheduled_endSpecified ? model.scheduled_end : default(DateTime?),
-                    SportId = string.IsNullOrEmpty(model?.tournament?.sport?.id) ? null : new URN(model.tournament.sport.id),
-                    TournamentId = string.IsNullOrEmpty(model?.tournament?.id) ? null : new URN(model.tournament.id),
+                    SportId = string.IsNullOrEmpty(model.tournament?.sport?.id) ? null : new URN(model.tournament.sport.id),
+                    TournamentId = string.IsNullOrEmpty(model.tournament?.id) ? null : new URN(model.tournament.id),
                     HomeTeamId = string.IsNullOrEmpty(homeTeamId) ? null : new URN(homeTeamId),
                     AwayTeamId = string.IsNullOrEmpty(awayTeamId) ? null : new URN(awayTeamId),
                     LiveOddsAvailability = model.liveodds.ParseToLiveOddsAvailability(),

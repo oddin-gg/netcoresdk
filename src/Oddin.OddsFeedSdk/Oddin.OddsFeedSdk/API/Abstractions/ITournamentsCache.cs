@@ -13,5 +13,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         IEnumerable<URN> GetTournamentCompetitors(URN id, CultureInfo culture);
 
         void ClearCacheItem(URN id);
+
+        void OnFeedMessageReceived(fixture_change e);
     }
 }

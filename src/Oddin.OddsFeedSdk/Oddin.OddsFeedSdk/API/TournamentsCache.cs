@@ -5,8 +5,6 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using Oddin.OddsFeedSdk.AMQP.Abstractions;
-using Oddin.OddsFeedSdk.AMQP.EventArguments;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Models;
@@ -19,17 +17,15 @@ namespace Oddin.OddsFeedSdk.API
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(TournamentsCache));
 
         private readonly IApiClient _apiClient;
-        private readonly IAmqpClient _amqpClient;
         private readonly MemoryCache _cache = new(nameof(TournamentsCache));
 
         private readonly Semaphore _semaphore = new(1, 1);
         private readonly IDisposable _subscription;
         private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(12);
 
-        public TournamentsCache(IApiClient apiClient, IAmqpClient amqpClient)
+        public TournamentsCache(IApiClient apiClient)
         {
             _apiClient = apiClient;
-            _amqpClient = amqpClient;
 
             _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
                 .Subscribe(response =>
@@ -39,9 +35,9 @@ namespace Oddin.OddsFeedSdk.API
 
                     var tournaments = response.Data switch
                     {
-                        FixturesEndpointModel f => new tournament[] { f.fixture.tournament },
+                        FixturesEndpointModel f => new[] { f.fixture.tournament },
                         TournamentsModel t => t.tournaments?.ToArray() ?? Array.Empty<tournament>(),
-                        MatchSummaryModel m => new tournament[] { m.sport_event.tournament },
+                        MatchSummaryModel m => new[] { m.sport_event.tournament },
                         ScheduleEndpointModel s => s.sport_event.Select(t => t.tournament).ToArray(),
                         TournamentScheduleModel t => t.tournament.ToArray(),
                         SportTournamentsModel s => s.tournaments?.ToArray() ?? Array.Empty<tournament>(),
@@ -64,13 +60,11 @@ namespace Oddin.OddsFeedSdk.API
                     }
 
                 });
-
-            _amqpClient.FixtureChangeMessageReceived += MatchFixtureChangeInvalidatesCache;
         }
 
-        private void MatchFixtureChangeInvalidatesCache(object sender, SimpleMessageEventArgs<fixture_change> e)
+        public void OnFeedMessageReceived(fixture_change e)
         {
-            var id = string.IsNullOrEmpty(e?.FeedMessage?.event_id) ? null : new URN(e.FeedMessage.event_id);
+            var id = string.IsNullOrEmpty(e?.event_id) ? null : new URN(e.event_id);
 
             if (id?.Type == "match")
             {
@@ -131,7 +125,7 @@ namespace Oddin.OddsFeedSdk.API
             }
         }
 
-        internal void LoadAndCacheItem(URN id, IEnumerable<CultureInfo> cultures)
+        private void LoadAndCacheItem(URN id, IEnumerable<CultureInfo> cultures)
         {
             foreach(var culture in cultures)
             {
@@ -156,29 +150,29 @@ namespace Oddin.OddsFeedSdk.API
             }
         }
 
-        internal void RefreshOrInsertItem(URN id, CultureInfo culture, tournament model)
+        private void RefreshOrInsertItem(URN id, CultureInfo culture, tournament model)
         {
             if (_cache.Get(id.ToString()) is LocalizedTournament item)
             {
                 item.RefId = string.IsNullOrEmpty(model.refid) ? null : new URN(model.refid);
-                item.StartDate = model?.tournament_length?.start_date;
-                item.EndDate = model?.tournament_length?.end_date;
-                item.SportId = string.IsNullOrEmpty(model?.sport?.id) ? null : new URN(model.sport.id);
-                item.ScheduledTime = model?.scheduled;
-                item.ScheduledEndTime = model?.scheduled_end;
-                item.RiskTier = model?.riskTier;
+                item.StartDate = model.tournament_length?.start_date;
+                item.EndDate = model.tournament_length?.end_date;
+                item.SportId = string.IsNullOrEmpty(model.sport?.id) ? null : new URN(model.sport.id);
+                item.ScheduledTime = model.scheduled;
+                item.ScheduledEndTime = model.scheduled_end;
+                item.RiskTier = model.riskTier;
             }
             else
             {
                 item = new LocalizedTournament(id)
                 {
                     RefId = string.IsNullOrEmpty(model.refid) ? null : new URN(model.refid),
-                    StartDate = model?.tournament_length?.start_date,
-                    EndDate = model?.tournament_length?.end_date,
-                    SportId = string.IsNullOrEmpty(model?.sport?.id) ? null : new URN(model.sport.id),
-                    ScheduledTime = model?.scheduled,
-                    ScheduledEndTime = model?.scheduled_end,
-                    RiskTier = model?.riskTier
+                    StartDate = model.tournament_length?.start_date,
+                    EndDate = model.tournament_length?.end_date,
+                    SportId = string.IsNullOrEmpty(model.sport?.id) ? null : new URN(model.sport.id),
+                    ScheduledTime = model.scheduled,
+                    ScheduledEndTime = model.scheduled_end,
+                    RiskTier = model.riskTier
                 };
             }
 
