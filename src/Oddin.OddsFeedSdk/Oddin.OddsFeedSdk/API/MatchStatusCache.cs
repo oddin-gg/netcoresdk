@@ -4,9 +4,7 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using Oddin.OddsFeedSdk.AMQP.Abstractions;
 using Oddin.OddsFeedSdk.AMQP.Enums;
-using Oddin.OddsFeedSdk.AMQP.EventArguments;
 using Oddin.OddsFeedSdk.AMQP.Messages;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
@@ -20,24 +18,22 @@ namespace Oddin.OddsFeedSdk.API
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(MatchStatusCache));
 
         private readonly IApiClient _apiClient;
-        private readonly IAmqpClient _ampqClient;
         private readonly MemoryCache _cache = new(nameof(MatchStatusCache));
 
         private readonly Semaphore _semaphore = new(1, 1);
         private readonly TimeSpan _cacheTTL = TimeSpan.FromMinutes(20);
         private readonly IDisposable _subscription;
 
-        public MatchStatusCache(IApiClient apiClient, IAmqpClient ampqClient)
+        public MatchStatusCache(IApiClient apiClient)
         {
             _apiClient = apiClient;
-            _ampqClient = ampqClient;
             _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
                 .Subscribe(response =>
                 {
                     if (response.Data is not MatchSummaryModel summary)
                         return;
 
-                    var id = string.IsNullOrEmpty(summary?.sport_event?.id) ? null : new URN(summary.sport_event.id);
+                    var id = string.IsNullOrEmpty(summary.sport_event?.id) ? null : new URN(summary.sport_event.id);
 
                     _semaphore.WaitOne();
                     try
@@ -50,21 +46,19 @@ namespace Oddin.OddsFeedSdk.API
                         _semaphore.Release();
                     }
                 });
-
-            _ampqClient.OddsChangeMessageReceived += UpdateCacheOnOddsChange;
         }
 
-        private void UpdateCacheOnOddsChange(object sender, SimpleMessageEventArgs<odds_change> e)
+        public void OnFeedMessageReceived(odds_change e)
         {
-            if (e.FeedMessage.sport_event_status == null)
+            if (e.sport_event_status == null)
                 return;
 
-            _log.LogDebug($"Updating Match Status cache from FEED for: {e.FeedMessage.event_id}");
+            _log.LogDebug($"Updating Match Status cache from FEED for: {e.event_id}");
 
             _semaphore.WaitOne();
             try
             {
-                RefreshOrInsertFeedItem(string.IsNullOrEmpty(e?.FeedMessage?.event_id) ? null : new URN(e.FeedMessage.event_id), e.FeedMessage.sport_event_status);
+                RefreshOrInsertFeedItem(string.IsNullOrEmpty(e.event_id) ? null : new URN(e.event_id), e.sport_event_status);
             }
             catch (Exception ex)
             {
@@ -84,7 +78,7 @@ namespace Oddin.OddsFeedSdk.API
                 {
                     WinnerId = string.IsNullOrEmpty(status?.winner_id) ? null : new URN(status.winner_id),
                     Status = status.status.GetEventStatusFromFeed(),
-                    PeriodScores = MapFeedPeriodScores(status.period_scores?.period_score ?? new periodScoreType[0]),
+                    PeriodScores = MapFeedPeriodScores(status.period_scores?.period_score ?? Array.Empty<periodScoreType>()),
                     MatchStatusId = status.match_status,
                     HomeScore = status.home_score,
                     AwayScore = status.away_score,
@@ -96,7 +90,7 @@ namespace Oddin.OddsFeedSdk.API
             {
                 item.WinnerId = string.IsNullOrEmpty(status?.winner_id) ? null : new URN(status.winner_id);
                 item.Status = status.status.GetEventStatusFromFeed();
-                item.PeriodScores = MapFeedPeriodScores(status.period_scores?.period_score ?? new periodScoreType[0]);
+                item.PeriodScores = MapFeedPeriodScores(status.period_scores?.period_score ?? Array.Empty<periodScoreType>());
                 item.MatchStatusId = status.match_status;
                 item.HomeScore = status.home_score;
                 item.AwayScore = status.away_score;
@@ -117,7 +111,7 @@ namespace Oddin.OddsFeedSdk.API
                 {
                     WinnerId = string.IsNullOrEmpty(summary?.winner_id) ? null : new URN(summary.winner_id),
                     Status = summary.status.GetEventStatusFromApi(),
-                    PeriodScores = MapApiPeriodScores(summary.period_scores ?? new periodScore[0]),
+                    PeriodScores = MapApiPeriodScores(summary.period_scores ?? Array.Empty<periodScore>()),
                     MatchStatusId = summary.match_status_code,
                     HomeScore = summary.home_score,
                     AwayScore = summary.away_score,
@@ -129,7 +123,7 @@ namespace Oddin.OddsFeedSdk.API
             {
                 item.WinnerId = string.IsNullOrEmpty(summary?.winner_id) ? null : new URN(summary.winner_id);
                 item.Status = summary.status.GetEventStatusFromApi();
-                item.PeriodScores = MapApiPeriodScores(summary.period_scores ?? new periodScore[0]);
+                item.PeriodScores = MapApiPeriodScores(summary.period_scores ?? Array.Empty<periodScore>());
                 item.MatchStatusId = summary.match_status_code;
                 item.HomeScore = summary.home_score;
                 item.AwayScore = summary.away_score;

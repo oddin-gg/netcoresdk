@@ -198,4 +198,9 @@ public partial class fixture_change : FeedMessageModel
             this.next_live_timeFieldSpecified = value;
         }
     }
+
+    public string Key()
+    {
+        return $"{product}_{event_id}_{timestamp}";
+    }
 }

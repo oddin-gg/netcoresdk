@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using Oddin.OddsFeedSdk.AMQP.EventArguments;
+using Oddin.OddsFeedSdk.AMQP.Messages;
 using Oddin.OddsFeedSdk.API.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API
@@ -21,6 +24,8 @@ namespace Oddin.OddsFeedSdk.API
 
         public IMatchStatusCache MatchStatusCache { get; }
 
+        public ISet<string> DispatchedFixtureChanges { get; }
+
         public CacheManager(
             ISportDataCache sportDataCache,
             ITournamentsCache tournamentsCache,
@@ -39,6 +44,7 @@ namespace Oddin.OddsFeedSdk.API
             FixtureCache = fixtureCache;
             MatchStatusCache = matchStatusCache;
             MarketDescriptionCache = marketDescriptionCache;
+            DispatchedFixtureChanges = new HashSet<string>();
         }
 
         public void Dispose()
@@ -48,6 +54,22 @@ namespace Oddin.OddsFeedSdk.API
             TournamentsCache.Dispose();
             SportDataCache.Dispose();
             MatchStatusCache.Dispose();
+        }
+
+        public void OnFeedMessageReceived(FeedMessageModel message)
+        {
+            switch (message)
+            {
+                case odds_change oddsChangeMessage:
+                    MatchStatusCache.OnFeedMessageReceived(oddsChangeMessage);
+                    break;
+                case fixture_change fixtureChange:
+                    MatchCache.OnFeedMessageReceived(fixtureChange);
+                    TournamentsCache.OnFeedMessageReceived(fixtureChange);
+                    FixtureCache.OnFeedMessageReceived(fixtureChange);
+                    break;
+           }
+
         }
     }
 }

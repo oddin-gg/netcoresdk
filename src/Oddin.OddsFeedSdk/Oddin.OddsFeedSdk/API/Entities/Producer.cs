@@ -21,14 +21,14 @@ namespace Oddin.OddsFeedSdk.API.Entities
         internal bool Enabled;
         internal readonly string ApiUrl;
         internal readonly int StatefulRecoveryInMinutes;
-        internal readonly IEnumerable<ProducerScope>? ProducerScopes;
+        internal readonly IEnumerable<ProducerScope> ProducerScopes;
 
         internal long LastMessageTimestamp = 0;
         internal bool FlaggedDown = true;
         internal long LastProcessedMessageGenTimestamp = 0;
         internal long LastAliveReceivedGenTimestamp = 0;
         internal long RecoveryFromTimestamp = 0;
-        internal IRecoveryInfo? LastRecoveryInfo = null;
+        internal IRecoveryInfo LastRecoveryInfo = null;
 
         internal ProducerData(int id, string name, string description, bool active, string apiUrl, string producerScopes, int statefulRecoveryInMinutes)
         {
@@ -75,7 +75,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
 
         public string ApiUrl => ProducerData.ApiUrl;
 
-        public IEnumerable<ProducerScope>? ProducerScopes => ProducerData.ProducerScopes;
+        public IEnumerable<ProducerScope> ProducerScopes => ProducerData.ProducerScopes;
 
         public long LastProcessedMessageGenTimestamp => ProducerData.LastProcessedMessageGenTimestamp;
 

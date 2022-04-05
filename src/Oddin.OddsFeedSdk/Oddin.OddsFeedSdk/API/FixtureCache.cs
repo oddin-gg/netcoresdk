@@ -32,7 +32,7 @@ namespace Oddin.OddsFeedSdk.API
             return _cache.Get(id.ToString()) as LocalizedFixture;
         }
 
-        internal void LoadAndCacheItem(URN id, CultureInfo culture)
+        private void LoadAndCacheItem(URN id, CultureInfo culture)
         {
 
             FixturesEndpointModel fixtureData;
@@ -61,7 +61,7 @@ namespace Oddin.OddsFeedSdk.API
             _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
         }
 
-        public static CultureInfo StringToCultureInfoOrDefault(string cultureString)
+        private static CultureInfo StringToCultureInfoOrDefault(string cultureString)
         {
             if (string.IsNullOrWhiteSpace(cultureString))
                 return default;
@@ -76,6 +76,17 @@ namespace Oddin.OddsFeedSdk.API
             }
 
             return default;
+        }
+
+        public void OnFeedMessageReceived(fixture_change e)
+        {
+            var id = string.IsNullOrEmpty(e?.event_id) ? null : new URN(e.event_id);
+
+            if (id != null)
+            {
+                _log.LogDebug($"Invalidating FixtureCache from FEED for: {id}");
+                ClearCacheItem(id);
+            }
         }
 
         public void ClearCacheItem(URN id)

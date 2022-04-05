@@ -5,7 +5,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Oddin.OddsFeedSdk.AMQP.Abstractions;
 using Oddin.OddsFeedSdk.AMQP.EventArguments;
 using Oddin.OddsFeedSdk.AMQP.Mapping;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
@@ -36,8 +35,6 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         private readonly object _lock = new();
         private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(RecoveryManager));
         private Timer _timer;
-        private readonly IAmqpClient _amqpClient;
-
 
         public event EventHandler<EventRecoveryCompletedEventArgs> EventRecoveryCompleted;
         public event EventHandler<ProducerStatusChangeEventArgs> EventProducerDown;
@@ -47,7 +44,6 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             IFeedConfiguration oddsFeedConfiguration,
             IProducerManager producerManager,
             IApiClient apiClient,
-            IAmqpClient amqpClient,
             IRequestIdFactory requestIdFactory
         ) {
             _oddsFeedConfiguration = oddsFeedConfiguration ?? throw new ArgumentNullException(nameof(oddsFeedConfiguration));
@@ -57,8 +53,6 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
             _producerRecoveryData = new ConcurrentDictionary<int, ProducerRecoveryData>();
             _messageProcessingTimes = new ConcurrentDictionary<Guid, long>();
-            _amqpClient = amqpClient;
-
         }
 
         public void Open(bool replayOnly)
@@ -102,14 +96,12 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         public void Close()
         {
             _isOpened = false;
+            _timer.Dispose();
+            _timer = null;
         }
 
-        public void OnMessageProcessingStarted(object sender, MessageProcessingEventArgs eventArgs)
+        public void OnMessageProcessingStarted(Guid sessionId, int producerId, long timestamp)
         {
-            var timestamp = eventArgs.Timestamp ?? Timestamp.Now();
-            var producerId = eventArgs.ProducerId;
-            var sessionId = eventArgs.SessionId;
-
             lock (_lock)
             {
                 _messageProcessingTimes.AddOrUpdate(sessionId, timestamp, (_, _) => timestamp);
@@ -117,24 +109,20 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             }
         }
 
-        public void OnMessageProcessingEnded(object sender, MessageProcessingEventArgs eventArgs)
+        public void OnMessageProcessingEnded(Guid sessionId, int producerId, long? timestamp)
         {
-            var generatedTimestamp = eventArgs.Timestamp;
-            var producerId = eventArgs.ProducerId;
-            var sessionId = eventArgs.SessionId;
-
             lock (_lock)
             {
 
-                if (generatedTimestamp != null)
+                if (timestamp != null)
                 {
-                    FindOrMakeProducerRecoveryData(producerId).LastProcessedMessageGenTimestamp = (long) generatedTimestamp;
+                    FindOrMakeProducerRecoveryData(producerId).LastProcessedMessageGenTimestamp = (long) timestamp;
                 }
 
                 bool started = _messageProcessingTimes.TryGetValue(sessionId, out var start);
                 if (started == false || start == 0)
                 {
-                    _log.LogWarning("Message processing ended, but was not started");
+                    _log.LogDebug("Message processing ended, but was not started");
                 }
                 else
                 {

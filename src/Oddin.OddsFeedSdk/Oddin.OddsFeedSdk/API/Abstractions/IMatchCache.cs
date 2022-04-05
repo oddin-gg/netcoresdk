@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Oddin.OddsFeedSdk.AMQP.EventArguments;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.Common;
 
@@ -10,5 +11,6 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
     {
         void ClearCacheItem(URN id);
         LocalizedMatch GetMatch(URN id, IEnumerable<CultureInfo> cultures);
+        void OnFeedMessageReceived(fixture_change e);
     }
 }

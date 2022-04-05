@@ -6,7 +6,7 @@ namespace Oddin.OddsFeedSdk
 {
     internal static class SdkLoggerFactory
     {
-        private static ILoggerFactory? _loggerFactory;
+        private static ILoggerFactory _loggerFactory;
 
         public static ILogger GetLogger(Type type)
         {
@@ -16,7 +16,7 @@ namespace Oddin.OddsFeedSdk
             return _loggerFactory.CreateLogger(type);
         }
 
-        public static void Initialize(ILoggerFactory? loggerFactory)
+        public static void Initialize(ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory ?? new NullLoggerFactory();
         }
