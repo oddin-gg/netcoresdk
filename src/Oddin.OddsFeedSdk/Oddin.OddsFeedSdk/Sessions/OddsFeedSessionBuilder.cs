@@ -30,7 +30,7 @@ namespace Oddin.OddsFeedSdk.Sessions
                 throw new InvalidOperationException($"The {nameof(IOddsFeedSession)} instance has already been built by the current instance of {nameof(ISessionBuilder)}!");
             }
             _hasBeenSessionBuild = true;
-            return _feed.CreateSession(_msgInterest);
+            return _feed.BuildSession(_msgInterest);
         }
     }
 }
