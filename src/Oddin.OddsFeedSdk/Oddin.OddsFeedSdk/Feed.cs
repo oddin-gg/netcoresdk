@@ -97,10 +97,7 @@ namespace Oddin.OddsFeedSdk
                 .AddSingleton<IApiModelMapper, ApiModelMapper>()
                 .AddSingleton<IFeedMessageMapper, FeedMessageMapper>()
                 .AddSingleton<IApiClient, ApiClient>()
-                .AddSingleton<IAmqpClient, AmqpClient>()
                 .AddSingleton<IProducerManager, ProducerManager>()
-                .AddSingleton<EventHandler<CallbackExceptionEventArgs>>(OnAmqpCallbackException)
-                .AddSingleton<EventHandler<ShutdownEventArgs>>(OnConnectionShutdown)
                 .AddSingleton<IRequestIdFactory, RequestIdFactory>()
                 .AddSingleton<ISdkRecoveryManager, RecoveryManager>()
                 .AddSingleton<IRestClient, RestClient>()
@@ -251,16 +248,7 @@ namespace Oddin.OddsFeedSdk
 
             if (!hasAliveMessageInterest && !replayOnly)
             {
-                _possibleAliveSession = new OddsFeedSession(
-                    this,
-                    Services.GetService<IAmqpClient>(),
-                    Services.GetService<IFeedMessageMapper>(),
-                    MessageInterest.SystemAliveOnlyMessages,
-                    _config,
-                    ProducerManager,
-                    (RecoveryManager) _recoveryManager,
-                    _cacheManager
-                );
+                _possibleAliveSession = NewSession(MessageInterest.SystemAliveOnlyMessages);
                 _possibleAliveSession.Open(MessageInterest.SystemAliveOnlyMessages.RoutingKeys);
             }
 
@@ -404,7 +392,7 @@ namespace Oddin.OddsFeedSdk
                 Dispatch(Closed, new FeedCloseEventArgs($"{shutdownEventArgs.ReplyCode} {shutdownEventArgs.ReplyText}"), nameof(Closed));
         }
 
-        internal IOddsFeedSession CreateSession(MessageInterest messageInterest)
+        internal IOddsFeedSession BuildSession(MessageInterest messageInterest)
         {
             if (messageInterest is null)
                 throw new ArgumentNullException(nameof(messageInterest));
@@ -412,19 +400,26 @@ namespace Oddin.OddsFeedSdk
             if (IsOpened())
                 throw new InvalidOperationException($"Cannot create a session in an already opened feed!");
 
-            var session = new OddsFeedSession(
-                this,
-                Services.GetService<IAmqpClient>(),
-                Services.GetService<IFeedMessageMapper>(),
-                messageInterest,
-                _config,
-                ProducerManager,
-                (RecoveryManager) _recoveryManager,
-                _cacheManager
-            );
-
+            var session = NewSession(messageInterest);
             _sessions.Add(session);
             return session;
+        }
+
+        private OddsFeedSession NewSession(MessageInterest messageInterest)
+        {
+            return new OddsFeedSession(
+                this,
+                _config,
+                Services.GetService<IFeedMessageMapper>(),
+                messageInterest,
+                ProducerManager,
+                (RecoveryManager) _recoveryManager,
+                _cacheManager,
+                Services.GetService<IApiClient>(),
+                OnAmqpCallbackException,
+                OnConnectionShutdown,
+                Services.GetService<IExchangeNameProvider>()
+            );
         }
 
         public IOddsFeedSessionBuilder CreateBuilder()

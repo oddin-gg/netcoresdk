@@ -13,11 +13,13 @@ using System.Text;
 using Oddin.OddsFeedSdk.Abstractions;
 using Oddin.OddsFeedSdk.AMQP;
 using Oddin.OddsFeedSdk.API;
+using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Exceptions;
 using Oddin.OddsFeedSdk.Managers.Abstractions;
 using Oddin.OddsFeedSdk.Managers.Recovery;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 namespace Oddin.OddsFeedSdk.Sessions
@@ -43,17 +45,20 @@ namespace Oddin.OddsFeedSdk.Sessions
 
         public IOddsFeed Feed { get; }
 
-        public OddsFeedSession(IOddsFeed feed,
-            IAmqpClient amqpClient,
+        public OddsFeedSession(
+            IOddsFeed feed,
+            IFeedConfiguration configuration,
             IFeedMessageMapper feedMessageMapper,
             MessageInterest messageInterest,
-            IFeedConfiguration configuration,
             IProducerManager producerManager,
             RecoveryManager recoveryMessageProcessor,
-            CacheManager cacheManager
-            )
-        {
-            _amqpClient = amqpClient ?? throw new ArgumentNullException(nameof(amqpClient));
+            CacheManager cacheManager,
+            IApiClient apiClient,
+            EventHandler<CallbackExceptionEventArgs> onCallbackException,
+            EventHandler<ShutdownEventArgs> onConnectionShutdown,
+            IExchangeNameProvider exchangeNameProvider
+        ) {
+            _amqpClient = new AmqpClient(configuration, apiClient, onCallbackException, onConnectionShutdown, exchangeNameProvider);
             _feedMessageMapper = feedMessageMapper ?? throw new ArgumentNullException(nameof(feedMessageMapper));
             MessageInterest = messageInterest ?? throw new ArgumentNullException(nameof(messageInterest));
             _configuration = configuration;
