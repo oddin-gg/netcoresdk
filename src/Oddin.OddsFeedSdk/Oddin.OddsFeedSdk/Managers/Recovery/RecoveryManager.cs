@@ -371,7 +371,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             {
                 recoveryFrom = (long) fromTimestamp;
             }
-            else if (_oddsFeedConfiguration.InitialSnapshotTimeInMinutes != default)
+
+            if (recoveryFrom == 0 && _oddsFeedConfiguration.InitialSnapshotTimeInMinutes != default)
             {
                 recoveryFrom = now - Timestamp.FromMinutes(_oddsFeedConfiguration.InitialSnapshotTimeInMinutes);
             }
