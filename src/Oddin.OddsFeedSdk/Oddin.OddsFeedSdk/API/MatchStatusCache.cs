@@ -155,7 +155,10 @@ namespace Oddin.OddsFeedSdk.API
                 scoreboard.home_destroyed_towers,
                 scoreboard.away_destroyed_towers,
                 scoreboard.home_goals,
-                scoreboard.away_goals);
+                scoreboard.away_goals,
+                scoreboard.time,
+                scoreboard.game_time
+                );
         }
 
         private Scoreboard MakeFeedScoreboard(scoreboard scoreboard)
@@ -177,7 +180,9 @@ namespace Oddin.OddsFeedSdk.API
                 scoreboard.home_destroyed_towers,
                 scoreboard.away_destroyed_towers,
                 scoreboard.home_goals,
-                scoreboard.away_goals);
+                scoreboard.away_goals,
+                scoreboard.time,
+                scoreboard.game_time);
         }
 
         private List<PeriodScore> MapApiPeriodScores(periodScore[] scores)
