@@ -206,6 +206,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         public int home_goals { get; set; }
         [XmlAttribute]
         public int away_goals { get; set; }
+        [XmlAttribute]
+        public int time { get; set; }
+        [XmlAttribute]
+        public int game_time { get; set; }
     }
 
     [Serializable]

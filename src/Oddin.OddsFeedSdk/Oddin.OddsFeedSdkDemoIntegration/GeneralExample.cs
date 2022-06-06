@@ -273,6 +273,16 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var tournament = match.Tournament;
             Console.WriteLine($"Tournament Id: {tournament.Id}");
             Console.WriteLine($"Risk Tier: {tournament.RiskTier()}");
+            
+            // Scoreboard
+            if (match.Status.IsScoreboardAvailable)
+            {
+                var scoreboard = match.Status.Scoreboard;
+                Console.WriteLine($"Home Goals: {scoreboard.HomeGoals}");
+                Console.WriteLine($"Away Goals: {scoreboard.AwayGoals}");
+                Console.WriteLine($"Scoreboard Time: {scoreboard.Time}");
+                Console.WriteLine($"Scoreboard GameTime: {scoreboard.GameTime}");
+            }
         }
 
         private static async void Session_OnFixtureChange(object sender, FixtureChangeEventArgs<ISportEvent> eventArgs)
