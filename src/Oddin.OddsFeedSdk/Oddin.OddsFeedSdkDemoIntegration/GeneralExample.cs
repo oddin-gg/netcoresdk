@@ -152,6 +152,13 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Live odds availability: {m.LiveOddsAvailability}");
             Console.WriteLine($"Status: {m.Status}");
 
+            var tournament = m.Tournament;
+            var scheduledTime = await tournament.GetScheduledTimeAsync();
+            var scheduledEnd = await tournament.GetScheduledEndTimeAsync();
+            Console.WriteLine($"Tournament Id: {tournament.Id}");
+            Console.WriteLine($"ScheduledTime: {scheduledTime}");
+            Console.WriteLine($"ScheduledEnd: {scheduledEnd}");
+
             var sport = await provider.GetSportAsync(sportUrn, CultureEn);
             Console.WriteLine($"Name: {sport.GetName(CultureEn)}");
             Console.WriteLine($"Names: {string.Join(", ", sport.Names)}");
@@ -278,10 +285,12 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             if (match.Status.IsScoreboardAvailable)
             {
                 var scoreboard = match.Status.Scoreboard;
-                Console.WriteLine($"Home Goals: {scoreboard.HomeGoals}");
-                Console.WriteLine($"Away Goals: {scoreboard.AwayGoals}");
-                Console.WriteLine($"Scoreboard Time: {scoreboard.Time}");
-                Console.WriteLine($"Scoreboard GameTime: {scoreboard.GameTime}");
+                if (scoreboard != null) {
+                    Console.WriteLine($"Home Goals: {scoreboard.HomeGoals}");
+                    Console.WriteLine($"Away Goals: {scoreboard.AwayGoals}");
+                    Console.WriteLine($"Scoreboard Time: {scoreboard.Time}");
+                    Console.WriteLine($"Scoreboard GameTime: {scoreboard.GameTime}");
+                }
             }
         }
 
@@ -311,7 +320,11 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
             // Tournament
             var tournament = match.Tournament;
+            var scheduledTime = await tournament.GetScheduledTimeAsync();
+            var scheduledEnd = await tournament.GetScheduledEndTimeAsync();
             Console.WriteLine($"Tournament Id: {tournament.Id}");
+            Console.WriteLine($"ScheduledTime: {scheduledTime}");
+            Console.WriteLine($"ScheduledEnd: {scheduledEnd}");
             Console.WriteLine($"Risk Tier: {tournament.RiskTier()}");
             
             // Get Sport from Match
