@@ -1,20 +1,20 @@
-using Microsoft.Extensions.Logging;
-using Oddin.OddsFeedSdk;
-using Oddin.OddsFeedSdk.AMQP.EventArguments;
-using Oddin.OddsFeedSdk.API.Entities.Abstractions;
-using Oddin.OddsFeedSdk.Common;
-using Oddin.OddsFeedSdk.Dispatch.EventArguments;
-using Oddin.OddsFeedSdk.Sessions;
-using Oddin.OddsFeedSdk.Sessions.Abstractions;
-using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Oddin.OddsFeedSdk;
 using Oddin.OddsFeedSdk.Abstractions;
+using Oddin.OddsFeedSdk.AMQP.EventArguments;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
+using Oddin.OddsFeedSdk.Dispatch.EventArguments;
+using Oddin.OddsFeedSdk.Sessions;
+using Oddin.OddsFeedSdk.Sessions.Abstractions;
+using Serilog;
 
 namespace Oddin.OddsFeedSdkDemoIntegration
 {
@@ -34,7 +34,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
                 .SetInitialSnapshotTimeInMinutes(60)
                 // or .LoadFromConfigFile()
                 .Build();
-            
+
             // Create Feed
             var feed = new Feed(config, loggerFactory);
 
@@ -50,7 +50,11 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             feed.Open();
 
             var ctrlCPressed = new TaskCompletionSource<bool>();
-            Console.CancelKeyPress += (s, e) => { e.Cancel = true; ctrlCPressed.TrySetResult(true); };
+            Console.CancelKeyPress += (s, e) =>
+            {
+                e.Cancel = true;
+                ctrlCPressed.TrySetResult(true);
+            };
 
             var tasks = new List<Task>
             {
@@ -79,9 +83,11 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
             // if the match is too old, 404 will be returned
             // you can use HttpStatusCode.IsSuccessStatusCode to check validity of response
-            Console.WriteLine($"Event recovery request: {feed.RecoveryManager.InitiateEventOddsMessagesRecovery(producer, urn)}");
-            Console.WriteLine($"Event stateful recovery request: {feed.RecoveryManager.InitiateEventStatefulMessagesRecovery(producer, urn)}");
-            
+            Console.WriteLine(
+                $"Event recovery request: {feed.RecoveryManager.InitiateEventOddsMessagesRecovery(producer, urn)}");
+            Console.WriteLine(
+                $"Event stateful recovery request: {feed.RecoveryManager.InitiateEventStatefulMessagesRecovery(producer, urn)}");
+
             return Task.CompletedTask;
         }
 
@@ -117,7 +123,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Start date: {act.GetStartDate()}");
             Console.WriteLine($"ID: {act.Id}");
             Console.WriteLine($"Risk Tier: {act.RiskTier()}");
-            
+
             var competitor = provider.GetCompetitor(competitorUrn, CultureEn);
             Console.WriteLine($"Abbreviation: {competitor.Abbreviations.First()}");
             Console.WriteLine($"Country: {competitor.Countries.FirstOrDefault()}");
@@ -169,9 +175,12 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
             var description = marketDescriptionsEn.First();
             var specifiers = string.Join(", ", description.Specifiers.Select(s => $"Name:{s.Name} Type:{s.Type}"));
-            var outcomes = string.Join(", ", description.Outcomes.Select(o => $"Id:{o.Id}/{o.RefId} Name:{o.GetName(CultureEn)} Description:{o.GetDescription(CultureEn)}"));
+            var outcomes = string.Join(", ",
+                description.Outcomes.Select(o =>
+                    $"Id:{o.Id}/{o.RefId} Name:{o.GetName(CultureEn)} Description:{o.GetDescription(CultureEn)}"));
 
-            Console.WriteLine($"Market Description - Name: {description.GetName(CultureEn)} Id:{description.Id} RefId:{description.RefId} OutcomeType/Variant:{description.OutcomeType}");
+            Console.WriteLine(
+                $"Market Description - Name: {description.GetName(CultureEn)} Id:{description.Id} RefId:{description.RefId} OutcomeType/Variant:{description.OutcomeType}");
             Console.WriteLine($"Specifiers:{specifiers}");
             Console.WriteLine($"Outcomes:{outcomes}");
 
@@ -220,6 +229,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
         private static void AttachEvents(IOddsFeedSession session)
         {
+            session.OnRawFeedMessageReceived += OnRawFeedMessageReceived;
             session.OnOddsChange += OnOddsChangeReceived;
             session.OnBetStop += OnBetStopReceived;
             session.OnBetSettlement += OnBetSettlement;
@@ -230,6 +240,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
         private static void DetachEvents(IOddsFeedSession session)
         {
+            session.OnRawFeedMessageReceived -= OnRawFeedMessageReceived;
             session.OnOddsChange -= OnOddsChangeReceived;
             session.OnBetStop -= OnBetStopReceived;
             session.OnBetSettlement -= OnBetSettlement;
@@ -267,28 +278,33 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
             var competitor = match.Competitors.FirstOrDefault();
             Console.WriteLine($"Odds change competitor icon path: {competitor?.IconPath}");
-            Console.WriteLine($"Odds change competitor sports: {string.Join(", ", competitor?.GetSports().Select(s => s.Id) ?? Enumerable.Empty<URN>())}");
-            
+            Console.WriteLine(
+                $"Odds change competitor sports: {string.Join(", ", competitor?.GetSports().Select(s => s.Id) ?? Enumerable.Empty<URN>())}");
+
             // Tournament
             var tournament = match.Tournament;
             Console.WriteLine($"Tournament Id: {tournament.Id}");
             Console.WriteLine($"Risk Tier: {tournament.RiskTier()}");
-            
+
             // Scoreboard
             if (match.Status.IsScoreboardAvailable)
             {
                 var scoreboard = match.Status.Scoreboard;
-                Console.WriteLine($"Home Goals: {scoreboard.HomeGoals}");
-                Console.WriteLine($"Away Goals: {scoreboard.AwayGoals}");
-                Console.WriteLine($"Scoreboard Time: {scoreboard.Time}");
-                Console.WriteLine($"Scoreboard GameTime: {scoreboard.GameTime}");
+                if (scoreboard != null)
+                {
+                    Console.WriteLine($"Home Goals: {scoreboard.HomeGoals}");
+                    Console.WriteLine($"Away Goals: {scoreboard.AwayGoals}");
+                    Console.WriteLine($"Scoreboard Time: {scoreboard.Time}");
+                    Console.WriteLine($"Scoreboard GameTime: {scoreboard.GameTime}");
+                }
             }
         }
 
         private static async void Session_OnFixtureChange(object sender, FixtureChangeEventArgs<ISportEvent> eventArgs)
         {
             var e = eventArgs.GetFixtureChange().Event;
-            Console.WriteLine($"On Bet Cancel Message Received in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine(
+                $"On Bet Cancel Message Received in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
             Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
             Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
         }
@@ -296,7 +312,8 @@ namespace Oddin.OddsFeedSdkDemoIntegration
         private static async void Session_OnBetCancel(object sender, BetCancelEventArgs<ISportEvent> eventArgs)
         {
             var e = eventArgs.GetBetCancel().Event;
-            Console.WriteLine($"On Bet Cancel Message Received in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine(
+                $"On Bet Cancel Message Received in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
             Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
             Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
         }
@@ -304,7 +321,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
         private static async void OnBetSettlement(object sender, BetSettlementEventArgs<ISportEvent> eventArgs)
         {
             var sportEvent = eventArgs.GetBetSettlement().Event;
-            
+
             // Match
             var match = (IMatch) sportEvent;
             Console.WriteLine($"Match Id: {match.Id}");
@@ -313,17 +330,17 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var tournament = match.Tournament;
             Console.WriteLine($"Tournament Id: {tournament.Id}");
             Console.WriteLine($"Risk Tier: {tournament.RiskTier()}");
-            
+
             // Get Sport from Match
             var sport1 = await match.GetSportAsync();
             var sportId = sport1.Id;
             Console.WriteLine($"Sport Id: {sportId}");
-            
+
             // Get Sport from Tournament
             var sport2 = await tournament.GetSportAsync();
             var sportName = sport2.GetName(CultureEn);
             Console.WriteLine($"Sport Name: {sportName}");
-            
+
             // Get Sport Using SportDataProvider
             var session = (IOddsFeedSession) sender;
             var provider = session.Feed.SportDataProvider;
@@ -333,7 +350,8 @@ namespace Oddin.OddsFeedSdkDemoIntegration
 
         private static async void OnBetStopReceived(object sender, BetStopEventArgs<ISportEvent> eventArgs)
         {
-            Console.WriteLine($"Bet stop in {await eventArgs.GetBetStop().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
+            Console.WriteLine(
+                $"Bet stop in {await eventArgs.GetBetStop().Event.GetNameAsync(Feed.AvailableLanguages().First())}");
         }
 
         private static void OnUnparsableMessageReceived(object sender, UnparsableMessageEventArgs e)
@@ -341,21 +359,36 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"On Unparsable Message Received in {e.MessageType}");
         }
 
+        private static void OnRawFeedMessageReceived(object sender, RawMessageEventArgs e)
+        {
+            var producer = e.Producer;
+            if (producer.Length > 0)
+            {
+                Console.WriteLine($"Received a RAW message: {e.MessageType} from: {producer}");
+            }
+            else
+            {
+                // not all messages (ALIVE) have a producer
+                Console.WriteLine($"Received a RAW message: {e.MessageType}");
+            }
+        }
+
         private static void OnEventRecoveryComplete(object sender, EventRecoveryCompletedEventArgs eventArgs)
         {
-            Console.WriteLine($"Event recovery completed [event id: {eventArgs.GetEventId()}, request id: {eventArgs.GetRequestId()}]");
+            Console.WriteLine(
+                $"Event recovery completed [event id: {eventArgs.GetEventId()}, request id: {eventArgs.GetRequestId()}]");
         }
-        
+
         private static void OnProducerDown(object sender, ProducerStatusChangeEventArgs eventArgs)
         {
             Console.WriteLine($"OnProducerDown: {eventArgs.GetProducerStatusChange().Producer.Name}");
         }
-        
+
         private static void OnProducerUp(object sender, ProducerStatusChangeEventArgs eventArgs)
         {
             Console.WriteLine($"OnProducerUp: {eventArgs.GetProducerStatusChange().Producer.Name}");
         }
-        
+
         private static void OnConnectionException(object sender, ConnectionExceptionEventArgs eventArgs)
         {
             Console.WriteLine($"OnConnectionException: {eventArgs.Exception}");
