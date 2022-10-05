@@ -18,5 +18,6 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
         int? AwayGoals { get; }
         int? Time { get; }
         int? GameTime { get; }
+        int? CurrentDefenderTeam { get; }
     }
 }

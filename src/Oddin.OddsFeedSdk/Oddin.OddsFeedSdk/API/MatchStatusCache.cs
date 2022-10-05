@@ -58,7 +58,8 @@ namespace Oddin.OddsFeedSdk.API
             _semaphore.WaitOne();
             try
             {
-                RefreshOrInsertFeedItem(string.IsNullOrEmpty(e.event_id) ? null : new URN(e.event_id), e.sport_event_status);
+                RefreshOrInsertFeedItem(string.IsNullOrEmpty(e.event_id) ? null : new URN(e.event_id),
+                    e.sport_event_status);
             }
             catch (Exception ex)
             {
@@ -78,7 +79,8 @@ namespace Oddin.OddsFeedSdk.API
                 {
                     WinnerId = string.IsNullOrEmpty(status?.winner_id) ? null : new URN(status.winner_id),
                     Status = status.status.GetEventStatusFromFeed(),
-                    PeriodScores = MapFeedPeriodScores(status.period_scores?.period_score ?? Array.Empty<periodScoreType>()),
+                    PeriodScores =
+                        MapFeedPeriodScores(status.period_scores?.period_score ?? Array.Empty<periodScoreType>()),
                     MatchStatusId = status.match_status,
                     HomeScore = status.home_score,
                     AwayScore = status.away_score,
@@ -90,7 +92,8 @@ namespace Oddin.OddsFeedSdk.API
             {
                 item.WinnerId = string.IsNullOrEmpty(status?.winner_id) ? null : new URN(status.winner_id);
                 item.Status = status.status.GetEventStatusFromFeed();
-                item.PeriodScores = MapFeedPeriodScores(status.period_scores?.period_score ?? Array.Empty<periodScoreType>());
+                item.PeriodScores =
+                    MapFeedPeriodScores(status.period_scores?.period_score ?? Array.Empty<periodScoreType>());
                 item.MatchStatusId = status.match_status;
                 item.HomeScore = status.home_score;
                 item.AwayScore = status.away_score;
@@ -157,8 +160,9 @@ namespace Oddin.OddsFeedSdk.API
                 scoreboard.home_goals,
                 scoreboard.away_goals,
                 scoreboard.time,
-                scoreboard.game_time
-                );
+                scoreboard.game_time,
+                scoreboard.current_def_team
+            );
         }
 
         private Scoreboard MakeFeedScoreboard(scoreboard scoreboard)
@@ -182,40 +186,42 @@ namespace Oddin.OddsFeedSdk.API
                 scoreboard.home_goals,
                 scoreboard.away_goals,
                 scoreboard.time,
-                scoreboard.game_time);
+                scoreboard.game_time,
+                scoreboard.current_def_team
+            );
         }
 
         private List<PeriodScore> MapApiPeriodScores(periodScore[] scores)
             => scores.Select(s =>
-                new PeriodScore(
-                    s.home_score,
-                    s.away_score,
-                    s.number,
-                    s.match_status_code,
-                    s.type,
-                    s.home_won_rounds,
-                    s.away_won_rounds,
-                    s.home_kills,
-                    s.away_kills,
-                    s.home_goals,
-                    s.away_goals))
+                    new PeriodScore(
+                        s.home_score,
+                        s.away_score,
+                        s.number,
+                        s.match_status_code,
+                        s.type,
+                        s.home_won_rounds,
+                        s.away_won_rounds,
+                        s.home_kills,
+                        s.away_kills,
+                        s.home_goals,
+                        s.away_goals))
                 .OrderBy(s => s.PeriodNumber)
                 .ToList();
 
         private List<PeriodScore> MapFeedPeriodScores(periodScoreType[] scores)
             => scores.Select(s =>
-                new PeriodScore(
-                    s.home_score,
-                    s.away_score,
-                    s.number,
-                    s.match_status_code,
-                    s.type,
-                    s.home_won_rounds,
-                    s.away_won_rounds,
-                    s.home_kills,
-                    s.away_kills,
-                    s.home_goals,
-                    s.away_goals))
+                    new PeriodScore(
+                        s.home_score,
+                        s.away_score,
+                        s.number,
+                        s.match_status_code,
+                        s.type,
+                        s.home_won_rounds,
+                        s.away_won_rounds,
+                        s.home_kills,
+                        s.away_kills,
+                        s.home_goals,
+                        s.away_goals))
                 .OrderBy(s => s.PeriodNumber)
                 .ToList();
 
@@ -226,6 +232,7 @@ namespace Oddin.OddsFeedSdk.API
                 _apiClient.GetMatchSummary(id, Feed.AvailableLanguages().First());
                 matchStatus = _cache.Get(id.ToString()) as LocalizedMatchStatus;
             }
+
             return matchStatus;
         }
 
