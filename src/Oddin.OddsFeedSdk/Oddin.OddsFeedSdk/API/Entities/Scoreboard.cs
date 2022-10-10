@@ -20,6 +20,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public int? AwayGoals { get; }
         public int? Time { get; }
         public int? GameTime { get; }
+        public int? CurrentDefenderTeam { get; }
 
         public Scoreboard(
             int? currentCtTeam,
@@ -37,7 +38,9 @@ namespace Oddin.OddsFeedSdk.API.Entities
             int? homeGoals,
             int? awayGoals,
             int? time,
-            int? gameTime)
+            int? gameTime,
+            int? currentDefenderTeam
+        )
         {
             CurrentCtTeam = currentCtTeam;
             HomeWonRounds = homeWonRounds;
@@ -55,6 +58,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
             AwayGoals = awayGoals;
             Time = time;
             GameTime = gameTime;
+            CurrentDefenderTeam = currentDefenderTeam;
         }
     }
 }

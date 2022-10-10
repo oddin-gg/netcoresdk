@@ -210,6 +210,8 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         public int time { get; set; }
         [XmlAttribute]
         public int game_time { get; set; }
+        [XmlAttribute]
+        public int current_def_team { get; set; }
     }
 
     [Serializable]
