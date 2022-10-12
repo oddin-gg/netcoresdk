@@ -9,5 +9,7 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         IMarketDescription GetMarketDescription(int marketId, IReadOnlyDictionary<string, string> specifiers, IEnumerable<CultureInfo> cultures);
 
         IEnumerable<IMarketDescription> GetMarketDescriptions(CultureInfo culture);
+
+        IEnumerable<IMarketVoidReason> GetMarketVoidReasons();
     }
 }

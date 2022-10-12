@@ -9,5 +9,8 @@ namespace Oddin.OddsFeedSdk.Managers.Abstractions
         IEnumerable<IMarketDescription> GetMarketDescriptions(CultureInfo culture = null);
 
         void DeleteVariantMarketDescriptionFromCache(int marketId, string variantValue);
+
+        // Get MarketVoidReasons from cache
+        IEnumerable<IMarketVoidReason> GetMarketVoidReasons();
     }
 }

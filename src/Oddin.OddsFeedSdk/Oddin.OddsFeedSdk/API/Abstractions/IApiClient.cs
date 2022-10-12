@@ -1,11 +1,11 @@
-using Oddin.OddsFeedSdk.API.Entities.Abstractions;
-using Oddin.OddsFeedSdk.API.Models;
-using Oddin.OddsFeedSdk.Common;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Threading.Tasks;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.API.Models;
+using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.API.Abstractions
 {
@@ -24,6 +24,8 @@ namespace Oddin.OddsFeedSdk.API.Abstractions
         Task<MarketDescriptionsModel> GetMarketDescriptionsAsync(CultureInfo culture = null);
 
         Task<HttpStatusCode> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId);
+
+        Task<MarketVoidReasonsModel> GetMarketVoidReasonsAsync();
 
         Task<HttpStatusCode> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId);
 

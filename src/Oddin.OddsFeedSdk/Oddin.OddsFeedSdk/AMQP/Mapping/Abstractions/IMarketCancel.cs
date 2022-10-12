@@ -3,5 +3,7 @@
     public interface IMarketCancel : IMarket
     {
         int? VoidReason { get; }
+        int? VoidReasonId { get; }
+        string? VoidReasonParams { get; }
     }
 }

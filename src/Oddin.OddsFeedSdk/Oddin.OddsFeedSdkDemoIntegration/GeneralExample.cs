@@ -184,6 +184,13 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Specifiers:{specifiers}");
             Console.WriteLine($"Outcomes:{outcomes}");
 
+            var marketVoidReasons = manager.GetMarketVoidReasons();
+            foreach (var voidReason in marketVoidReasons)
+            {
+                Console.WriteLine(
+                    $"Void reason: [id={voidReason.Id}; name='{voidReason.Name}'; description='{voidReason.Description}'; template='{voidReason.Template}'; params='{string.Join(",", voidReason.Params)}']");
+            }
+
             return Task.CompletedTask;
         }
 
@@ -316,6 +323,11 @@ namespace Oddin.OddsFeedSdkDemoIntegration
                 $"On Bet Cancel Message Received in {await e.GetNameAsync(Feed.AvailableLanguages().First())}");
             Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
             Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
+            foreach (var market in eventArgs.GetBetCancel(CultureEn).Markets)
+            {
+                Console.WriteLine(
+                    $"Market: '{market.GetName(CultureEn)}'; voidReason: {market.VoidReason}; voidReasonId: {market.VoidReasonId}; voidReasonParams: '{market.VoidReasonParams}'");
+            }
         }
 
         private static async void OnBetSettlement(object sender, BetSettlementEventArgs<ISportEvent> eventArgs)
