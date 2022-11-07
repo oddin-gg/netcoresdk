@@ -5,44 +5,43 @@ using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
-namespace Oddin.OddsFeedSdk.AMQP.Mapping
+namespace Oddin.OddsFeedSdk.AMQP.Mapping;
+
+internal class OutcomeSettlement : Outcome, IOutcomeSettlement
 {
-    internal class OutcomeSettlement : Outcome, IOutcomeSettlement
+    internal OutcomeSettlement(
+        double? deadHeatFactor,
+        long id,
+        long refId,
+        int result,
+        double? voidFactor,
+        IMarketDescriptionFactory marketDescriptionFactory,
+        IFeedConfiguration configuration,
+        int marketId,
+        IReadOnlyDictionary<string, string> marketSpecifiers,
+        ISportEvent sportEvent)
+        : base(id, refId, marketDescriptionFactory, configuration, marketId, marketSpecifiers, sportEvent)
     {
-        public double? DeadHeatFactor { get; }
+        DeadHeatFactor = deadHeatFactor;
 
-        public VoidFactor? VoidFactor { get; }
-
-        public OutcomeResult OutcomeResult { get; }
-
-        internal OutcomeSettlement(
-            double? deadHeatFactor,
-            long id,
-            long refId,
-            int result,
-            double? voidFactor,
-            IMarketDescriptionFactory marketDescriptionFactory,
-            IFeedConfiguration configuration,
-            int marketId,
-            IReadOnlyDictionary<string, string> marketSpecifiers,
-            ISportEvent sportEvent)
-            : base(id, refId, marketDescriptionFactory, configuration, marketId, marketSpecifiers, sportEvent)
+        VoidFactor = voidFactor switch
         {
-            DeadHeatFactor = deadHeatFactor;
+            1 => Enums.VoidFactor.One,
+            0.5 => Enums.VoidFactor.Half,
+            _ => null
+        };
 
-            VoidFactor = voidFactor switch
-            {
-                1 => Enums.VoidFactor.One,
-                0.5 => Enums.VoidFactor.Half,
-                _ => null
-            };
-
-            OutcomeResult = result switch
-            {
-                0 => OutcomeResult.Lost,
-                1 => OutcomeResult.Won,
-                _ => OutcomeResult.UndecidedYet
-            };
-        }
+        OutcomeResult = result switch
+        {
+            0 => OutcomeResult.Lost,
+            1 => OutcomeResult.Won,
+            _ => OutcomeResult.UndecidedYet
+        };
     }
+
+    public double? DeadHeatFactor { get; }
+
+    public VoidFactor? VoidFactor { get; }
+
+    public OutcomeResult OutcomeResult { get; }
 }

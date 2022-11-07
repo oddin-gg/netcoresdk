@@ -1,12 +1,11 @@
 using System;
 using Oddin.OddsFeedSdk.Common;
 
-namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
-{
-    public interface IFixtureChange
-    {
-        URN SportEventId { get; }
+namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
 
-        DateTime UpdateTime { get; }
-    }
+public interface IFixtureChange
+{
+    URN SportEventId { get; }
+
+    DateTime UpdateTime { get; }
 }

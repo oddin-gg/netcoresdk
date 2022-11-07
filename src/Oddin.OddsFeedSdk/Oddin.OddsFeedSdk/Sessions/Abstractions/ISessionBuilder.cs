@@ -1,7 +1,6 @@
-﻿namespace Oddin.OddsFeedSdk.Sessions.Abstractions
+﻿namespace Oddin.OddsFeedSdk.Sessions.Abstractions;
+
+public interface ISessionBuilder
 {
-    public interface ISessionBuilder
-    {
-        IOddsFeedSession Build();
-    }
+    IOddsFeedSession Build();
 }

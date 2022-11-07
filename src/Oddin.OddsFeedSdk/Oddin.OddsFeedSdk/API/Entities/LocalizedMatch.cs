@@ -5,30 +5,26 @@ using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 
-namespace Oddin.OddsFeedSdk.API.Entities
+namespace Oddin.OddsFeedSdk.API.Entities;
+
+internal class LocalizedMatch : ILocalizedItem
 {
-    internal class LocalizedMatch : ILocalizedItem
-    {
-        internal URN Id { get; }
-        internal URN RefId { get; set; }
+    public LocalizedMatch(URN id) => Id = id;
 
-        internal DateTime? ScheduledTime { get; set; }
-        internal DateTime? ScheduledEndTime { get; set; }
-        internal URN SportId { get; set; }
-        internal URN TournamentId { get; set; }
-        internal URN HomeTeamId { get; set; }
-        internal URN AwayTeamId { get; set; }
-        internal string HomeTeamQualifier { get; set; }
-        internal string AwayTeamQualifier { get; set; }
+    internal URN Id { get; }
+    internal URN RefId { get; set; }
 
-        internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
-        public IEnumerable<CultureInfo> LoadedLocals => Name.Keys;
+    internal DateTime? ScheduledTime { get; set; }
+    internal DateTime? ScheduledEndTime { get; set; }
+    internal URN SportId { get; set; }
+    internal URN TournamentId { get; set; }
+    internal URN HomeTeamId { get; set; }
+    internal URN AwayTeamId { get; set; }
+    internal string HomeTeamQualifier { get; set; }
+    internal string AwayTeamQualifier { get; set; }
 
-        internal LiveOddsAvailability LiveOddsAvailability { get; set; }
+    internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
 
-        public LocalizedMatch(URN id)
-        {
-            Id = id;
-        }
-    }
+    internal LiveOddsAvailability LiveOddsAvailability { get; set; }
+    public IEnumerable<CultureInfo> LoadedLocals => Name.Keys;
 }

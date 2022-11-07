@@ -2,16 +2,15 @@ using System;
 using System.Collections.Generic;
 using Oddin.OddsFeedSdk.Common;
 
-namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
+namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
+
+public interface IFixture
 {
-    public interface IFixture
-    {
-        URN Id { get; }
+    URN Id { get; }
 
-        DateTime? StartTime { get; }
+    DateTime? StartTime { get; }
 
-        IReadOnlyDictionary<string, string> ExtraInfo { get; }
+    IReadOnlyDictionary<string, string> ExtraInfo { get; }
 
-        IEnumerable<ITvChannel> TvChannels { get; }
-    }
+    IEnumerable<ITvChannel> TvChannels { get; }
 }

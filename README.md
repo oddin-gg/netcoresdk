@@ -1,11 +1,11 @@
 .NET SDK
 ----------------
 
-Purpose of this SDK is to make integration process much smoother and easier. This SDK should take care of all connection, 
+Purpose of this SDK is to make integration process much smoother and easier. This SDK should take care of all
+connection,
 data binding and other issues related to connection to API and Feed.
 
 ### How to start
-
 
 ```c#
 // Build configuration
@@ -53,8 +53,10 @@ feed.Close();
 
 You are all set and messages should start coming.
 
-You can check more information via appropriate managers - SportsInfoManager, MarketDescriptionManager, ReplayManager and others
+You can check more information via appropriate managers - SportsInfoManager, MarketDescriptionManager, ReplayManager and
+others
 For example:
+
 ```c#
 var sportsInfoManager = feed.SportDataProvider;
 
@@ -67,7 +69,8 @@ var tournaments = sportsInfoManager.GetActiveTournaments("Dota 2");
 
 ### Replay
 
-You can use replay feature to receive data from previously played events. You need to build a replay session via session builder, add events to replay list and play it.
+You can use replay feature to receive data from previously played events. You need to build a replay session via session
+builder, add events to replay list and play it.
 
 ```c#
 // Set up your odds feed config

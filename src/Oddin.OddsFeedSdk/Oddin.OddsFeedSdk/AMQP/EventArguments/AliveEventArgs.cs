@@ -4,30 +4,28 @@ using Oddin.OddsFeedSdk.AMQP.Messages;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Sessions;
 
-namespace Oddin.OddsFeedSdk.AMQP.EventArguments
+namespace Oddin.OddsFeedSdk.AMQP.EventArguments;
+
+public class AliveEventArgs : EventArgs
 {
-    public class AliveEventArgs : EventArgs
+    internal readonly bool IsSubscribed;
+    internal readonly MessageInterest MessageInterest;
+    internal readonly MessageTimestamp MessageTimestamp;
+    internal readonly int ProducerId;
+
+    internal AliveEventArgs(
+        alive feedMessage,
+        MessageInterest messageInterest)
     {
-        internal readonly int ProducerId;
-        internal readonly MessageInterest MessageInterest;
-        internal readonly MessageTimestamp MessageTimestamp;
-        internal readonly bool IsSubscribed;
+        ProducerId = feedMessage.product;
+        MessageInterest = messageInterest;
 
-        internal AliveEventArgs(
-            alive feedMessage,
-            MessageInterest messageInterest)
-        {
+        MessageTimestamp = new MessageTimestamp(
+            feedMessage.GeneratedAt,
+            feedMessage.SentAt,
+            feedMessage.ReceivedAt,
+            Timestamp.Now());
 
-            ProducerId = feedMessage.product;
-            MessageInterest = messageInterest;
-
-            MessageTimestamp = new MessageTimestamp(
-                feedMessage.GeneratedAt,
-                feedMessage.SentAt,
-                feedMessage.ReceivedAt,
-                Timestamp.Now());
-
-            IsSubscribed = feedMessage.subscribed == 1;
-        }
+        IsSubscribed = feedMessage.subscribed == 1;
     }
 }

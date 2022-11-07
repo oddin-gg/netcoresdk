@@ -10,169 +10,164 @@ using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Exceptions;
 
-namespace Oddin.OddsFeedSdk.API.Entities
+namespace Oddin.OddsFeedSdk.API.Entities;
+
+internal class Match : IMatch
 {
-    internal class Match : IMatch
+    private readonly IEnumerable<CultureInfo> _cultures;
+    private readonly ExceptionHandlingStrategy _handlingStrategy;
+    private readonly IMatchCache _matchCache;
+    private readonly ISportDataBuilder _sportDataBuilder;
+
+    public Match(URN id, URN localSportId, IMatchCache matchCache, ISportDataBuilder sportDataBuilder,
+        ExceptionHandlingStrategy handlingStrategy, IEnumerable<CultureInfo> cultures)
     {
-        private readonly IMatchCache _matchCache;
-        private readonly ISportDataBuilder _sportDataBuilder;
-        private readonly ExceptionHandlingStrategy _handlingStrategy;
-        private readonly IEnumerable<CultureInfo> _cultures;
+        Id = id;
+        _localSportId = localSportId;
+        _matchCache = matchCache;
+        _sportDataBuilder = sportDataBuilder;
+        _handlingStrategy = handlingStrategy;
+        _cultures = cultures;
+    }
 
-        public URN Id { get; }
+    private URN _localSportId { get; set; }
 
-        public URN RefId
-            => FetchMatch(_cultures)?.RefId;
+    public URN Id { get; }
 
-        public URN SportId => FetchSportId();
+    public URN RefId
+        => FetchMatch(_cultures)?.RefId;
 
-        private URN _localSportId { get; set; }
+    public URN SportId => FetchSportId();
 
-        public ITournament Tournament => FetchTournament();
+    public ITournament Tournament => FetchTournament();
 
-        public IMatchStatus Status
-            => _sportDataBuilder.BuildMatchStatus(Id, _cultures);
+    public IMatchStatus Status
+        => _sportDataBuilder.BuildMatchStatus(Id, _cultures);
 
-        public IFixture Fixture
-            => _sportDataBuilder.BuildFixture(Id, _cultures);
+    public IFixture Fixture
+        => _sportDataBuilder.BuildFixture(Id, _cultures);
 
-        public ITeamCompetitor HomeCompetitor
+    public ITeamCompetitor HomeCompetitor
+    {
+        get
         {
-            get
-            {
-                var match = FetchMatch(_cultures);
-                if (match is null) return null;
+            var match = FetchMatch(_cultures);
+            if (match is null) return null;
 
-                var competitor = FetchCompetitor(match.HomeTeamId);
+            var competitor = FetchCompetitor(match.HomeTeamId);
 
-                if (competitor != null)
-                    return new TeamCompetitor(match.HomeTeamQualifier, competitor);
-                else
-                    return null;
-            }
+            if (competitor != null)
+                return new TeamCompetitor(match.HomeTeamQualifier, competitor);
+            return null;
         }
+    }
 
-        public ITeamCompetitor AwayCompetitor
+    public ITeamCompetitor AwayCompetitor
+    {
+        get
         {
-            get
-            {
-                var match = FetchMatch(_cultures);
-                if (match is null) return null;
+            var match = FetchMatch(_cultures);
+            if (match is null) return null;
 
-                var competitor = FetchCompetitor(match.AwayTeamId);
+            var competitor = FetchCompetitor(match.AwayTeamId);
 
-                if (competitor != null)
-                    return new TeamCompetitor(match.AwayTeamQualifier, competitor);
-                else
-                    return null;
-            }
+            if (competitor != null)
+                return new TeamCompetitor(match.AwayTeamQualifier, competitor);
+            return null;
         }
+    }
 
-        public IEnumerable<ITeamCompetitor> Competitors
+    public IEnumerable<ITeamCompetitor> Competitors
+    {
+        get
         {
-            get
-            {
-                var list = new List<ITeamCompetitor>();
-                var homeCompetitor = HomeCompetitor;
-                var awayCompetitor = AwayCompetitor;
+            var list = new List<ITeamCompetitor>();
+            var homeCompetitor = HomeCompetitor;
+            var awayCompetitor = AwayCompetitor;
 
-                if (homeCompetitor != null)
-                    list.Add(homeCompetitor);
+            if (homeCompetitor != null)
+                list.Add(homeCompetitor);
 
-                if (awayCompetitor != null)
-                    list.Add(awayCompetitor);
+            if (awayCompetitor != null)
+                list.Add(awayCompetitor);
 
-                return list;
-            }
+            return list;
         }
+    }
 
-        public Task<string> GetNameAsync(CultureInfo culture)
-        {
-            var name = FetchMatch(new[] { culture })?.Name?.FirstOrDefault(d => d.Key.Equals(culture)).Value;
-            return Task.FromResult(name);
-        }
+    public Task<string> GetNameAsync(CultureInfo culture)
+    {
+        var name = FetchMatch(new[] { culture })?.Name?.FirstOrDefault(d => d.Key.Equals(culture)).Value;
+        return Task.FromResult(name);
+    }
 
-        public Task<DateTime?> GetScheduledTimeAsync()
-            => Task.FromResult(FetchMatch(_cultures)?.ScheduledTime);
+    public Task<DateTime?> GetScheduledTimeAsync()
+        => Task.FromResult(FetchMatch(_cultures)?.ScheduledTime);
 
-        public Task<DateTime?> GetScheduledEndTimeAsync()
-            => Task.FromResult(FetchMatch(_cultures)?.ScheduledEndTime);
+    public Task<DateTime?> GetScheduledEndTimeAsync()
+        => Task.FromResult(FetchMatch(_cultures)?.ScheduledEndTime);
 
-        public Task<URN> GetSportIdAsync()
-            => Task.FromResult(SportId);
+    public Task<URN> GetSportIdAsync()
+        => Task.FromResult(SportId);
 
-        public Task<ISport> GetSportAsync()
-            => Task.FromResult(FetchSport(_cultures));
+    public Task<ISport> GetSportAsync()
+        => Task.FromResult(FetchSport(_cultures));
 
-        public LiveOddsAvailability? LiveOddsAvailability
-            => FetchMatch(_cultures)?.LiveOddsAvailability;
+    public LiveOddsAvailability? LiveOddsAvailability
+        => FetchMatch(_cultures)?.LiveOddsAvailability;
 
-        public Match(URN id, URN localSportId, IMatchCache matchCache, ISportDataBuilder sportDataBuilder, ExceptionHandlingStrategy handlingStrategy, IEnumerable<CultureInfo> cultures)
-        {
-            Id = id;
-            _localSportId = localSportId;
-            _matchCache = matchCache;
-            _sportDataBuilder = sportDataBuilder;
-            _handlingStrategy = handlingStrategy;
-            _cultures = cultures;
-        }
+    private LocalizedMatch FetchMatch(IEnumerable<CultureInfo> cultures)
+    {
+        var item = _matchCache.GetMatch(Id, cultures);
 
-        private LocalizedMatch FetchMatch(IEnumerable<CultureInfo> cultures)
-        {
-            var item = _matchCache.GetMatch(Id, cultures);
+        if (item is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
+            throw new ItemNotFoundException(Id.ToString(), "Unable to fetch competitor");
+        return item;
+    }
 
-            if (item is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
-                throw new ItemNotFoundException(Id.ToString(), "Unable to fetch competitor");
-            else
-                return item;
-        }
+    private ICompetitor FetchCompetitor(URN id)
+    {
+        if (id is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
+            throw new ItemNotFoundException("null", "Unable to fetch competitor");
+        if (id is null)
+            return null;
+        return _sportDataBuilder.BuildCompetitor(id, _cultures);
+    }
 
-        private ICompetitor FetchCompetitor(URN id)
-        {
-            if (id is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
-                throw new ItemNotFoundException("null", "Unable to fetch competitor");
-            else if (id is null)
-                return null;
-            else
-                return _sportDataBuilder.BuildCompetitor(id, _cultures);
-        }
+    private URN FetchSportId()
+    {
+        var sportId = _localSportId ?? FetchMatch(_cultures)?.SportId;
 
-        private URN FetchSportId()
-        {
-            var sportId = _localSportId ?? FetchMatch(_cultures)?.SportId;
+        if (sportId is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
+            throw new ItemNotFoundException(null, "Cannot load sport");
+        if (sportId is null)
+            return null;
 
-            if (sportId is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
-                throw new ItemNotFoundException(null, "Cannot load sport");
-            else if (sportId is null)
-                return null;
+        _localSportId = sportId;
+        return sportId;
+    }
 
-            _localSportId = sportId;
-            return sportId;
-        }
+    private ITournament FetchTournament()
+    {
+        var sportId = SportId;
+        if (sportId is null)
+            return null;
 
-        private ITournament FetchTournament()
-        {
-            var sportId = SportId;
-            if (sportId is null)
-                return null;
+        var tournamentId = FetchMatch(_cultures)?.TournamentId;
 
-            var tournamentId = FetchMatch(_cultures)?.TournamentId;
+        if (tournamentId is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
+            throw new ItemNotFoundException("null", "Cannot load tournament");
+        if (tournamentId is null)
+            return null;
+        return _sportDataBuilder.BuildTournament(tournamentId, sportId, _cultures);
+    }
 
-            if (tournamentId is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
-                throw new ItemNotFoundException("null", "Cannot load tournament");
-            else if (tournamentId is null)
-                return null;
-            else
-                return _sportDataBuilder.BuildTournament(tournamentId, sportId, _cultures);
-        }
+    private ISport FetchSport(IEnumerable<CultureInfo> cultures)
+    {
+        var sportId = SportId;
+        if (sportId is null)
+            return null;
 
-        private ISport FetchSport(IEnumerable<CultureInfo> cultures)
-        {
-            var sportId = SportId;
-            if (sportId is null)
-                return null;
-
-            return _sportDataBuilder.BuildSport(sportId, cultures);
-        }
+        return _sportDataBuilder.BuildSport(sportId, cultures);
     }
 }

@@ -1,13 +1,12 @@
 ﻿using System;
 
-namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
+namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
+
+public interface IBookmakerDetails
 {
-    public interface IBookmakerDetails
-    {
-        DateTime ExpireAt { get; }
+    DateTime ExpireAt { get; }
 
-        int BookmakerId { get; }
+    int BookmakerId { get; }
 
-        string VirtualHost { get; }
-    }
+    string VirtualHost { get; }
 }

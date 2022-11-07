@@ -1,9 +1,8 @@
-﻿namespace Oddin.OddsFeedSdk.AMQP.Enums
+﻿namespace Oddin.OddsFeedSdk.AMQP.Enums;
+
+public enum BetSettlementCertainty
 {
-    public enum BetSettlementCertainty
-    {
-        LiveScouted = 1,
-        Confirmed = 2,
-        Unknown = 0
-    }
+    LiveScouted = 1,
+    Confirmed = 2,
+    Unknown = 0
 }

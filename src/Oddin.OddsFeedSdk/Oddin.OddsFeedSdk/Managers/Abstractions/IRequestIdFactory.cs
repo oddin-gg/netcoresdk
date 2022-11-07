@@ -1,7 +1,6 @@
-namespace Oddin.OddsFeedSdk.Managers.Abstractions
+namespace Oddin.OddsFeedSdk.Managers.Abstractions;
+
+internal interface IRequestIdFactory
 {
-    internal interface IRequestIdFactory
-    {
-        long GetNext();
-    }
+    long GetNext();
 }

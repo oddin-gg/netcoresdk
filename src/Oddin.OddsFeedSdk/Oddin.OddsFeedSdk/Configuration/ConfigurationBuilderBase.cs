@@ -1,100 +1,98 @@
-using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using System;
 using System.Globalization;
 using System.Linq;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
-namespace Oddin.OddsFeedSdk.Configuration
+namespace Oddin.OddsFeedSdk.Configuration;
+
+internal abstract class ConfigurationBuilderBase<T> : IConfigurationBuilderBase<T>
+    where T : class
 {
-    internal abstract class ConfigurationBuilderBase<T> : IConfigurationBuilderBase<T>
-        where T : class
+    internal readonly string AccessToken;
+    internal readonly IAppConfigurationSectionProvider SectionProvider;
+
+    internal CultureInfo DefaultLocale;
+
+    internal ExceptionHandlingStrategy ExceptionHandlingStrategy;
+
+    internal int? HttpClientTimeout;
+
+    internal int? InitialSnapshotTimeInMinutes;
+
+    internal int? SdkNodeId;
+
+    internal ConfigurationBuilderBase(string accessToken, IAppConfigurationSectionProvider sectionProvider)
     {
-        internal readonly IAppConfigurationSectionProvider SectionProvider;
+        if (string.IsNullOrEmpty(accessToken))
+            throw new ArgumentException(nameof(accessToken));
 
-        internal readonly string AccessToken;
+        AccessToken = accessToken;
+        SectionProvider = sectionProvider ?? throw new ArgumentNullException(nameof(sectionProvider));
+        ExceptionHandlingStrategy = ExceptionHandlingStrategy.CATCH;
+        SdkNodeId = null;
+        DefaultLocale = Feed.AvailableLanguages().FirstOrDefault();
+    }
 
-        internal CultureInfo DefaultLocale;
+    internal AppConfigurationSection Section { get; private set; }
 
-        internal ExceptionHandlingStrategy ExceptionHandlingStrategy;
+    public T LoadFromConfigFile()
+    {
+        LoadFromConfigFile(SectionProvider.Get());
+        return this as T;
+    }
 
-        internal int? SdkNodeId;
+    public T SetDefaultLocale(CultureInfo culture)
+    {
+        DefaultLocale = culture ?? throw new ArgumentNullException(nameof(culture));
+        return this as T;
+    }
 
-        internal int? HttpClientTimeout;
+    public T SetExceptionHandlingStrategy(ExceptionHandlingStrategy strategy)
+    {
+        ExceptionHandlingStrategy = strategy;
+        return this as T;
+    }
 
-        internal int? InitialSnapshotTimeInMinutes;
+    public T SetNodeId(int nodeId)
+    {
+        SdkNodeId = nodeId;
+        return this as T;
+    }
 
-        internal AppConfigurationSection Section { get; private set; }
+    public T SetHttpClientTimeout(int httpClientTimeout)
+    {
+        HttpClientTimeout = httpClientTimeout;
+        return this as T;
+    }
 
-        internal ConfigurationBuilderBase(string accessToken, IAppConfigurationSectionProvider sectionProvider)
-        {
-            if (string.IsNullOrEmpty(accessToken))
-                throw new ArgumentException(nameof(accessToken));
+    public T SetInitialSnapshotTimeInMinutes(int initialSnapshotTimeInMinutes)
+    {
+        InitialSnapshotTimeInMinutes = initialSnapshotTimeInMinutes;
+        return this as T;
+    }
 
-            AccessToken = accessToken;
-            SectionProvider = sectionProvider ?? throw new ArgumentNullException(nameof(sectionProvider));
-            ExceptionHandlingStrategy = ExceptionHandlingStrategy.CATCH;
-            SdkNodeId = null;
-            DefaultLocale = Feed.AvailableLanguages().FirstOrDefault();
-        }
+    public abstract IFeedConfiguration Build();
 
-        internal virtual void LoadFromConfigFile(AppConfigurationSection section)
-        {
-            Section = section ?? throw new ArgumentNullException(nameof(section));
+    internal virtual void LoadFromConfigFile(AppConfigurationSection section)
+    {
+        Section = section ?? throw new ArgumentNullException(nameof(section));
 
-            if (string.IsNullOrEmpty(section.DefaultLocale) == false)
-                SetDefaultLocale(new CultureInfo(section.DefaultLocale.Trim()));
+        if (string.IsNullOrEmpty(section.DefaultLocale) == false)
+            SetDefaultLocale(new CultureInfo(section.DefaultLocale.Trim()));
 
-            ExceptionHandlingStrategy = section.ExceptionHandlingStrategy;
-            SdkNodeId = section.SdkNodeId;
+        ExceptionHandlingStrategy = section.ExceptionHandlingStrategy;
+        SdkNodeId = section.SdkNodeId;
 
-            HttpClientTimeout = section.HttpClientTimeout;
+        HttpClientTimeout = section.HttpClientTimeout;
 
-            InitialSnapshotTimeInMinutes = section.InitialSnapshotTimeInMinutes;
-        }
+        InitialSnapshotTimeInMinutes = section.InitialSnapshotTimeInMinutes;
+    }
 
-        public T LoadFromConfigFile()
-        {
-            LoadFromConfigFile(SectionProvider.Get());
-            return this as T;
-        }
+    protected virtual void PreBuildCheck()
+    {
+        DefaultLocale ??= Feed.AvailableLanguages().First();
 
-        public T SetDefaultLocale(CultureInfo culture)
-        {
-            DefaultLocale = culture ?? throw new ArgumentNullException(nameof(culture));
-            return this as T;
-        }
-
-        public T SetExceptionHandlingStrategy(ExceptionHandlingStrategy strategy)
-        {
-            ExceptionHandlingStrategy = strategy;
-            return this as T;
-        }
-
-        public T SetNodeId(int nodeId)
-        {
-            SdkNodeId = nodeId;
-            return this as T;
-        }
-
-        public T SetHttpClientTimeout(int httpClientTimeout)
-        {
-            HttpClientTimeout = httpClientTimeout;
-            return this as T;
-        }
-
-        public T SetInitialSnapshotTimeInMinutes(int initialSnapshotTimeInMinutes)
-        {
-            InitialSnapshotTimeInMinutes = initialSnapshotTimeInMinutes;
-            return this as T;
-        }
-
-        public abstract IFeedConfiguration Build();
-
-        protected virtual void PreBuildCheck()
-        {
-            DefaultLocale ??= Feed.AvailableLanguages().First();
-
-            if (string.IsNullOrEmpty(AccessToken))
-                throw new InvalidOperationException("Missing access token");
-        }
+        if (string.IsNullOrEmpty(AccessToken))
+            throw new InvalidOperationException("Missing access token");
     }
 }

@@ -1,27 +1,23 @@
-using Oddin.OddsFeedSdk.API.Entities.Abstractions;
-using Oddin.OddsFeedSdk.Common;
 using System.Collections.Generic;
 using System.Globalization;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.Common;
 
-namespace Oddin.OddsFeedSdk.API.Entities
+namespace Oddin.OddsFeedSdk.API.Entities;
+
+internal class LocalizedSport : ILocalizedItem
 {
-    internal class LocalizedSport : ILocalizedItem
-    {
-        internal URN Id { get; }
+    public LocalizedSport(URN id) => Id = id;
 
-        internal URN RefId { get; set; }
+    internal URN Id { get; }
 
-        internal string IconPath { get; set; }
+    internal URN RefId { get; set; }
 
-        internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
+    internal string IconPath { get; set; }
 
-        internal ICollection<URN> TournamentIds { get; set; } = null;
+    internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
 
-        public IEnumerable<CultureInfo> LoadedLocals => Name.Keys;
+    internal ICollection<URN> TournamentIds { get; set; } = null;
 
-        public LocalizedSport(URN id)
-        {
-            Id = id;
-        }
-    }
+    public IEnumerable<CultureInfo> LoadedLocals => Name.Keys;
 }

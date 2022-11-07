@@ -1,18 +1,17 @@
 using System;
 using System.Collections.Generic;
 
-namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
+namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
+
+public interface ITournament : ISportEvent
 {
-    public interface ITournament : ISportEvent
-    {
-        string IconPath { get; }
+    string IconPath { get; }
 
-        IEnumerable<ICompetitor> GetCompetitors();
+    IEnumerable<ICompetitor> GetCompetitors();
 
-        DateTime? GetEndDate();
+    DateTime? GetEndDate();
 
-        DateTime? GetStartDate();
+    DateTime? GetStartDate();
 
-        int? RiskTier();
-    }
+    int? RiskTier();
 }

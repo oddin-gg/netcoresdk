@@ -1,70 +1,52 @@
 using System;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
-namespace Oddin.OddsFeedSdk
+namespace Oddin.OddsFeedSdk;
+
+public static class SdkDefaults
 {
-    public static class SdkDefaults
-    {
+    public const int DefaultPort = 5672;
 
-        [Obsolete("ProductionHost is deprecated, please use GetProductionHost() instead.")]
-        public static readonly string ProductionHost = GetProductionHost();
+    public const int UnknownProducerId = 99;
 
-        [Obsolete("ProductionApiHost is deprecated, please use GetProductionApiHost() instead.")]
-        public static readonly string ProductionApiHost = GetProductionApiHost();
+    public const int StatefulRecoveryWindowInMinutes = 4320;
 
-        [Obsolete("IntegrationHost is deprecated, please use GetIntegrationHost() instead.")]
-        public static readonly string IntegrationHost = GetIntegrationHost();
+    public const int MinHttpClientTimeout = 10;
+    public const int MaxHttpClientTimeout = 60;
+    public const int DefaultHttpClientTimeout = 30;
 
-        [Obsolete("IntegrationApiHost is deprecated, please use GetIntegrationApiHost() instead.")]
-        public static readonly string IntegrationApiHost = GetIntegrationApiHost();
+    [Obsolete("ProductionHost is deprecated, please use GetProductionHost() instead.")]
+    public static readonly string ProductionHost = GetProductionHost();
 
-        [Obsolete("TestHost is deprecated, please use GetTestHost() instead.")]
-        public static readonly string TestHost = GetTestHost();
+    [Obsolete("ProductionApiHost is deprecated, please use GetProductionApiHost() instead.")]
+    public static readonly string ProductionApiHost = GetProductionApiHost();
 
-        [Obsolete("TestApiHost is deprecated, please use GetTestApiHost() instead.")]
-        public static readonly string TestApiHost = GetTestApiHost();
+    [Obsolete("IntegrationHost is deprecated, please use GetIntegrationHost() instead.")]
+    public static readonly string IntegrationHost = GetIntegrationHost();
 
-        public const int DefaultPort = 5672;
+    [Obsolete("IntegrationApiHost is deprecated, please use GetIntegrationApiHost() instead.")]
+    public static readonly string IntegrationApiHost = GetIntegrationApiHost();
 
-        public const int UnknownProducerId = 99;
+    [Obsolete("TestHost is deprecated, please use GetTestHost() instead.")]
+    public static readonly string TestHost = GetTestHost();
 
-        public const int StatefulRecoveryWindowInMinutes = 4320;
+    [Obsolete("TestApiHost is deprecated, please use GetTestApiHost() instead.")]
+    public static readonly string TestApiHost = GetTestApiHost();
 
-        public const int MinHttpClientTimeout = 10;
-        public const int MaxHttpClientTimeout = 60;
-        public const int DefaultHttpClientTimeout = 30;
-        public static int MaxRecoveryExecutionMinutes = 360;
-        public static int MaxInactivitySeconds = 20;
+    public static int MaxRecoveryExecutionMinutes = 360;
+    public static int MaxInactivitySeconds = 20;
 
-        public static string GetProductionHost(string region = Region.DEFAULT)
-        {
-            return "mq." + region + "oddin.gg";
-        }
+    public static string GetProductionHost(string region = Region.DEFAULT) => "mq." + region + "oddin.gg";
 
-        public static string GetProductionApiHost(string region = Region.DEFAULT)
-        {
-            return "api-mq." + region + "oddin.gg";
-        }
+    public static string GetProductionApiHost(string region = Region.DEFAULT) => "api-mq." + region + "oddin.gg";
 
-        public static string GetIntegrationHost(string region = Region.DEFAULT)
-        {
-            return "mq.integration." + region + "oddin.gg";
-        }
+    public static string GetIntegrationHost(string region = Region.DEFAULT) => "mq.integration." + region + "oddin.gg";
 
-        public static string GetIntegrationApiHost(string region = Region.DEFAULT)
-        {
-            return "api-mq.integration." + region + "oddin.gg";
-        }
+    public static string GetIntegrationApiHost(string region = Region.DEFAULT) =>
+        "api-mq.integration." + region + "oddin.gg";
 
-        public static string GetTestHost(string region = Region.DEFAULT)
-        {
-            return "mq-test.integration." + region + "oddin.gg";
-        }
+    public static string GetTestHost(string region = Region.DEFAULT) => "mq-test.integration." + region + "oddin.gg";
 
-        public static string GetTestApiHost(string region = Region.DEFAULT)
-        {
-            return "api-mq-test.integration." + region + "oddin.gg";
-        }
-
-    }
+    public static string GetTestApiHost(string region = Region.DEFAULT) =>
+        "api-mq-test.integration." + region + "oddin.gg";
 }

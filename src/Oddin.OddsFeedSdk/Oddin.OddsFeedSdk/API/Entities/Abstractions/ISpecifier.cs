@@ -1,9 +1,8 @@
-namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
-{
-    public interface ISpecifier
-    {
-        string Name { get; }
+namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
 
-        string Type { get; }
-    }
+public interface ISpecifier
+{
+    string Name { get; }
+
+    string Type { get; }
 }

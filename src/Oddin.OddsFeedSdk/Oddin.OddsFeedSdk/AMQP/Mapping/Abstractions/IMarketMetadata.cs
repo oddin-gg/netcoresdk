@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
-{ 
-    public interface IMarketMetadata
-    {
-        long? NextBetstop { get; }
+namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 
-        DateTime? NextBetstopDate => null;
-    }
+public interface IMarketMetadata
+{
+    long? NextBetstop { get; }
+
+    DateTime? NextBetstopDate => null;
 }

@@ -3,37 +3,37 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 
-namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
+namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
+
+public interface ICompetitor : IPlayer
 {
-    public interface ICompetitor : IPlayer
-    {
-        IReadOnlyDictionary<CultureInfo, string> Countries { get; }
+    IReadOnlyDictionary<CultureInfo, string> Countries { get; }
 
-        IReadOnlyDictionary<CultureInfo, string> Abbreviations { get; }
+    IReadOnlyDictionary<CultureInfo, string> Abbreviations { get; }
 
-        bool? IsVirtual { get; }
+    bool? IsVirtual { get; }
 
-        string GetCountry(CultureInfo culture);
+    string CountryCode { get; }
 
-        string GetAbbreviation(CultureInfo culture);
+    string Underage { get; }
 
-        string CountryCode { get; }
+    string ShortName => null;
 
-        string Underage { get; }
+    string IconPath { get; }
 
-        string ShortName => null;
+    string GetCountry(CultureInfo culture);
 
-        string IconPath { get; }
+    string GetAbbreviation(CultureInfo culture);
 
-        // TODO: Delete in next iteration of updates
-        [Obsolete("GetSportAsync() is deprecated, please use GetSports() instead. Method GetSportAsync() will be removed in the future.")]
-        Task<ISport> GetSportAsync();
+    // TODO: Delete in next iteration of updates
+    [Obsolete(
+        "GetSportAsync() is deprecated, please use GetSports() instead. Method GetSportAsync() will be removed in the future.")]
+    Task<ISport> GetSportAsync();
 
-        IEnumerable<ISport> GetSports();
-    }
+    IEnumerable<ISport> GetSports();
+}
 
-    public interface ITeamCompetitor : ICompetitor
-    {
-        string Qualifier { get; }
-    }
+public interface ITeamCompetitor : ICompetitor
+{
+    string Qualifier { get; }
 }

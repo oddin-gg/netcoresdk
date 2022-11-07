@@ -1,14 +1,13 @@
 ﻿using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 
-namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
+namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+
+public interface IEventMessage<out T> : IMessage
+    where T : ISportEvent
 {
-    public interface IEventMessage<out T> : IMessage 
-        where T : ISportEvent
-    {
-        T Event { get; }
+    T Event { get; }
 
-        long? RequestId { get; }
+    long? RequestId { get; }
 
-        byte[] RawMessage { get; }
-    }
+    byte[] RawMessage { get; }
 }

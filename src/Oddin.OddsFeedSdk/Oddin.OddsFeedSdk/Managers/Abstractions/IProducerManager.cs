@@ -1,27 +1,26 @@
-﻿using Oddin.OddsFeedSdk.API.Entities.Abstractions;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 
-namespace Oddin.OddsFeedSdk.Managers.Abstractions
+namespace Oddin.OddsFeedSdk.Managers.Abstractions;
+
+public interface IProducerManager
 {
-    public interface IProducerManager
-    {
-        IReadOnlyCollection<IProducer> Producers { get; }
+    IReadOnlyCollection<IProducer> Producers { get; }
 
-        void DisableProducer(int id);
+    void DisableProducer(int id);
 
-        IProducer Get(int id);
+    IProducer Get(int id);
 
-        IProducer Get(string name);
+    IProducer Get(string name);
 
-        bool Exists(int id);
+    bool Exists(int id);
 
-        bool Exists(string name);
+    bool Exists(string name);
 
-        void AddTimestampBeforeDisconnect(int id, DateTime timestamp);
+    void AddTimestampBeforeDisconnect(int id, DateTime timestamp);
 
-        void RemoveTimestampBeforeDisconnect(int id);
+    void RemoveTimestampBeforeDisconnect(int id);
 
-        internal void Lock();
-    }
+    internal void Lock();
 }

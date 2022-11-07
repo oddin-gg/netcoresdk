@@ -1,8 +1,7 @@
-﻿namespace Oddin.OddsFeedSdk.Configuration.Abstractions
+﻿namespace Oddin.OddsFeedSdk.Configuration.Abstractions;
+
+public static class Region
 {
-    public static class Region
-    {
-        public const string DEFAULT = "";
-        public const string AP_SOUTHEAST_1 = "ap-southeast-1.";
-    }
+    public const string DEFAULT = "";
+    public const string AP_SOUTHEAST_1 = "ap-southeast-1.";
 }

@@ -1,36 +1,35 @@
 ﻿using Oddin.OddsFeedSdk.Configuration.Abstractions;
-using System;
 
-namespace Oddin.OddsFeedSdk.Configuration
+namespace Oddin.OddsFeedSdk.Configuration;
+
+internal abstract class RecoveryConfigurationBuilder<T> : ConfigurationBuilderBase<T>, IRecoveryConfigurationBuilder<T>
+    where T : class
 {
-    internal abstract class RecoveryConfigurationBuilder<T> : ConfigurationBuilderBase<T>, IRecoveryConfigurationBuilder<T> where T : class
+    protected int? MaxInactivitySeconds;
+    protected int? MaxRecoveryExecutionMinutes;
+
+    internal RecoveryConfigurationBuilder(string accessToken, IAppConfigurationSectionProvider sectionProvider)
+        : base(accessToken, sectionProvider)
     {
-        protected int? MaxInactivitySeconds;
-        protected int? MaxRecoveryExecutionMinutes;
+    }
 
-        internal RecoveryConfigurationBuilder(string accessToken, IAppConfigurationSectionProvider sectionProvider)
-            : base(accessToken, sectionProvider)
-        {
-        }
+    public T SetMaxInactivitySeconds(int inactivitySeconds)
+    {
+        MaxInactivitySeconds = inactivitySeconds;
+        return this as T;
+    }
 
-        internal override void LoadFromConfigFile(AppConfigurationSection section)
-        {
-            base.LoadFromConfigFile(section);
+    public T SetMaxRecoveryExecutionMinutes(int maxRecoveryExecutionMinutes)
+    {
+        MaxRecoveryExecutionMinutes = maxRecoveryExecutionMinutes;
+        return this as T;
+    }
 
-            MaxInactivitySeconds = section.MaxInactivitySeconds;
-            MaxRecoveryExecutionMinutes = section.MaxRecoveryExecutionMinutes;
-        }
+    internal override void LoadFromConfigFile(AppConfigurationSection section)
+    {
+        base.LoadFromConfigFile(section);
 
-        public T SetMaxInactivitySeconds(int inactivitySeconds)
-        {
-            MaxInactivitySeconds = inactivitySeconds;
-            return this as T;
-        }
-
-        public T SetMaxRecoveryExecutionMinutes(int maxRecoveryExecutionMinutes)
-        {
-            MaxRecoveryExecutionMinutes = maxRecoveryExecutionMinutes;
-            return this as T;
-        }
+        MaxInactivitySeconds = section.MaxInactivitySeconds;
+        MaxRecoveryExecutionMinutes = section.MaxRecoveryExecutionMinutes;
     }
 }

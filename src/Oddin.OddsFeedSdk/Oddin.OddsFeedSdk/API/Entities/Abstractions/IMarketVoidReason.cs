@@ -1,17 +1,16 @@
 using System.Collections.Generic;
 
-namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
+namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
+
+public interface IMarketVoidReason
 {
-    public interface IMarketVoidReason
-    {
-        int Id { get; }
+    int Id { get; }
 
-        string Name { get; }
+    string Name { get; }
 
-        string Description { get; }
+    string Description { get; }
 
-        string Template { get; }
+    string Template { get; }
 
-        IEnumerable<string> Params { get; }
-    }
+    IEnumerable<string> Params { get; }
 }

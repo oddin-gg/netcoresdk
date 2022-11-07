@@ -1,40 +1,39 @@
 using System;
 using System.Linq;
 
-namespace Oddin.OddsFeedSdk.API.Entities
+namespace Oddin.OddsFeedSdk.API.Entities;
+
+internal class CompositeKey
 {
-    internal class CompositeKey
+    public readonly int MarketId;
+    public readonly string Variant;
+
+    public CompositeKey(int marketId, string variant)
     {
-        public readonly int MarketId;
-        public readonly string Variant;
+        MarketId = marketId;
+        Variant = variant;
+    }
 
-        internal string Key => $"{MarketId}-{Variant ?? "*"}";
+    internal string Key => $"{MarketId}-{Variant ?? "*"}";
 
-        public CompositeKey(int marketId, string variant)
-        {
-            MarketId = marketId;
-            Variant = variant;
-        }
+    public override bool Equals(object obj) => obj is CompositeKey key && Key == key.Key;
 
-        public override bool Equals(object obj) => obj is CompositeKey key && Key == key.Key;
+    public override int GetHashCode() => HashCode.Combine(Key);
 
-        public override int GetHashCode() => HashCode.Combine(Key);
+    public override string ToString() => Key;
 
-        public override string ToString() => Key;
+    public static bool TryParse(string key, out CompositeKey compositeKey)
+    {
+        compositeKey = null;
 
-        public static bool TryParse(string key, out CompositeKey compositeKey)
-        {
-            compositeKey = null;
+        var parts = key.Split('-');
+        if (parts.Count() != 2)
+            return false;
 
-            var parts = key.Split('-');
-            if (parts.Count() != 2)
-                return false;
+        if (int.TryParse(parts[0], out var marketId) == false)
+            return false;
 
-            if (int.TryParse(parts[0], out var marketId) == false)
-                return false;
-
-            compositeKey = new CompositeKey(marketId, parts[1]);
-            return true;
-        }
+        compositeKey = new CompositeKey(marketId, parts[1]);
+        return true;
     }
 }

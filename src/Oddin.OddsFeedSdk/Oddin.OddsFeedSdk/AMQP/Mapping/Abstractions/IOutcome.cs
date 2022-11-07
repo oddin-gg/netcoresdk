@@ -1,13 +1,12 @@
 using System.Globalization;
 
-namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
+namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+
+public interface IOutcome
 {
-    public interface IOutcome
-    {
-        long Id { get; }
+    long Id { get; }
 
-        long RefId { get; }
+    long RefId { get; }
 
-        string GetName(CultureInfo culture);
-    }
+    string GetName(CultureInfo culture);
 }

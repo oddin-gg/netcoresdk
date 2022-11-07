@@ -1,30 +1,24 @@
-﻿using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+﻿using System;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
-using System;
 
-namespace Oddin.OddsFeedSdk.API.Entities
+namespace Oddin.OddsFeedSdk.API.Entities;
+
+internal class MatchSummary : IMatchSummary
 {
-    internal class MatchSummary : IMatchSummary
+    public MatchSummary(string name, DateTime? scheduledTime, DateTime? scheduledEndTime, URN sportId)
     {
-        private readonly string _name;
-        private readonly DateTime? _scheduledTime;
-        private readonly DateTime? _scheduledEndTime;
-        private readonly URN _sportId;
-
-        public MatchSummary(string name, DateTime? scheduledTime, DateTime? scheduledEndTime, URN sportId)
-        {
-            _name = name;
-            _scheduledTime = scheduledTime;
-            _scheduledEndTime = scheduledEndTime;
-            _sportId = sportId;
-        }
-
-        public string Name => _name;
-
-        public DateTime? ScheduledTime => _scheduledTime;
-
-        public DateTime? ScheduledEndTime => _scheduledEndTime;
-
-        public URN SportId => _sportId;
+        Name = name;
+        ScheduledTime = scheduledTime;
+        ScheduledEndTime = scheduledEndTime;
+        SportId = sportId;
     }
+
+    public string Name { get; }
+
+    public DateTime? ScheduledTime { get; }
+
+    public DateTime? ScheduledEndTime { get; }
+
+    public URN SportId { get; }
 }

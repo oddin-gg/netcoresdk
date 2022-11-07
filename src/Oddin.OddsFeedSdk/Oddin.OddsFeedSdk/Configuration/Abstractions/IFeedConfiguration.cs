@@ -1,34 +1,32 @@
 using System.Globalization;
 
-namespace Oddin.OddsFeedSdk.Configuration.Abstractions
+namespace Oddin.OddsFeedSdk.Configuration.Abstractions;
+
+public interface IFeedConfiguration
 {
-    public interface IFeedConfiguration
-    {
-        public string AccessToken { get; }
+    public string AccessToken { get; }
 
-        public CultureInfo DefaultLocale { get; }
+    public CultureInfo DefaultLocale { get; }
 
-        public int MaxInactivitySeconds { get; }
+    public int MaxInactivitySeconds { get; }
 
-        public int MaxRecoveryExecutionMinutes { get; }
+    public int MaxRecoveryExecutionMinutes { get; }
 
-        public int? NodeId { get; }
+    public int? NodeId { get; }
 
-        public ExceptionHandlingStrategy ExceptionHandlingStrategy { get; }
+    public ExceptionHandlingStrategy ExceptionHandlingStrategy { get; }
 
-        public string Host { get; }
+    public string Host { get; }
 
-        public int Port { get; }
+    public int Port { get; }
 
-        public bool UseSsl { get; }
+    public bool UseSsl { get; }
 
-        public string ApiHost { get; }
+    public string ApiHost { get; }
 
-        public bool UseApiSsl { get; }
+    public bool UseApiSsl { get; }
 
-        public int HttpClientTimeout { get; }
+    public int HttpClientTimeout { get; }
 
-        public int InitialSnapshotTimeInMinutes { get; }
-
-    }
+    public int InitialSnapshotTimeInMinutes { get; }
 }

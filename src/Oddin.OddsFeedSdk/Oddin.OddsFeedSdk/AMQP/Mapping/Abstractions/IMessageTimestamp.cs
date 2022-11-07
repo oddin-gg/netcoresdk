@@ -1,13 +1,12 @@
-﻿namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
+﻿namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+
+public interface IMessageTimestamp
 {
-    public interface IMessageTimestamp
-    {
-        long Created { get; }
+    long Created { get; }
 
-        long Sent { get; }
+    long Sent { get; }
 
-        long Received { get; }
+    long Received { get; }
 
-        long Dispatched { get; }
-    }
+    long Dispatched { get; }
 }

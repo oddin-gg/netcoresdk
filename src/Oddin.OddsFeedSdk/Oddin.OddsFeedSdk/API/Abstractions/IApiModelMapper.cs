@@ -1,15 +1,14 @@
+using System.Collections.Generic;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
-using System.Collections.Generic;
 
-namespace Oddin.OddsFeedSdk.API.Abstractions
+namespace Oddin.OddsFeedSdk.API.Abstractions;
+
+internal interface IApiModelMapper
 {
-    internal interface IApiModelMapper
-    {
-        public IBookmakerDetails MapBookmakerDetails(BookmakerDetailsModel model);
+    public IBookmakerDetails MapBookmakerDetails(BookmakerDetailsModel model);
 
-        public IMatchSummary MapMatchSummary(MatchSummaryModel model);
+    public IMatchSummary MapMatchSummary(MatchSummaryModel model);
 
-        public IEnumerable<IProducer> MapProducersList(ProducersModel model);
-    }
+    public IEnumerable<IProducer> MapProducersList(ProducersModel model);
 }

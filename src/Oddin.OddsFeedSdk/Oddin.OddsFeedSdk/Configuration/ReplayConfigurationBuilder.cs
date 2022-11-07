@@ -1,33 +1,33 @@
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
-namespace Oddin.OddsFeedSdk.Configuration
+namespace Oddin.OddsFeedSdk.Configuration;
+
+internal class ReplayConfigurationBuilder : ConfigurationBuilderBase<IReplayConfigurationBuilder>,
+    IReplayConfigurationBuilder
 {
-    internal class ReplayConfigurationBuilder : ConfigurationBuilderBase<IReplayConfigurationBuilder>, IReplayConfigurationBuilder
+    public ReplayConfigurationBuilder(string accessToken, IAppConfigurationSectionProvider sectionProvider)
+        : base(accessToken, sectionProvider)
     {
-        public ReplayConfigurationBuilder(string accessToken, IAppConfigurationSectionProvider sectionProvider)
-            : base(accessToken, sectionProvider)
-        {
-        }
+    }
 
-        public override IFeedConfiguration Build()
-        {
-            PreBuildCheck();
+    public override IFeedConfiguration Build()
+    {
+        PreBuildCheck();
 
-            return new FeedConfiguration(
-                accessToken: AccessToken,
-                defaultLocale: DefaultLocale,
-                host: SdkDefaults.GetIntegrationHost(),
-                port: SdkDefaults.DefaultPort,
-                apiHost: SdkDefaults.GetIntegrationApiHost(),
-                useSsl: true,
-                useApiSsl: true,
-                maxInactivitySeconds: SdkDefaults.MaxInactivitySeconds,
-                maxRecoveryExecutionMinutes: SdkDefaults.MaxRecoveryExecutionMinutes,
-                nodeId: SdkNodeId,
-                exceptionHandlingStrategy: ExceptionHandlingStrategy,
-                httpClientTimeout: HttpClientTimeout ?? SdkDefaults.DefaultHttpClientTimeout,
-                InitialSnapshotTimeInMinutes ?? default,
-                section: Section);
-        }
+        return new FeedConfiguration(
+            AccessToken,
+            DefaultLocale,
+            SdkDefaults.GetIntegrationHost(),
+            SdkDefaults.DefaultPort,
+            SdkDefaults.GetIntegrationApiHost(),
+            true,
+            true,
+            SdkDefaults.MaxInactivitySeconds,
+            SdkDefaults.MaxRecoveryExecutionMinutes,
+            SdkNodeId,
+            ExceptionHandlingStrategy,
+            HttpClientTimeout ?? SdkDefaults.DefaultHttpClientTimeout,
+            InitialSnapshotTimeInMinutes ?? default,
+            Section);
     }
 }

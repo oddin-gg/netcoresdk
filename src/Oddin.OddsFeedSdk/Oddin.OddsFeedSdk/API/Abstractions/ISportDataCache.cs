@@ -1,18 +1,17 @@
-using Oddin.OddsFeedSdk.API.Entities;
-using Oddin.OddsFeedSdk.Common;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using Oddin.OddsFeedSdk.API.Entities;
+using Oddin.OddsFeedSdk.Common;
 
-namespace Oddin.OddsFeedSdk.API.Abstractions
+namespace Oddin.OddsFeedSdk.API.Abstractions;
+
+internal interface ISportDataCache : IDisposable
 {
-    internal interface ISportDataCache : IDisposable
-    {
-        Task<IEnumerable<URN>> GetSports(IEnumerable<CultureInfo> cultures);
+    Task<IEnumerable<URN>> GetSports(IEnumerable<CultureInfo> cultures);
 
-        Task<LocalizedSport> GetSport(URN id, IEnumerable<CultureInfo> cultures);
+    Task<LocalizedSport> GetSport(URN id, IEnumerable<CultureInfo> cultures);
 
-        IEnumerable<URN> GetSportTournaments(URN id, CultureInfo culture);
-    }
+    IEnumerable<URN> GetSportTournaments(URN id, CultureInfo culture);
 }

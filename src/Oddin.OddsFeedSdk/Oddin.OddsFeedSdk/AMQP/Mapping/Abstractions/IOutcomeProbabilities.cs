@@ -1,11 +1,10 @@
-﻿namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
+﻿namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+
+public interface IOutcomeProbabilities : IOutcome
 {
-    public interface IOutcomeProbabilities : IOutcome
-    {
-        bool? Active { get; }
+    bool? Active { get; }
 
-        double? Probabilities { get; }
+    double? Probabilities { get; }
 
-        IAdditionalProbabilities AdditionalProbabilities => null;
-    }
+    IAdditionalProbabilities AdditionalProbabilities => null;
 }

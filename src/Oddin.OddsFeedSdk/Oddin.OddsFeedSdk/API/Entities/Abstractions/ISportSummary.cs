@@ -1,17 +1,16 @@
-using Oddin.OddsFeedSdk.Common;
 using System.Collections.Generic;
 using System.Globalization;
+using Oddin.OddsFeedSdk.Common;
 
-namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
+namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
+
+public interface ISportSummary
 {
-    public interface ISportSummary
-    {
-        URN Id { get; }
+    URN Id { get; }
 
-        URN RefId { get; }
+    URN RefId { get; }
 
-        string GetName(CultureInfo culture);
+    IReadOnlyDictionary<CultureInfo, string> Names { get; }
 
-        IReadOnlyDictionary<CultureInfo, string> Names { get; }
-    }
+    string GetName(CultureInfo culture);
 }

@@ -1,17 +1,15 @@
-﻿using Oddin.OddsFeedSdk.AMQP;
+﻿using System;
 using Oddin.OddsFeedSdk.Common;
-using System;
 
-namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
+namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
+
+public interface IMatchSummary
 {
-    public interface IMatchSummary
-    {
-        public string Name { get; }
+    public string Name { get; }
 
-        public DateTime? ScheduledTime { get; }
+    public DateTime? ScheduledTime { get; }
 
-        public DateTime? ScheduledEndTime { get; }
+    public DateTime? ScheduledEndTime { get; }
 
-        public URN SportId { get; }
-    }
+    public URN SportId { get; }
 }

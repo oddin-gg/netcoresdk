@@ -1,27 +1,26 @@
 ﻿using System.Threading;
 
-namespace Oddin.OddsFeedSdk.Configuration
+namespace Oddin.OddsFeedSdk.Configuration;
+
+internal class AppConfigurationSectionProvider : IAppConfigurationSectionProvider
 {
-    internal class AppConfigurationSectionProvider : IAppConfigurationSectionProvider
+    private readonly SemaphoreSlim _lock = new(1, 1);
+
+    private AppConfigurationSection _config;
+
+    public AppConfigurationSection Get()
     {
-        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
-
-        private AppConfigurationSection _config;
-
-        public AppConfigurationSection Get()
+        _lock.Wait();
+        try
         {
-            _lock.Wait();
-            try
-            {
-                if (_config == null)
-                    _config = AppConfigurationSection.LoadFromFile();
-            }
-            finally
-            {
-                _lock.Release();
-            }
-
-            return _config;
+            if (_config == null)
+                _config = AppConfigurationSection.LoadFromFile();
         }
+        finally
+        {
+            _lock.Release();
+        }
+
+        return _config;
     }
 }
