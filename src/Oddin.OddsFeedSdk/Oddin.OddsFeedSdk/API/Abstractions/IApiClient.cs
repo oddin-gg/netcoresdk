@@ -7,68 +7,68 @@ using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
 
-namespace Oddin.OddsFeedSdk.API.Abstractions
+namespace Oddin.OddsFeedSdk.API.Abstractions;
+
+public interface IApiClient
 {
-    public interface IApiClient
-    {
-        IEnumerable<IProducer> GetProducers();
+    IEnumerable<IProducer> GetProducers();
 
-        IBookmakerDetails GetBookmakerDetails();
+    IBookmakerDetails GetBookmakerDetails();
 
-        Task<IMatchSummary> GetMatchSummaryAsync(URN sportEventId, CultureInfo culture = null);
+    Task<IMatchSummary> GetMatchSummaryAsync(URN sportEventId, CultureInfo culture = null);
 
-        Task<SportsModel> GetSports(CultureInfo culture = null);
+    Task<SportsModel> GetSports(CultureInfo culture = null);
 
-        TournamentsModel GetTournaments(URN sportId, CultureInfo culture = null);
+    TournamentsModel GetTournaments(URN sportId, CultureInfo culture = null);
 
-        Task<MarketDescriptionsModel> GetMarketDescriptionsAsync(CultureInfo culture = null);
+    Task<MarketDescriptionsModel> GetMarketDescriptionsAsync(CultureInfo culture = null);
 
-        Task<HttpStatusCode> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId);
+    Task<HttpStatusCode> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId);
 
-        Task<MarketVoidReasonsModel> GetMarketVoidReasonsAsync();
+    Task<MarketVoidReasonsModel> GetMarketVoidReasonsAsync();
 
-        Task<HttpStatusCode> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId);
+    Task<HttpStatusCode> PostEventStatefulRecoveryRequest(string producerName, URN sportEventId, long requestId,
+        int? nodeId);
 
-        Task<bool> PostRecoveryRequest(string producerName, long requestId, int? nodeId, long timestamp = default);
+    Task<bool> PostRecoveryRequest(string producerName, long requestId, int? nodeId, long timestamp = default);
 
-        TournamentInfoModel GetTournament(URN id, CultureInfo culture = null);
+    TournamentInfoModel GetTournament(URN id, CultureInfo culture = null);
 
-        teamExtended GetCompetitorProfile(URN id, CultureInfo culture);
+    teamExtended GetCompetitorProfile(URN id, CultureInfo culture);
 
-        MatchSummaryModel GetMatchSummary(URN sportEventId, CultureInfo desiredCulture);
+    MatchSummaryModel GetMatchSummary(URN sportEventId, CultureInfo desiredCulture);
 
-        FixturesEndpointModel GetFixture(URN id, CultureInfo culture);
+    FixturesEndpointModel GetFixture(URN id, CultureInfo culture);
 
-        MatchStatusModel GetMatchStatusDescriptions(CultureInfo culture);
+    MatchStatusModel GetMatchStatusDescriptions(CultureInfo culture);
 
-        ScheduleEndpointModel GetLiveMatches(CultureInfo culture);
+    ScheduleEndpointModel GetLiveMatches(CultureInfo culture);
 
-        ScheduleEndpointModel GetMatches(DateTime dateToGet, CultureInfo culture);
+    ScheduleEndpointModel GetMatches(DateTime dateToGet, CultureInfo culture);
 
-        ScheduleEndpointModel GetSchedule(int startIndex, int limit, CultureInfo culture);
+    ScheduleEndpointModel GetSchedule(int startIndex, int limit, CultureInfo culture);
 
-        fixtureChangesEndpoint GetFixtureChanges(CultureInfo culture);
+    fixtureChangesEndpoint GetFixtureChanges(CultureInfo culture);
 
-        IObservable<T> SubscribeForClass<T>();
+    IObservable<T> SubscribeForClass<T>();
 
-        Task<bool> PostReplayClear(int? nodeId);
+    Task<bool> PostReplayClear(int? nodeId);
 
-        Task<bool> PostReplayStop(int? nodeId);
+    Task<bool> PostReplayStop(int? nodeId);
 
-        Task<ReplayEndpointModel> GetReplaySetContent(int? nodeId);
+    Task<ReplayEndpointModel> GetReplaySetContent(int? nodeId);
 
-        Task<bool> PutReplayEvent(URN eventId, int? nodeId);
+    Task<bool> PutReplayEvent(URN eventId, int? nodeId);
 
-        Task<bool> DeleteReplayEvent(URN eventId, int? nodeId);
+    Task<bool> DeleteReplayEvent(URN eventId, int? nodeId);
 
-        Task<ReplayStatusEndpointModel> GetStatusOfReplay();
+    Task<ReplayStatusEndpointModel> GetStatusOfReplay();
 
-        Task<bool> PostReplayStart(
-            int? nodeId,
-            int? speed = null,
-            int? maxDelay = null,
-            bool? useReplayTimestamp = null,
-            string product = null,
-            bool? runParallel = null);
-    }
+    Task<bool> PostReplayStart(
+        int? nodeId,
+        int? speed = null,
+        int? maxDelay = null,
+        bool? useReplayTimestamp = null,
+        string product = null,
+        bool? runParallel = null);
 }

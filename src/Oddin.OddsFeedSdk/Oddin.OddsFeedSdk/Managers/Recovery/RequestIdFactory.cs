@@ -1,33 +1,29 @@
-﻿using Oddin.OddsFeedSdk.Managers.Abstractions;
-using System.Threading;
+﻿using System.Threading;
+using Oddin.OddsFeedSdk.Managers.Abstractions;
 
-namespace Oddin.OddsFeedSdk.Managers.Recovery
+namespace Oddin.OddsFeedSdk.Managers.Recovery;
+
+internal class RequestIdFactory : IRequestIdFactory
 {
-    internal class RequestIdFactory : IRequestIdFactory
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private long _currentId;
+
+    public RequestIdFactory() => _currentId = 0;
+
+    public long GetNext()
     {
-        private long _currentId;
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-
-        public RequestIdFactory()
+        _semaphore.Wait();
+        try
         {
-            _currentId = 0;
+            var newId = _currentId < long.MaxValue
+                ? _currentId + 1
+                : 0;
+            _currentId = newId;
+            return newId;
         }
-
-        public long GetNext()
+        finally
         {
-            _semaphore.Wait();
-            try
-            {
-                var newId = _currentId < long.MaxValue
-                    ? _currentId + 1
-                    : 0;
-                _currentId = newId;
-                return newId;
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
+            _semaphore.Release();
         }
     }
 }

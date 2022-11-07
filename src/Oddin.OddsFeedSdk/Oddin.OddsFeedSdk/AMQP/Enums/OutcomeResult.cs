@@ -1,9 +1,8 @@
-﻿namespace Oddin.OddsFeedSdk.AMQP.Enums
+﻿namespace Oddin.OddsFeedSdk.AMQP.Enums;
+
+public enum OutcomeResult
 {
-    public enum OutcomeResult
-    {
-        Lost,
-        Won,
-        UndecidedYet
-    }
+    Lost,
+    Won,
+    UndecidedYet
 }

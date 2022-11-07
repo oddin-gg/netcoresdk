@@ -1,17 +1,16 @@
-﻿namespace Oddin.OddsFeedSdk.AMQP.Enums
+﻿namespace Oddin.OddsFeedSdk.AMQP.Enums;
+
+public enum FixtureChangeType
 {
-    public enum FixtureChangeType
-    {
-        NEW = 1,
+    NEW = 1,
 
-        DATE_TIME = 2,
+    DATE_TIME = 2,
 
-        CANCELLED = 3,
+    CANCELLED = 3,
 
-        FORMAT = 4,
+    FORMAT = 4,
 
-        COVERAGE = 5,
+    COVERAGE = 5,
 
-        STREAM_URL = 106
-    }
+    STREAM_URL = 106
 }

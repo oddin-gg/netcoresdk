@@ -3,53 +3,49 @@ using System.Globalization;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 
-namespace Oddin.OddsFeedSdk.API.Entities
+namespace Oddin.OddsFeedSdk.API.Entities;
+
+internal class LocalizedCompetitor : ILocalizedItem
 {
-    internal class LocalizedCompetitor : ILocalizedItem
+    public LocalizedCompetitor(URN id) => Id = id;
+
+    public URN Id { get; }
+
+    public URN RefId { get; set; }
+
+    public IEnumerable<URN> SportIds { get; set; }
+
+    internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
+
+    internal IDictionary<CultureInfo, string> Abbreviation { get; set; } = new Dictionary<CultureInfo, string>();
+
+    internal IDictionary<CultureInfo, string> Country { get; set; } = new Dictionary<CultureInfo, string>();
+
+    public bool? IsVirtual { get; set; }
+
+    public string CountryCode { get; set; }
+
+    public string Underage { get; set; }
+
+    public bool IconPathLoaded { get; set; } = false;
+
+    public string IconPath { get; set; }
+
+    public IEnumerable<CultureInfo> LoadedLocals => GetLoadedLocals();
+
+    private IEnumerable<CultureInfo> GetLoadedLocals()
     {
-        public URN Id { get; }
+        var allCultures = new HashSet<CultureInfo>();
 
-        public URN RefId { get; set; }
+        foreach (var name in Name)
+            allCultures.Add(name.Key);
 
-        public IEnumerable<URN> SportIds { get; set; }
+        foreach (var abbreviation in Abbreviation)
+            allCultures.Add(abbreviation.Key);
 
-        internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
+        foreach (var country in Country)
+            allCultures.Add(country.Key);
 
-        internal IDictionary<CultureInfo, string> Abbreviation { get; set; } = new Dictionary<CultureInfo, string>();
-
-        internal IDictionary<CultureInfo, string> Country { get; set; } = new Dictionary<CultureInfo, string>();
-
-        public bool? IsVirtual { get; set; }
-
-        public string CountryCode { get; set; }
-
-        public string Underage { get; set; }
-
-        public bool IconPathLoaded { get; set; } = false;
-
-        public string IconPath { get; set; }
-
-        public IEnumerable<CultureInfo> LoadedLocals => GetLoadedLocals();
-
-        private IEnumerable<CultureInfo> GetLoadedLocals()
-        {
-            var allCultures = new HashSet<CultureInfo>();
-
-            foreach (var name in Name)
-                allCultures.Add(name.Key);
-            
-            foreach (var abbreviation in Abbreviation)
-                allCultures.Add(abbreviation.Key);
-            
-            foreach (var country in Country)
-                allCultures.Add(country.Key);
-
-            return allCultures;
-        }
-
-        public LocalizedCompetitor(URN id)
-        {
-            Id = id;
-        }
+        return allCultures;
     }
 }

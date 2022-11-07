@@ -2,14 +2,13 @@ using System.Collections.Generic;
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.Common;
 
-namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
+namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
+
+public interface ICompetitionStatus
 {
-    public interface ICompetitionStatus
-    {
-        URN WinnerId { get; }
+    URN WinnerId { get; }
 
-        EventStatus Status { get; }
+    EventStatus Status { get; }
 
-        IReadOnlyDictionary<string, object> Properties { get; }
-    }
+    IReadOnlyDictionary<string, object> Properties { get; }
 }

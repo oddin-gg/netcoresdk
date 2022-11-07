@@ -1,10 +1,8 @@
-﻿using Oddin.OddsFeedSdk.AMQP.Enums;
-using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+﻿using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 
-namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
+namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+
+public interface IRollbackBetSettlement<out T> : IMarketMessage<IMarket, T>
+    where T : ISportEvent
 {
-    public interface IRollbackBetSettlement<out T> : IMarketMessage<IMarket, T>
-        where T : ISportEvent
-    {
-    }
 }

@@ -1,36 +1,35 @@
 ﻿using System.Globalization;
 
-namespace Oddin.OddsFeedSdk.Configuration.Abstractions
+namespace Oddin.OddsFeedSdk.Configuration.Abstractions;
+
+public interface IConfigurationBuilderBase<out T>
 {
-    public interface IConfigurationBuilderBase<out T>
-    {
-        T LoadFromConfigFile();
+    T LoadFromConfigFile();
 
-        T SetDefaultLocale(CultureInfo culture);
+    T SetDefaultLocale(CultureInfo culture);
 
-        T SetExceptionHandlingStrategy(ExceptionHandlingStrategy strategy);
+    T SetExceptionHandlingStrategy(ExceptionHandlingStrategy strategy);
 
-        T SetNodeId(int nodeId);
+    T SetNodeId(int nodeId);
 
-        T SetHttpClientTimeout(int httpClientTimeout);
+    T SetHttpClientTimeout(int httpClientTimeout);
 
-        T SetInitialSnapshotTimeInMinutes(int initialSnapshotTimeInMinutes);
+    T SetInitialSnapshotTimeInMinutes(int initialSnapshotTimeInMinutes);
 
-        IFeedConfiguration Build();
-    }
+    IFeedConfiguration Build();
+}
 
-    public interface IRecoveryConfigurationBuilder<out T> : IConfigurationBuilderBase<T>
-    {
-        T SetMaxInactivitySeconds(int inactivitySeconds);
+public interface IRecoveryConfigurationBuilder<out T> : IConfigurationBuilderBase<T>
+{
+    T SetMaxInactivitySeconds(int inactivitySeconds);
 
-        T SetMaxRecoveryExecutionMinutes(int maxRecoveryExecutionMinutes);
-    }
+    T SetMaxRecoveryExecutionMinutes(int maxRecoveryExecutionMinutes);
+}
 
-    public interface IConfigurationBuilder : IRecoveryConfigurationBuilder<IConfigurationBuilder>
-    {
-    }
+public interface IConfigurationBuilder : IRecoveryConfigurationBuilder<IConfigurationBuilder>
+{
+}
 
-    public interface IReplayConfigurationBuilder : IConfigurationBuilderBase<IReplayConfigurationBuilder>
-    {
-    }
+public interface IReplayConfigurationBuilder : IConfigurationBuilderBase<IReplayConfigurationBuilder>
+{
 }

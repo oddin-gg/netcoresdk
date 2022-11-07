@@ -1,112 +1,116 @@
-namespace Oddin.OddsFeedSdk.API.Models
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Xml.Serialization;
+
+namespace Oddin.OddsFeedSdk.API.Models;
+
+[Serializable]
+[DebuggerStepThrough]
+[DesignerCategory("code")]
+[XmlType(AnonymousType = true)]
+[XmlRoot(ElementName = "void_reasons", IsNullable = false)]
+public class MarketVoidReasonsModel
 {
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    [System.Xml.Serialization.XmlRootAttribute(ElementName = "void_reasons", IsNullable = false)]
-    public class MarketVoidReasonsModel
+    private ResponseCode _responseCodeField;
+    private bool _responseCodeFieldSpecified;
+    private void_reason[] _voidReasonsField;
+
+    /// <remarks />
+    [XmlElement("void_reason")]
+    public void_reason[] void_reasons
     {
-        private ResponseCode _responseCodeField;
-        private bool _responseCodeFieldSpecified;
-        private void_reason[] _voidReasonsField;
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("void_reason")]
-        public void_reason[] void_reasons
-        {
-            get => _voidReasonsField;
-            set => _voidReasonsField = value;
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public ResponseCode response_code
-        {
-            get => _responseCodeField;
-            set => _responseCodeField = value;
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool response_codeSpecified
-        {
-            get => _responseCodeFieldSpecified;
-            set => _responseCodeFieldSpecified = value;
-        }
+        get => _voidReasonsField;
+        set => _voidReasonsField = value;
     }
 
-    /// <remarks/>
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute()]
-    public class void_reason
+    /// <remarks />
+    [XmlAttribute]
+    public ResponseCode response_code
     {
-        private string _descriptionField;
-
-        private int _idField;
-        private string _nameField;
-
-        private void_reason_param[] _paramsField;
-        private string _templateField;
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public int id
-        {
-            get => _idField;
-            set => _idField = value;
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string name
-        {
-            get => _nameField;
-            set => _nameField = value;
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string description
-        {
-            get => _descriptionField;
-            set => _descriptionField = value;
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string template
-        {
-            get => _templateField;
-            set => _templateField = value;
-        }
-
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("param")]
-        public void_reason_param[] void_reason_params
-        {
-            get => _paramsField;
-            set => _paramsField = value;
-        }
+        get => _responseCodeField;
+        set => _responseCodeField = value;
     }
 
-    /// <remarks/>
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute()]
-    public class void_reason_param
+    /// <remarks />
+    [XmlIgnore]
+    public bool response_codeSpecified
     {
-        private string _nameField;
+        get => _responseCodeFieldSpecified;
+        set => _responseCodeFieldSpecified = value;
+    }
+}
 
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string name
-        {
-            get => _nameField;
-            set => _nameField = value;
-        }
+/// <remarks />
+[Serializable]
+[DebuggerStepThrough]
+[DesignerCategory("code")]
+[XmlType]
+public class void_reason
+{
+    private string _descriptionField;
+
+    private int _idField;
+    private string _nameField;
+
+    private void_reason_param[] _paramsField;
+    private string _templateField;
+
+    /// <remarks />
+    [XmlAttribute]
+    public int id
+    {
+        get => _idField;
+        set => _idField = value;
+    }
+
+    /// <remarks />
+    [XmlAttribute]
+    public string name
+    {
+        get => _nameField;
+        set => _nameField = value;
+    }
+
+    /// <remarks />
+    [XmlAttribute]
+    public string description
+    {
+        get => _descriptionField;
+        set => _descriptionField = value;
+    }
+
+    /// <remarks />
+    [XmlAttribute]
+    public string template
+    {
+        get => _templateField;
+        set => _templateField = value;
+    }
+
+    /// <remarks />
+    [XmlElement("param")]
+    public void_reason_param[] void_reason_params
+    {
+        get => _paramsField;
+        set => _paramsField = value;
+    }
+}
+
+/// <remarks />
+[Serializable]
+[DebuggerStepThrough]
+[DesignerCategory("code")]
+[XmlType]
+public class void_reason_param
+{
+    private string _nameField;
+
+    /// <remarks />
+    [XmlAttribute]
+    public string name
+    {
+        get => _nameField;
+        set => _nameField = value;
     }
 }

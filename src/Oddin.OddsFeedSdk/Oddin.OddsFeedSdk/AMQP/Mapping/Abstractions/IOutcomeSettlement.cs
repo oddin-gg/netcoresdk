@@ -1,13 +1,12 @@
 ﻿using Oddin.OddsFeedSdk.AMQP.Enums;
 
-namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
+namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+
+public interface IOutcomeSettlement : IOutcome
 {
-    public interface IOutcomeSettlement : IOutcome
-    {
-        double? DeadHeatFactor { get; }
+    double? DeadHeatFactor { get; }
 
-        VoidFactor? VoidFactor { get; }
+    VoidFactor? VoidFactor { get; }
 
-        OutcomeResult OutcomeResult { get; }
-    }
+    OutcomeResult OutcomeResult { get; }
 }

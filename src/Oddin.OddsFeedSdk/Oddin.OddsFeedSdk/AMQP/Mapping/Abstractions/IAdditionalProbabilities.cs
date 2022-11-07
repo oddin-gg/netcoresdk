@@ -1,15 +1,14 @@
-﻿namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
+﻿namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+
+public interface IAdditionalProbabilities
 {
-    public interface IAdditionalProbabilities
-    {
-        double? Win { get; }
+    double? Win { get; }
 
-        double? Lose { get; }
+    double? Lose { get; }
 
-        double? HalfWin { get; }
+    double? HalfWin { get; }
 
-        double? HalfLose { get; }
+    double? HalfLose { get; }
 
-        double? Refund { get; }
-    }
+    double? Refund { get; }
 }

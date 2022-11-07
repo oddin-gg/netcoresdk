@@ -1,24 +1,23 @@
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
+namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
+
+public interface IMatchStatus : ICompetitionStatus
 {
-    public interface IMatchStatus : ICompetitionStatus
-    {
-        IEnumerable<IPeriodScore> PeriodScores { get; }
+    IEnumerable<IPeriodScore> PeriodScores { get; }
 
-        int? MatchStatusId { get; }
+    int? MatchStatusId { get; }
 
-        ILocalizedNamedValue MatchStatus { get; }
+    ILocalizedNamedValue MatchStatus { get; }
 
-        ILocalizedNamedValue GetMatchStatus(CultureInfo culture);
+    double? HomeScore { get; }
 
-        double? HomeScore { get; }
+    double? AwayScore { get; }
 
-        double? AwayScore { get; }
+    bool IsScoreboardAvailable { get; }
 
-        bool IsScoreboardAvailable { get; }
+    IScoreboard Scoreboard { get; }
 
-        IScoreboard Scoreboard { get; }
-    }
+    ILocalizedNamedValue GetMatchStatus(CultureInfo culture);
 }

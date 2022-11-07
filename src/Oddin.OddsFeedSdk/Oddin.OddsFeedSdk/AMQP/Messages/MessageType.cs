@@ -1,27 +1,26 @@
-﻿namespace Oddin.OddsFeedSdk.AMQP.Messages
+﻿namespace Oddin.OddsFeedSdk.AMQP.Messages;
+
+public enum MessageType
 {
-    public enum MessageType
-    {
-        UNKNOWN,
+    UNKNOWN,
 
-        PRODUCER_DOWN,
+    PRODUCER_DOWN,
 
-        SNAPSHOT_COMPLETE,
+    SNAPSHOT_COMPLETE,
 
-        ALIVE,
+    ALIVE,
 
-        FIXTURE_CHANGE,
+    FIXTURE_CHANGE,
 
-        BET_STOP,
+    BET_STOP,
 
-        BET_CANCEL,
+    BET_CANCEL,
 
-        ROLLBACK_BET_CANCEL,
+    ROLLBACK_BET_CANCEL,
 
-        BET_SETTLEMENT,
+    BET_SETTLEMENT,
 
-        ROLLBACK_BET_SETTLEMENT,
+    ROLLBACK_BET_SETTLEMENT,
 
-        ODDS_CHANGE
-    }
+    ODDS_CHANGE
 }

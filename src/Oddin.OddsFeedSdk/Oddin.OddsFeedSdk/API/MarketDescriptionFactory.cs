@@ -6,50 +6,45 @@ using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
-namespace Oddin.OddsFeedSdk.API
+namespace Oddin.OddsFeedSdk.API;
+
+internal class MarketDescriptionFactory : IMarketDescriptionFactory
 {
-    internal class MarketDescriptionFactory : IMarketDescriptionFactory
+    private readonly IFeedConfiguration _feedConfiguration;
+    private readonly IMarketDescriptionCache _marketDescriptionCache;
+    private readonly IMarketVoidReasonsCache _marketVoidReasonsCache;
+
+    public MarketDescriptionFactory(
+        IFeedConfiguration feedConfiguration,
+        IMarketDescriptionCache marketDescriptionCache,
+        IMarketVoidReasonsCache marketVoidReasonsCache)
     {
-        private readonly IFeedConfiguration _feedConfiguration;
-        private readonly IMarketDescriptionCache _marketDescriptionCache;
-        private readonly IMarketVoidReasonsCache _marketVoidReasonsCache;
+        _feedConfiguration = feedConfiguration;
+        _marketDescriptionCache = marketDescriptionCache;
+        _marketVoidReasonsCache = marketVoidReasonsCache;
+    }
 
-        public MarketDescriptionFactory(
-            IFeedConfiguration feedConfiguration,
-            IMarketDescriptionCache marketDescriptionCache,
-            IMarketVoidReasonsCache marketVoidReasonsCache)
-        {
-            _feedConfiguration = feedConfiguration;
-            _marketDescriptionCache = marketDescriptionCache;
-            _marketVoidReasonsCache = marketVoidReasonsCache;
-        }
+    public IMarketDescription GetMarketDescription(int marketId, IReadOnlyDictionary<string, string> specifiers,
+        IEnumerable<CultureInfo> cultures) =>
+        new MarketDescription(
+            marketId,
+            specifiers?.FirstOrDefault(s => s.Key == "variant").Value,
+            _marketDescriptionCache,
+            _feedConfiguration.ExceptionHandlingStrategy,
+            cultures.ToHashSet());
 
-        public IMarketDescription GetMarketDescription(int marketId, IReadOnlyDictionary<string, string> specifiers, IEnumerable<CultureInfo> cultures)
-        {
-            return new MarketDescription(
-                marketId,
-                specifiers?.FirstOrDefault(s => s.Key == "variant").Value,
+    public IEnumerable<IMarketDescription> GetMarketDescriptions(CultureInfo culture)
+    {
+        var keys = _marketDescriptionCache.GetMarketDescriptions(culture);
+
+        return keys.Select(k
+            => new MarketDescription(
+                k.MarketId,
+                k.Variant,
                 _marketDescriptionCache,
                 _feedConfiguration.ExceptionHandlingStrategy,
-                cultures.ToHashSet());
-        }
-
-        public IEnumerable<IMarketDescription> GetMarketDescriptions(CultureInfo culture)
-        {
-            var keys = _marketDescriptionCache.GetMarketDescriptions(culture);
-
-            return keys.Select(k
-                => new MarketDescription(
-                    k.MarketId,
-                    k.Variant,
-                    _marketDescriptionCache,
-                    _feedConfiguration.ExceptionHandlingStrategy,
-                    new[] {culture}));
-        }
-
-        public IEnumerable<IMarketVoidReason> GetMarketVoidReasons()
-        {
-            return _marketVoidReasonsCache.GetMarketVoidReasons();
-        }
+                new[] { culture }));
     }
+
+    public IEnumerable<IMarketVoidReason> GetMarketVoidReasons() => _marketVoidReasonsCache.GetMarketVoidReasons();
 }

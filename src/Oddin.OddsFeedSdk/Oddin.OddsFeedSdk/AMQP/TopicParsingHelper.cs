@@ -1,83 +1,85 @@
-﻿using Oddin.OddsFeedSdk.AMQP.Messages;
-using System;
+﻿using System;
+using Oddin.OddsFeedSdk.AMQP.Messages;
 using Oddin.OddsFeedSdk.Common;
 
-namespace Oddin.OddsFeedSdk.AMQP
+namespace Oddin.OddsFeedSdk.AMQP;
+
+public static class TopicParsingHelper
 {
-    public static class TopicParsingHelper
+    public const int TOTAL_SECTIONS_COUNT = 8;
+    public const int EVENT_ID_SECTION_INDEX = 6;
+    public const int MESSAGE_TYPE_SECTION_INDEX = 3;
+    public const int LIVE_SECTION_INDEX = 2;
+    public const int PRE_SECTION_INDEX = 1;
+    public const int SPORT_SECTION_INDEX = 4;
+
+    public const string PRE_PRODUCER_STRING = "pre";
+    public const string LIVE_PRODUCER_STRING = "live";
+
+    private const string SPORT_ID_PREFIX = "od:sport:";
+
+    private static string[] GetSections(string topic)
     {
-        public const int TOTAL_SECTIONS_COUNT = 8;
-        public const int EVENT_ID_SECTION_INDEX = 6;
-        public const int MESSAGE_TYPE_SECTION_INDEX = 3;
-        public const int LIVE_SECTION_INDEX = 2;
-        public const int PRE_SECTION_INDEX = 1;
-        public const int SPORT_SECTION_INDEX = 4;
-
-        public const string PRE_PRODUCER_STRING = "pre";
-        public const string LIVE_PRODUCER_STRING = "live";
-
-        private const string SPORT_ID_PREFIX = "od:sport:";
-
-        private static string[] GetSections(string topic)
+        var sections = topic.Split(".");
+        if (sections.Length != TOTAL_SECTIONS_COUNT)
         {
-            var sections = topic.Split(".");
-            if (sections.Length != TOTAL_SECTIONS_COUNT)
-            {
-                throw new ArgumentException($"AMQP message topic should consist of {TOTAL_SECTIONS_COUNT} sections. Only {sections.Length} were found!");
-            }
-            return sections;
+            throw new ArgumentException(
+                $"AMQP message topic should consist of {TOTAL_SECTIONS_COUNT} sections. Only {sections.Length} were found!");
         }
 
-        public static MessageType GetMessageType(string topic)
+        return sections;
+    }
+
+    public static MessageType GetMessageType(string topic)
+    {
+        var messageTypeString = GetSections(topic)[MESSAGE_TYPE_SECTION_INDEX];
+        MessageType result;
+        try
         {
-            var messageTypeString = GetSections(topic)[MESSAGE_TYPE_SECTION_INDEX];
-            MessageType result;
-            try
-            {
-                result = (MessageType)Enum.Parse(typeof(MessageType), messageTypeString.ToUpper());
-            }
-            catch (Exception e)
+            result = (MessageType)Enum.Parse(typeof(MessageType), messageTypeString.ToUpper());
+        }
+        catch (Exception e)
             when (e is ArgumentException
-                || e is ArgumentNullException
-                || e is OverflowException)
-            {
-                return MessageType.UNKNOWN;
-            }
-            return result;
-        }
-
-        public static string GetProducer(string topic)
+                  || e is ArgumentNullException
+                  || e is OverflowException)
         {
-            var sections = GetSections(topic);
-            var isProducerLive = sections[LIVE_SECTION_INDEX] == LIVE_PRODUCER_STRING;
-            var isProducerPre = sections[PRE_SECTION_INDEX] == PRE_PRODUCER_STRING;
-
-            if (isProducerLive && (isProducerPre == false))
-                return LIVE_PRODUCER_STRING;
-
-            if (isProducerPre && (isProducerLive == false))
-                return PRE_PRODUCER_STRING;
-
-            return string.Empty;
+            return MessageType.UNKNOWN;
         }
 
-        public static string GetEventId(string topic)
+        return result;
+    }
+
+    public static string GetProducer(string topic)
+    {
+        var sections = GetSections(topic);
+        var isProducerLive = sections[LIVE_SECTION_INDEX] == LIVE_PRODUCER_STRING;
+        var isProducerPre = sections[PRE_SECTION_INDEX] == PRE_PRODUCER_STRING;
+
+        if (isProducerLive && isProducerPre == false)
+            return LIVE_PRODUCER_STRING;
+
+        if (isProducerPre && isProducerLive == false)
+            return PRE_PRODUCER_STRING;
+
+        return string.Empty;
+    }
+
+    public static string GetEventId(string topic)
+    {
+        var sections = GetSections(topic);
+        // INFO: "-" in event ID section means ID is not specified
+        return sections[EVENT_ID_SECTION_INDEX] == "-" ? string.Empty : sections[EVENT_ID_SECTION_INDEX];
+    }
+
+    public static URN GetSportURN(string topic)
+    {
+        if (string.IsNullOrEmpty(topic))
         {
-            var sections = GetSections(topic);
-            // INFO: "-" in event ID section means ID is not specified
-            return sections[EVENT_ID_SECTION_INDEX] == "-" ? string.Empty : sections[EVENT_ID_SECTION_INDEX];
+            return null;
         }
 
-        public static URN GetSportURN(string topic)
-        {
-            if (string.IsNullOrEmpty(topic))
-            {
-                return null;
-            }
-
-            var sections = GetSections(topic);
-            // INFO: "-" in event ID section means ID is not specified
-            return sections[SPORT_SECTION_INDEX] == "-" ? null : new URN(SPORT_ID_PREFIX + sections[SPORT_SECTION_INDEX]);
-        }
+        var sections = GetSections(topic);
+        // INFO: "-" in event ID section means ID is not specified
+        return sections[SPORT_SECTION_INDEX] == "-" ? null : new URN(SPORT_ID_PREFIX + sections[SPORT_SECTION_INDEX]);
     }
 }

@@ -1,51 +1,50 @@
-using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
-using Oddin.OddsFeedSdk.AMQP.Messages;
-using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+using Oddin.OddsFeedSdk.AMQP.Messages;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 
-namespace Oddin.OddsFeedSdk.AMQP.EventArguments
+namespace Oddin.OddsFeedSdk.AMQP.EventArguments;
+
+public class RollbackBetCancelEventArgs<T> : EventArgs where T : ISportEvent
 {
-    public class RollbackBetCancelEventArgs<T> : EventArgs where T : ISportEvent
+    private readonly IEnumerable<CultureInfo> _defaultCultures;
+    private readonly rollback_bet_cancel _feedMessage;
+    private readonly IFeedMessageMapper _messageMapper;
+    private readonly byte[] _rawMessage;
+    private readonly IRollbackBetCancel<T> _rollbackBetCancel;
+
+    internal RollbackBetCancelEventArgs(
+        IFeedMessageMapper messageMapper,
+        rollback_bet_cancel feedMessage,
+        IEnumerable<CultureInfo> defaultCultures,
+        byte[] rawMessage)
     {
-        private readonly IFeedMessageMapper _messageMapper;
-        private readonly rollback_bet_cancel _feedMessage;
-        private readonly IEnumerable<CultureInfo> _defaultCultures;
-        private readonly byte[] _rawMessage;
-        private readonly IRollbackBetCancel<T> _rollbackBetCancel;
+        if (messageMapper is null)
+            throw new ArgumentNullException($"{nameof(messageMapper)}");
 
-        internal RollbackBetCancelEventArgs(
-            IFeedMessageMapper messageMapper,
-            rollback_bet_cancel feedMessage,
-            IEnumerable<CultureInfo> defaultCultures,
-            byte[] rawMessage)
-        {
-            if (messageMapper is null)
-                throw new ArgumentNullException($"{nameof(messageMapper)}");
+        if (feedMessage is null)
+            throw new ArgumentNullException($"{nameof(feedMessage)}");
 
-            if (feedMessage is null)
-                throw new ArgumentNullException($"{nameof(feedMessage)}");
+        _messageMapper = messageMapper;
+        _feedMessage = feedMessage;
+        _defaultCultures = defaultCultures;
+        _rawMessage = rawMessage;
 
-            _messageMapper = messageMapper;
-            _feedMessage = feedMessage;
-            _defaultCultures = defaultCultures;
-            _rawMessage = rawMessage;
+        _rollbackBetCancel = GetRollbackBetCancel();
+    }
 
-            _rollbackBetCancel = GetRollbackBetCancel();
-        }
+    public IRollbackBetCancel<T> GetRollbackBetCancel(CultureInfo culture = null)
+    {
+        if (_rollbackBetCancel is not null && culture is null)
+            return _rollbackBetCancel;
 
-        public IRollbackBetCancel<T> GetRollbackBetCancel(CultureInfo culture = null)
-        {
-            if(_rollbackBetCancel is not null && culture is null)
-                return _rollbackBetCancel;
-
-            return _messageMapper.MapRollbackBetCancel<T>(
-                _feedMessage,
-                culture is null
-                    ? _defaultCultures
-                    : new[] { culture },
-                _rawMessage);
-        }
+        return _messageMapper.MapRollbackBetCancel<T>(
+            _feedMessage,
+            culture is null
+                ? _defaultCultures
+                : new[] { culture },
+            _rawMessage);
     }
 }

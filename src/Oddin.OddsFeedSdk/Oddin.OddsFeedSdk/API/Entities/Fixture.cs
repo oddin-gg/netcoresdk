@@ -9,48 +9,48 @@ using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Exceptions;
 
-namespace Oddin.OddsFeedSdk.API.Entities
+namespace Oddin.OddsFeedSdk.API.Entities;
+
+internal class Fixture : IFixture
 {
-    internal class Fixture : IFixture
+    private readonly IEnumerable<CultureInfo> _cultures;
+    private readonly IFixtureCache _fixtureCache;
+    private readonly ExceptionHandlingStrategy _handlingStrategy;
+
+    public Fixture(URN id, IFixtureCache fixtureCache, ExceptionHandlingStrategy handlingStrategy,
+        IEnumerable<CultureInfo> cultures)
     {
-        private readonly IFixtureCache _fixtureCache;
-        private readonly ExceptionHandlingStrategy _handlingStrategy;
-        private readonly IEnumerable<CultureInfo> _cultures;
+        Id = id;
+        _fixtureCache = fixtureCache;
+        _handlingStrategy = handlingStrategy;
+        _cultures = cultures;
+    }
 
-        public URN Id { get; }
+    public URN Id { get; }
 
-        public DateTime? StartTime => FetchFixture()?.StartTime;
+    public DateTime? StartTime => FetchFixture()?.StartTime;
 
-        public IReadOnlyDictionary<string, string> ExtraInfo
+    public IReadOnlyDictionary<string, string> ExtraInfo
+    {
+        get
         {
-            get
-            {
-                var fixtures = FetchFixture()?.ExtraInfo;
-                if(fixtures is not null)
-                    return new ReadOnlyDictionary<string, string>(fixtures);
+            var fixtures = FetchFixture()?.ExtraInfo;
+            if (fixtures is not null)
+                return new ReadOnlyDictionary<string, string>(fixtures);
 
-                return new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
-            }
+            return new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
         }
+    }
 
-        public IEnumerable<ITvChannel> TvChannels => FetchFixture()?.TvChannels;
+    public IEnumerable<ITvChannel> TvChannels => FetchFixture()?.TvChannels;
 
-        public Fixture(URN id, IFixtureCache fixtureCache, ExceptionHandlingStrategy handlingStrategy, IEnumerable<CultureInfo> cultures)
-        {
-            Id = id;
-            _fixtureCache = fixtureCache;
-            _handlingStrategy = handlingStrategy;
-            _cultures = cultures;
-        }
+    private LocalizedFixture FetchFixture()
+    {
+        var item = _fixtureCache.GetFixture(Id, _cultures.First());
 
-        private LocalizedFixture FetchFixture()
-        {
-            var item = _fixtureCache.GetFixture(Id, _cultures.First());
+        if (item is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
+            throw new ItemNotFoundException(Id.ToString(), $"Fixture with id {Id} not found");
 
-            if (item is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
-                throw new ItemNotFoundException(Id.ToString(), $"Fixture with id {Id} not found");
-
-            return item;
-        }
+        return item;
     }
 }

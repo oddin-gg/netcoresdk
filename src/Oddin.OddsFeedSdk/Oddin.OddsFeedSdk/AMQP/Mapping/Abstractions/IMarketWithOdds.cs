@@ -1,16 +1,15 @@
 using System.Collections.Generic;
 using Oddin.OddsFeedSdk.AMQP.Enums;
 
-namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
+namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+
+public interface IMarketWithOdds : IMarket
 {
-    public interface IMarketWithOdds : IMarket
-    {
-        MarketStatus Status { get; }
+    MarketStatus Status { get; }
 
-        bool IsFavorite { get; }
+    bool IsFavorite { get; }
 
-        IEnumerable<IOutcomeOdds> OutcomeOdds { get; }
+    IEnumerable<IOutcomeOdds> OutcomeOdds { get; }
 
-        IMarketMetadata MarketMetadata { get; }
-    }
+    IMarketMetadata MarketMetadata { get; }
 }

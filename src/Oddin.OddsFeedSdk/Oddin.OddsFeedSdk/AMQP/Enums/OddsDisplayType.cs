@@ -1,8 +1,7 @@
-namespace Oddin.OddsFeedSdk.AMQP.Enums
+namespace Oddin.OddsFeedSdk.AMQP.Enums;
+
+public enum OddsDisplayType
 {
-    public enum OddsDisplayType
-    {
-        Decimal,
-        American
-    }
+    Decimal,
+    American
 }

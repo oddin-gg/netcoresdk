@@ -1,15 +1,14 @@
-﻿namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
+﻿namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
+
+public interface IRecoveryInfo
 {
-    public interface IRecoveryInfo
-    {
-        public long After { get; }
+    public long After { get; }
 
-        public long Timestamp { get; }
+    public long Timestamp { get; }
 
-        public long RequestId { get; }
+    public long RequestId { get; }
 
-        public bool Successful { get; }
+    public bool Successful { get; }
 
-        public int? NodeId { get; }
-    }
+    public int? NodeId { get; }
 }

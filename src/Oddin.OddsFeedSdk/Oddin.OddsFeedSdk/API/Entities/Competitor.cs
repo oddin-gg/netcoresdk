@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -10,122 +9,113 @@ using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Exceptions;
 
-namespace Oddin.OddsFeedSdk.API.Entities
+namespace Oddin.OddsFeedSdk.API.Entities;
+
+internal class Competitor : ICompetitor
 {
-    internal class Competitor : ICompetitor
+    private readonly ICompetitorCache _competitorCache;
+    private readonly IEnumerable<CultureInfo> _cultures;
+    private readonly ExceptionHandlingStrategy _exceptionHandling;
+    private readonly ISportDataBuilder _sportDataBuilder;
+
+    public Competitor(
+        URN id,
+        ICompetitorCache competitorCache,
+        ISportDataBuilder sportDataBuilder,
+        ExceptionHandlingStrategy exceptionHandling,
+        IEnumerable<CultureInfo> cultures)
     {
-        private readonly ICompetitorCache _competitorCache;
-        private readonly ISportDataBuilder _sportDataBuilder;
-        private readonly ExceptionHandlingStrategy _exceptionHandling;
-        private readonly IEnumerable<CultureInfo> _cultures;
+        Id = id;
+        _competitorCache = competitorCache;
+        _sportDataBuilder = sportDataBuilder;
+        _exceptionHandling = exceptionHandling;
+        _cultures = cultures;
+    }
 
-        public URN Id { get; }
+    public URN Id { get; }
 
-        public URN RefId => FetchCompetitor(_cultures)?.RefId;
+    public URN RefId => FetchCompetitor(_cultures)?.RefId;
 
-        public IReadOnlyDictionary<CultureInfo, string> Names
+    public IReadOnlyDictionary<CultureInfo, string> Names
+    {
+        get
         {
-            get
-            {
-                var names = FetchCompetitor(_cultures)?.Name;
-                if(names is not null)
-                    return new ReadOnlyDictionary<CultureInfo, string>(names);
+            var names = FetchCompetitor(_cultures)?.Name;
+            if (names is not null)
+                return new ReadOnlyDictionary<CultureInfo, string>(names);
 
-                return new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>());
-            }
+            return new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>());
         }
+    }
 
-        public IReadOnlyDictionary<CultureInfo, string> Countries
+    public IReadOnlyDictionary<CultureInfo, string> Countries
+    {
+        get
         {
-            get
-            {
-                var countries = FetchCompetitor(_cultures)?.Country;
-                if (countries is not null)
-                    return new ReadOnlyDictionary<CultureInfo, string>(countries);
+            var countries = FetchCompetitor(_cultures)?.Country;
+            if (countries is not null)
+                return new ReadOnlyDictionary<CultureInfo, string>(countries);
 
-                return new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>());
-            }
+            return new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>());
         }
+    }
 
-        public IReadOnlyDictionary<CultureInfo, string> Abbreviations
+    public IReadOnlyDictionary<CultureInfo, string> Abbreviations
+    {
+        get
         {
-            get
-            {
-                var abbreviations = FetchCompetitor(_cultures)?.Abbreviation;
-                if (abbreviations is not null)
-                    return new ReadOnlyDictionary<CultureInfo, string>(abbreviations);
+            var abbreviations = FetchCompetitor(_cultures)?.Abbreviation;
+            if (abbreviations is not null)
+                return new ReadOnlyDictionary<CultureInfo, string>(abbreviations);
 
-                return new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>());
-            }
+            return new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>());
         }
+    }
 
-        public bool? IsVirtual => FetchCompetitor(_cultures)?.IsVirtual;
+    public bool? IsVirtual => FetchCompetitor(_cultures)?.IsVirtual;
 
-        public string CountryCode => FetchCompetitor(_cultures)?.CountryCode;
+    public string CountryCode => FetchCompetitor(_cultures)?.CountryCode;
 
-        public string Underage => FetchCompetitor(_cultures)?.Underage;
+    public string Underage => FetchCompetitor(_cultures)?.Underage;
 
-        public string IconPath => _competitorCache.GetCompetitorIconPath(Id, _cultures.First());
+    public string IconPath => _competitorCache.GetCompetitorIconPath(Id, _cultures.First());
 
-        public Competitor(
-            URN id,
-            ICompetitorCache competitorCache,
-            ISportDataBuilder sportDataBuilder,
-            ExceptionHandlingStrategy exceptionHandling,
-            IEnumerable<CultureInfo> cultures)
-        {
-            Id = id;
-            _competitorCache = competitorCache;
-            _sportDataBuilder = sportDataBuilder;
-            _exceptionHandling = exceptionHandling;
-            _cultures = cultures;
-        }
+    public string GetName(CultureInfo culture) =>
+        FetchCompetitor(new[] { culture })
+            ?.Name
+            ?.FirstOrDefault(d => d.Key.Equals(culture))
+            .Value;
 
-        public string GetName(CultureInfo culture)
-        {
-            return FetchCompetitor(new[] { culture })
-                ?.Name
-                ?.FirstOrDefault(d => d.Key.Equals(culture))
-                .Value;
-        }
+    public string GetCountry(CultureInfo culture) =>
+        FetchCompetitor(new[] { culture })
+            ?.Country
+            ?.FirstOrDefault(d => d.Key.Equals(culture))
+            .Value;
 
-        public string GetCountry(CultureInfo culture)
-        {
-            return FetchCompetitor(new[] { culture })
-                ?.Country
-                ?.FirstOrDefault(d => d.Key.Equals(culture))
-                .Value;
-        }
+    public string GetAbbreviation(CultureInfo culture) =>
+        FetchCompetitor(new[] { culture })
+            ?.Abbreviation
+            ?.FirstOrDefault(d => d.Key.Equals(culture))
+            .Value;
 
-        public string GetAbbreviation(CultureInfo culture)
-        {
-            return FetchCompetitor(new[] { culture })
-                ?.Abbreviation
-                ?.FirstOrDefault(d => d.Key.Equals(culture))
-                .Value;
-        }
+    public Task<ISport> GetSportAsync() => Task.FromResult(GetSports()?.FirstOrDefault());
 
-        public Task<ISport> GetSportAsync() => Task.FromResult(GetSports()?.FirstOrDefault());
+    public IEnumerable<ISport> GetSports()
+    {
+        var sportIds = FetchCompetitor(_cultures)?.SportIds;
 
-        public IEnumerable<ISport> GetSports()
-        {
-            var sportIds = FetchCompetitor(_cultures)?.SportIds;
+        if (sportIds is null || sportIds.Any() == false)
+            return null;
+        return sportIds
+            .Select(s => _sportDataBuilder.BuildSport(s, _cultures));
+    }
 
-            if (sportIds is null || sportIds.Any() == false)
-                return null;
-            else
-                return sportIds
-                    .Select(s => _sportDataBuilder.BuildSport(s, _cultures));
-        }
+    private LocalizedCompetitor FetchCompetitor(IEnumerable<CultureInfo> cultures)
+    {
+        var item = _competitorCache.GetCompetitor(Id, cultures);
 
-        private LocalizedCompetitor FetchCompetitor(IEnumerable<CultureInfo> cultures)
-        {
-            var item = _competitorCache.GetCompetitor(Id, cultures);
-
-            if (item == null && _exceptionHandling == ExceptionHandlingStrategy.THROW)
-                throw new ItemNotFoundException(Id.ToString(), $"Competitor {Id} not found");
-            else
-                return item;
-        }
+        if (item == null && _exceptionHandling == ExceptionHandlingStrategy.THROW)
+            throw new ItemNotFoundException(Id.ToString(), $"Competitor {Id} not found");
+        return item;
     }
 }

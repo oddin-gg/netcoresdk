@@ -1,7 +1,6 @@
-namespace Oddin.OddsFeedSdk.AMQP.Abstractions
+namespace Oddin.OddsFeedSdk.AMQP.Abstractions;
+
+internal interface IExchangeNameProvider
 {
-    internal interface IExchangeNameProvider
-    {
-        string ExchangeName { get; }
-    }
+    string ExchangeName { get; }
 }

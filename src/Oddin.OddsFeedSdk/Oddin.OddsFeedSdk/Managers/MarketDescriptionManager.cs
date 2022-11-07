@@ -6,43 +6,40 @@ using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Exceptions;
 using Oddin.OddsFeedSdk.Managers.Abstractions;
 
-namespace Oddin.OddsFeedSdk.Managers
+namespace Oddin.OddsFeedSdk.Managers;
+
+internal class MarketDescriptionManager : IMarketDescriptionManager
 {
-    internal class MarketDescriptionManager : IMarketDescriptionManager
+    private readonly ICacheManager _cacheManager;
+    private readonly IExceptionWrapper _exceptionWrapper;
+    private readonly IFeedConfiguration _feedConfiguration;
+    private readonly IMarketDescriptionFactory _marketDescriptionFactory;
+
+    public MarketDescriptionManager(
+        IFeedConfiguration feedConfiguration,
+        IMarketDescriptionFactory marketDescriptionFactory,
+        ICacheManager cacheManager,
+        IExceptionWrapper exceptionWrapper)
     {
-        private readonly IFeedConfiguration _feedConfiguration;
-        private readonly IMarketDescriptionFactory _marketDescriptionFactory;
-        private readonly ICacheManager _cacheManager;
-        private readonly IExceptionWrapper _exceptionWrapper;
-
-        public MarketDescriptionManager(
-            IFeedConfiguration feedConfiguration,
-            IMarketDescriptionFactory marketDescriptionFactory,
-            ICacheManager cacheManager,
-            IExceptionWrapper exceptionWrapper)
-        {
-            _feedConfiguration = feedConfiguration;
-            _marketDescriptionFactory = marketDescriptionFactory;
-            _cacheManager = cacheManager;
-            _exceptionWrapper = exceptionWrapper;
-        }
-
-        public IEnumerable<IMarketDescription> GetMarketDescriptions(CultureInfo culture = null)
-        {
-            if (culture is null)
-                culture = _feedConfiguration.DefaultLocale;
-
-            return _exceptionWrapper.Wrap(()
-                => _marketDescriptionFactory.GetMarketDescriptions(culture));
-        }
-
-        public IEnumerable<IMarketVoidReason> GetMarketVoidReasons()
-        {
-            return _exceptionWrapper.Wrap(()
-                => _marketDescriptionFactory.GetMarketVoidReasons());
-        }
-
-        public void DeleteVariantMarketDescriptionFromCache(int marketId, string variantValue)
-            => _cacheManager.MarketDescriptionCache.ClearCacheItem(marketId, variantValue);
+        _feedConfiguration = feedConfiguration;
+        _marketDescriptionFactory = marketDescriptionFactory;
+        _cacheManager = cacheManager;
+        _exceptionWrapper = exceptionWrapper;
     }
+
+    public IEnumerable<IMarketDescription> GetMarketDescriptions(CultureInfo culture = null)
+    {
+        if (culture is null)
+            culture = _feedConfiguration.DefaultLocale;
+
+        return _exceptionWrapper.Wrap(()
+            => _marketDescriptionFactory.GetMarketDescriptions(culture));
+    }
+
+    public IEnumerable<IMarketVoidReason> GetMarketVoidReasons() =>
+        _exceptionWrapper.Wrap(()
+            => _marketDescriptionFactory.GetMarketVoidReasons());
+
+    public void DeleteVariantMarketDescriptionFromCache(int marketId, string variantValue)
+        => _cacheManager.MarketDescriptionCache.ClearCacheItem(marketId, variantValue);
 }

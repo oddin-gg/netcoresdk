@@ -4,16 +4,15 @@ using System.Globalization;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.Common;
 
-namespace Oddin.OddsFeedSdk.API.Abstractions
+namespace Oddin.OddsFeedSdk.API.Abstractions;
+
+internal interface ITournamentsCache : IDisposable
 {
-    internal interface ITournamentsCache : IDisposable
-    {
-        LocalizedTournament GetTournament(URN id, IEnumerable<CultureInfo> cultures);
+    LocalizedTournament GetTournament(URN id, IEnumerable<CultureInfo> cultures);
 
-        IEnumerable<URN> GetTournamentCompetitors(URN id, CultureInfo culture);
+    IEnumerable<URN> GetTournamentCompetitors(URN id, CultureInfo culture);
 
-        void ClearCacheItem(URN id);
+    void ClearCacheItem(URN id);
 
-        void OnFeedMessageReceived(fixture_change e);
-    }
+    void OnFeedMessageReceived(fixture_change e);
 }

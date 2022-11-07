@@ -1,9 +1,8 @@
-namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
-{
-    public interface INamedValue
-    {
-        long Id { get; }
+namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
 
-        string Description { get; }
-    }
+public interface INamedValue
+{
+    long Id { get; }
+
+    string Description { get; }
 }

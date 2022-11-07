@@ -1,7 +1,6 @@
-﻿namespace Oddin.OddsFeedSdk.Configuration
+﻿namespace Oddin.OddsFeedSdk.Configuration;
+
+internal interface IAppConfigurationSectionProvider
 {
-    internal interface IAppConfigurationSectionProvider 
-    {
-        AppConfigurationSection Get(); 
-    }
+    AppConfigurationSection Get();
 }

@@ -1,33 +1,32 @@
+using System;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Dispatch.EventArguments;
 using Oddin.OddsFeedSdk.Managers.Abstractions;
 using Oddin.OddsFeedSdk.Sessions.Abstractions;
-using System;
 
-namespace Oddin.OddsFeedSdk.Abstractions
+namespace Oddin.OddsFeedSdk.Abstractions;
+
+public interface IOddsFeed : IDisposable
 {
-    public interface IOddsFeed : IDisposable
-    {
-        IProducerManager ProducerManager { get; }
+    IProducerManager ProducerManager { get; }
 
-        ISportDataProvider SportDataProvider { get; }
+    ISportDataProvider SportDataProvider { get; }
 
-        IRecoveryManager RecoveryManager { get; }
+    IRecoveryManager RecoveryManager { get; }
 
-        IBookmakerDetails BookmakerDetails { get; }
+    IBookmakerDetails BookmakerDetails { get; }
 
-        IMarketDescriptionManager MarketDescriptionManager { get; }
+    IMarketDescriptionManager MarketDescriptionManager { get; }
 
-        IOddsFeedSessionBuilder CreateBuilder();
+    IOddsFeedSessionBuilder CreateBuilder();
 
-        void Open();
-        void Close();
+    void Open();
+    void Close();
 
-        event EventHandler<ConnectionExceptionEventArgs> ConnectionException;
-        event EventHandler<EventArgs> Disconnected;
-        event EventHandler<FeedCloseEventArgs> Closed;
-        event EventHandler<EventRecoveryCompletedEventArgs> EventRecoveryCompleted;
-        event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
-        event EventHandler<ProducerStatusChangeEventArgs> ProducerUp;
-    }
+    event EventHandler<ConnectionExceptionEventArgs> ConnectionException;
+    event EventHandler<EventArgs> Disconnected;
+    event EventHandler<FeedCloseEventArgs> Closed;
+    event EventHandler<EventRecoveryCompletedEventArgs> EventRecoveryCompleted;
+    event EventHandler<ProducerStatusChangeEventArgs> ProducerDown;
+    event EventHandler<ProducerStatusChangeEventArgs> ProducerUp;
 }

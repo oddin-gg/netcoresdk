@@ -1,15 +1,14 @@
-namespace Oddin.OddsFeedSdk.Configuration.Abstractions
+namespace Oddin.OddsFeedSdk.Configuration.Abstractions;
+
+public interface IEnvironmentSelector
 {
-    public interface IEnvironmentSelector
-    {
-        IConfigurationBuilder SelectIntegration(string region = Region.DEFAULT);
+    IConfigurationBuilder SelectIntegration(string region = Region.DEFAULT);
 
-        IConfigurationBuilder SelectProduction(string region = Region.DEFAULT);
+    IConfigurationBuilder SelectProduction(string region = Region.DEFAULT);
 
-        IConfigurationBuilder SelectTest(string region = Region.DEFAULT);
+    IConfigurationBuilder SelectTest(string region = Region.DEFAULT);
 
-        IReplayConfigurationBuilder SelectReplay();
+    IReplayConfigurationBuilder SelectReplay();
 
-        IConfigurationBuilder SelectEnvironment(string host, string apiHost, int port = SdkDefaults.DefaultPort);
-    }
+    IConfigurationBuilder SelectEnvironment(string host, string apiHost, int port = SdkDefaults.DefaultPort);
 }

@@ -4,14 +4,13 @@ using System.Globalization;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.Common;
 
-namespace Oddin.OddsFeedSdk.API.Abstractions
+namespace Oddin.OddsFeedSdk.API.Abstractions;
+
+internal interface ICompetitorCache : IDisposable
 {
-    internal interface ICompetitorCache : IDisposable
-    {
-        LocalizedCompetitor GetCompetitor(URN id, IEnumerable<CultureInfo> cultures);
+    LocalizedCompetitor GetCompetitor(URN id, IEnumerable<CultureInfo> cultures);
 
-        string GetCompetitorIconPath(URN id, CultureInfo culture);
+    string GetCompetitorIconPath(URN id, CultureInfo culture);
 
-        void ClearCacheItem(URN id);
-    }
+    void ClearCacheItem(URN id);
 }

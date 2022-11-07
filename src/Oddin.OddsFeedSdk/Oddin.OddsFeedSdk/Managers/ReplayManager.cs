@@ -9,157 +9,159 @@ using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Managers.Abstractions;
 
-namespace Oddin.OddsFeedSdk.Managers
+namespace Oddin.OddsFeedSdk.Managers;
+
+internal class ReplayManager : IReplayManager
 {
-    internal class ReplayManager : IReplayManager
+    private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(ReplayManager));
+    private readonly IApiClient _apiClient;
+
+    private readonly IFeedConfiguration _feedConfiguration;
+    private readonly ISportDataProvider _sportsDataProvider;
+
+    public ReplayManager(IFeedConfiguration feedConfiguration, IApiClient apiClient,
+        ISportDataProvider sportsDataProvider)
     {
-        private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(ReplayManager));
+        _feedConfiguration = feedConfiguration;
+        _apiClient = apiClient;
+        _sportsDataProvider = sportsDataProvider;
+    }
 
-        private readonly IFeedConfiguration _feedConfiguration;
-        private readonly IApiClient _apiClient;
-        private readonly ISportDataProvider _sportsDataProvider;
-
-        public ReplayManager(IFeedConfiguration feedConfiguration, IApiClient apiClient, ISportDataProvider sportsDataProvider)
+    public async Task<IEnumerable<URN>> GetEventsInQueue()
+    {
+        try
         {
-            _feedConfiguration = feedConfiguration;
-            _apiClient = apiClient;
-            _sportsDataProvider = sportsDataProvider;
+            var data = await _apiClient.GetReplaySetContent(_feedConfiguration.NodeId);
+
+            return data?.replay_event?
+                       .Where(e => e.id != null)
+                       .Select(e => string.IsNullOrEmpty(e?.id) ? null : new URN(e.id))
+                   ?? Enumerable.Empty<URN>();
         }
-
-        public async Task<IEnumerable<URN>> GetEventsInQueue()
+        catch (Exception e)
         {
-            try
-            {
-                var data = await _apiClient.GetReplaySetContent(_feedConfiguration.NodeId);
-
-                return data?.replay_event?
-                    .Where(e => e.id != null)
-                    .Select(e => string.IsNullOrEmpty(e?.id) ? null : new URN(e.id))
-                    ?? Enumerable.Empty<URN>();
-            }
-            catch (Exception e)
-            {
-                _log.LogError($"Failed to fetch replay events with error: {e}");
-                return null;
-            }
+            _log.LogError($"Failed to fetch replay events with error: {e}");
+            return null;
         }
+    }
 
-        public async Task<IEnumerable<ISportEvent>> GetReplayList()
+    public async Task<IEnumerable<ISportEvent>> GetReplayList()
+    {
+        try
         {
-            try
-            {
-                var data = await _apiClient.GetReplaySetContent(_feedConfiguration.NodeId);
+            var data = await _apiClient.GetReplaySetContent(_feedConfiguration.NodeId);
 
-                return data?.replay_event?
-                    .Where(e => e.id != null)
-                    .Select(e => _sportsDataProvider.GetMatch(string.IsNullOrEmpty(e?.id) ? null : new URN(e.id)))
-                    ?? Enumerable.Empty<ISportEvent>();
-            }
-            catch(Exception e)
-            {
-                _log.LogError($"Failed to fetch replay events with error: {e}");
-                return null;
-            }
+            return data?.replay_event?
+                       .Where(e => e.id != null)
+                       .Select(e => _sportsDataProvider.GetMatch(string.IsNullOrEmpty(e?.id) ? null : new URN(e.id)))
+                   ?? Enumerable.Empty<ISportEvent>();
         }
-
-        public async Task<bool> AddMessagesToReplayQueue(ISportEvent sportEvent)
+        catch (Exception e)
         {
-            if (sportEvent?.Id is null)
-                return false;
-
-            return await AddMessagesToReplayQueue(sportEvent.Id);
+            _log.LogError($"Failed to fetch replay events with error: {e}");
+            return null;
         }
+    }
 
-        public async Task<bool> AddMessagesToReplayQueue(URN eventId)
+    public async Task<bool> AddMessagesToReplayQueue(ISportEvent sportEvent)
+    {
+        if (sportEvent?.Id is null)
+            return false;
+
+        return await AddMessagesToReplayQueue(sportEvent.Id);
+    }
+
+    public async Task<bool> AddMessagesToReplayQueue(URN eventId)
+    {
+        try
         {
-            try
-            {
-                return await _apiClient.PutReplayEvent(eventId, _feedConfiguration.NodeId);
-            }
-            catch (Exception e)
-            {
-                _log.LogError($"Failed to add replay events with error: {e}");
-                return false;
-            }
+            return await _apiClient.PutReplayEvent(eventId, _feedConfiguration.NodeId);
         }
-
-        public async Task<bool> RemoveEventFromReplayQueue(ISportEvent sportEvent)
+        catch (Exception e)
         {
-            if (sportEvent?.Id is null)
-                return false;
-
-            return await RemoveEventFromReplayQueue(sportEvent.Id);
+            _log.LogError($"Failed to add replay events with error: {e}");
+            return false;
         }
-        public async Task<bool> RemoveEventFromReplayQueue(URN eventId)
-        {
-            try
-            {
-                return await _apiClient.DeleteReplayEvent(eventId, _feedConfiguration.NodeId);
-            }
-            catch (Exception e)
-            {
-                _log.LogError($"Failed to remove event id {eventId} with error: { e}");
-                return false;
-            }
-        }
+    }
 
-        public async Task<bool> StartReplay(int? speed = null, int? maxDelay = null, bool? useReplayTimestamp = null, string product = null, bool? runParallel = null)
-        {
-            try
-            {
-                return await _apiClient.PostReplayStart(
-                    _feedConfiguration.NodeId,
-                    speed,
-                    maxDelay,
-                    useReplayTimestamp,
-                    product,
-                    runParallel);
-            }
-            catch (Exception e)
-            {
-                _log.LogError($"Failed play replay with error: {e}");
-                return false;
-            }
-        }
+    public async Task<bool> RemoveEventFromReplayQueue(ISportEvent sportEvent)
+    {
+        if (sportEvent?.Id is null)
+            return false;
 
-        public async Task<bool> StopReplay()
-        {
-            try
-            {
-                return await _apiClient.PostReplayStop(_feedConfiguration.NodeId);
-            }
-            catch (Exception e)
-            {
-                _log.LogError($"Failed to clear replay with: {e}");
-                return false;
-            }
-        }
+        return await RemoveEventFromReplayQueue(sportEvent.Id);
+    }
 
-        public async Task<bool> StopAndClearReplay()
+    public async Task<bool> RemoveEventFromReplayQueue(URN eventId)
+    {
+        try
         {
-            try
-            {
-                return await _apiClient.PostReplayClear(_feedConfiguration.NodeId);
-            }
-            catch (Exception e)
-            {
-                _log.LogError($"Failed to clear replay with: {e}");
-                return false;
-            }
+            return await _apiClient.DeleteReplayEvent(eventId, _feedConfiguration.NodeId);
         }
-
-        public async Task<string> GetStatusOfReplay()
+        catch (Exception e)
         {
-            try
-            {
-                var result = await _apiClient.GetStatusOfReplay();
-                return result.status;
-            }
-            catch (Exception e)
-            {
-                _log.LogError($"Failed to get replay status: {e}");
-                return null;
-            }
+            _log.LogError($"Failed to remove event id {eventId} with error: {e}");
+            return false;
+        }
+    }
+
+    public async Task<bool> StartReplay(int? speed = null, int? maxDelay = null, bool? useReplayTimestamp = null,
+        string product = null, bool? runParallel = null)
+    {
+        try
+        {
+            return await _apiClient.PostReplayStart(
+                _feedConfiguration.NodeId,
+                speed,
+                maxDelay,
+                useReplayTimestamp,
+                product,
+                runParallel);
+        }
+        catch (Exception e)
+        {
+            _log.LogError($"Failed play replay with error: {e}");
+            return false;
+        }
+    }
+
+    public async Task<bool> StopReplay()
+    {
+        try
+        {
+            return await _apiClient.PostReplayStop(_feedConfiguration.NodeId);
+        }
+        catch (Exception e)
+        {
+            _log.LogError($"Failed to clear replay with: {e}");
+            return false;
+        }
+    }
+
+    public async Task<bool> StopAndClearReplay()
+    {
+        try
+        {
+            return await _apiClient.PostReplayClear(_feedConfiguration.NodeId);
+        }
+        catch (Exception e)
+        {
+            _log.LogError($"Failed to clear replay with: {e}");
+            return false;
+        }
+    }
+
+    public async Task<string> GetStatusOfReplay()
+    {
+        try
+        {
+            var result = await _apiClient.GetStatusOfReplay();
+            return result.status;
+        }
+        catch (Exception e)
+        {
+            _log.LogError($"Failed to get replay status: {e}");
+            return null;
         }
     }
 }
