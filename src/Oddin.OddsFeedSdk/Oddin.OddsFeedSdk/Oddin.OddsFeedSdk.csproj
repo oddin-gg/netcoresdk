@@ -1,25 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>Oddin.OddsFeedSdk</AssemblyName>
     <RootNamespace>Oddin.OddsFeedSdk</RootNamespace>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>10</LangVersion>
     <AssemblyVersion>1.1.19.0</AssemblyVersion>
     <FileVersion>1.1.19.0</FileVersion>
     <Version>1.1.19</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Flurl" Version="3.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-    <PackageReference Include="RabbitMQ.Client" Version="6.2.1" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
-    <PackageReference Include="System.Reactive" Version="4.4.1" />
-    <PackageReference Include="System.Runtime.Caching" Version="5.0.0" />
+    <PackageReference Include="Flurl" Version="3.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.2" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.1" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="System.Runtime.Caching" Version="6.0.0" />
   </ItemGroup>
 
 </Project>
