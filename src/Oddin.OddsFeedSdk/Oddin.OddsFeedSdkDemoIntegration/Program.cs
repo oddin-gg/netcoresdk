@@ -1,34 +1,31 @@
 using System;
 using System.Threading.Tasks;
+using Oddin.OddsFeedSdk;
 
 namespace Oddin.OddsFeedSdkDemoIntegration
 {
     public static class Program
     {
         // Put you token here:
-        private const string TOKEN = "your-token";
+        private const bool REPLAY = false;
+        private const string TOKEN = "95d7d5b7-4b31-407a-9320-4aa5bdec8bc5";
+        private const string MQHOST = "mq-test.integration.oddin.gg";
+        private const string APIHOST = "api-mq-test.integration.oddin.gg";
 
         static async Task Main(string[] _)
         {
-            Console.WriteLine("Select example:");
-            Console.WriteLine("G = General");
-            Console.WriteLine("R = Replay");
-            Console.Write("Enter letter: ");
-            var key = Console.ReadKey().KeyChar;
-            Console.WriteLine();
-
-            switch (char.ToUpper(key))
+            if (!REPLAY)
             {
-                case 'R':
-                {
-                    await ReplayExample.Run(TOKEN, "od:match:61695");
-                    break;
-                }
-                default:
-                {
-                    await GeneralExample.Run(TOKEN);
-                    break;
-                }
+                await GeneralExample.Run(TOKEN, Feed
+                    .GetConfigurationBuilder()
+                    .SetAccessToken(TOKEN)
+                    .SelectEnvironment(MQHOST, APIHOST)
+                    .SetInitialSnapshotTimeInMinutes(1)
+                    .Build());
+            }
+            else
+            {
+                await ReplayExample.Run(TOKEN, "od:match:61695");
             }
         }
     }

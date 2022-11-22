@@ -15,7 +15,9 @@ namespace Oddin.OddsFeedSdk.API.Entities
             int? homeKills,
             int? awayKills,
             int? homeGoals,
-            int? awayGoals)
+            int? awayGoals,
+            int? homePoints,
+            int? awayPoints)
         {
             HomeScore = homeScore;
             AwayScore = awayScore;
@@ -28,6 +30,8 @@ namespace Oddin.OddsFeedSdk.API.Entities
             AwayKills = awayKills;
             HomeGoals = homeGoals;
             AwayGoals = awayGoals;
+            HomePoints = homePoints;
+            AwayPoints = awayPoints;
         }
 
         public double HomeScore { get; }
@@ -41,5 +45,7 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public int? AwayKills { get; }
         public int? HomeGoals { get; }
         public int? AwayGoals { get; }
+        public int? HomePoints { get; }
+        public int? AwayPoints { get; }
     }
 }

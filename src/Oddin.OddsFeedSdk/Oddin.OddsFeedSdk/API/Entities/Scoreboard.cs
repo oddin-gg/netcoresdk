@@ -21,6 +21,10 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public int? Time { get; }
         public int? GameTime { get; }
         public int? CurrentDefenderTeam { get; }
+        // VirtualBasketballScoreboard
+        public int? HomePoints { get; }
+        public int? AwayPoints { get; }
+        public int? RemainingGameTime { get; }
 
         public Scoreboard(
             int? currentCtTeam,
@@ -39,7 +43,11 @@ namespace Oddin.OddsFeedSdk.API.Entities
             int? awayGoals,
             int? time,
             int? gameTime,
-            int? currentDefenderTeam
+            int? currentDefenderTeam,
+            // VirtualBasketballScoreboard
+            int? homePoints,
+            int? awayPoints,
+            int? remainingGameTime
         )
         {
             CurrentCtTeam = currentCtTeam;
@@ -59,6 +67,10 @@ namespace Oddin.OddsFeedSdk.API.Entities
             Time = time;
             GameTime = gameTime;
             CurrentDefenderTeam = currentDefenderTeam;
+            // VirtualBasketballScoreboard
+            HomePoints = homePoints;
+            AwayPoints = awayPoints;
+            RemainingGameTime = remainingGameTime;
         }
     }
 }
