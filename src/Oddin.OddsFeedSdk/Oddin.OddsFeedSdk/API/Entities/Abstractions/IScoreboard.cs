@@ -19,5 +19,9 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
         int? Time { get; }
         int? GameTime { get; }
         int? CurrentDefenderTeam { get; }
+        // VirtualBasketballScoreboard
+        int? HomePoints { get; }
+        int? AwayPoints { get; }
+        int? RemainingGameTime { get; }
     }
 }

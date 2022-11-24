@@ -26,5 +26,9 @@ namespace Oddin.OddsFeedSdk.API.Models
         [XmlAttribute] public int time { get; set; }
         [XmlAttribute] public int game_time { get; set; }
         [XmlAttribute] public int current_def_team { get; set; }
+        // VirtualBasketballScoreboard
+        [XmlAttribute] public int home_points { get; set; }
+        [XmlAttribute] public int away_points { get; set; }
+        [XmlAttribute] public int remaining_game_time { get; set; }
     }
 }

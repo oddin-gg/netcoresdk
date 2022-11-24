@@ -161,7 +161,11 @@ namespace Oddin.OddsFeedSdk.API
                 scoreboard.away_goals,
                 scoreboard.time,
                 scoreboard.game_time,
-                scoreboard.current_def_team
+                scoreboard.current_def_team,
+                // VirtualBasketballScoreboard
+                scoreboard.home_points,
+                scoreboard.away_points,
+                scoreboard.remaining_game_time
             );
         }
 
@@ -187,7 +191,11 @@ namespace Oddin.OddsFeedSdk.API
                 scoreboard.away_goals,
                 scoreboard.time,
                 scoreboard.game_time,
-                scoreboard.current_def_team
+                scoreboard.current_def_team,
+                // VirtualBasketballScoreboard
+                scoreboard.home_points,
+                scoreboard.away_points,
+                scoreboard.remaining_game_time
             );
         }
 
@@ -204,7 +212,9 @@ namespace Oddin.OddsFeedSdk.API
                         s.home_kills,
                         s.away_kills,
                         s.home_goals,
-                        s.away_goals))
+                        s.away_goals,
+                        s.home_points,
+                        s.away_points))
                 .OrderBy(s => s.PeriodNumber)
                 .ToList();
 
@@ -221,7 +231,9 @@ namespace Oddin.OddsFeedSdk.API
                         s.home_kills,
                         s.away_kills,
                         s.home_goals,
-                        s.away_goals))
+                        s.away_goals,
+                        s.home_points,
+                        s.away_points))
                 .OrderBy(s => s.PeriodNumber)
                 .ToList();
 

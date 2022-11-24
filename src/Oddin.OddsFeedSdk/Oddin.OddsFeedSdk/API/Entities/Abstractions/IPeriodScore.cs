@@ -13,5 +13,7 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
         int? AwayKills { get; }
         int? HomeGoals { get; }
         int? AwayGoals { get; }
+        int? HomePoints { get; }
+        int? AwayPoints { get; }
     }
 }
