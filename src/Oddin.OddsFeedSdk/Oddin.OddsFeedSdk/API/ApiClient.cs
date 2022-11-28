@@ -66,7 +66,7 @@ namespace Oddin.OddsFeedSdk.API
             culture ??= _defaultCulture;
             ValidateCulture(culture);
 
-            var dateRoute = dateToGet.ToUniversalTime().ToString("yyyy-MM-dd");
+            var dateRoute = dateToGet.ToString("yyyy-MM-dd");
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/schedules/{dateRoute}/schedule";
             var result = _restClient.SendRequest<ScheduleEndpointModel>(route, HttpMethod.Get, culture);
             return result.Data;
