@@ -173,6 +173,14 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
 
         private bool void_reasonFieldSpecified;
 
+        private int void_reason_idField;
+
+        private bool void_reason_idFieldSpecified;
+
+        private string void_reason_paramsField;
+
+        private bool void_reason_paramsFieldSpecified;
+
         private int statusField;
 
         private int refidField;
@@ -284,6 +292,60 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
             set
             {
                 this.void_reasonFieldSpecified = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int void_reason_id
+        {
+            get
+            {
+                return this.void_reason_idField;
+            }
+            set
+            {
+                this.void_reason_idField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool void_reason_idSpecified
+        {
+            get
+            {
+                return this.void_reason_idFieldSpecified;
+            }
+            set
+            {
+                this.void_reason_idFieldSpecified = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string void_reason_params
+        {
+            get
+            {
+                return this.void_reason_paramsField;
+            }
+            set
+            {
+                this.void_reason_paramsField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool void_reason_paramsSpecified
+        {
+            get
+            {
+                return this.void_reason_paramsFieldSpecified;
+            }
+            set
+            {
+                this.void_reason_paramsFieldSpecified = value;
             }
         }
 

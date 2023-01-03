@@ -1,8 +1,3 @@
-using Oddin.OddsFeedSdk.Common;
-using Oddin.OddsFeedSdk.API.Abstractions;
-using Oddin.OddsFeedSdk.API.Entities.Abstractions;
-using Oddin.OddsFeedSdk.API.Models;
-using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,7 +5,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Reactive.Subjects;
+using Oddin.OddsFeedSdk.API.Abstractions;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.API.Models;
+using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API
 {
@@ -19,14 +18,10 @@ namespace Oddin.OddsFeedSdk.API
         private readonly IApiModelMapper _apiModelMapper;
         private readonly IRestClient _restClient;
         private readonly CultureInfo _defaultCulture;
-        private readonly Subject<object> _publisher = new();
 
         public ApiClient(IApiModelMapper apiModelMapper, IFeedConfiguration config, IRestClient restClient)
         {
-            if (apiModelMapper is null)
-                throw new ArgumentNullException(nameof(apiModelMapper));
-
-            _apiModelMapper = apiModelMapper;
+            _apiModelMapper = apiModelMapper ?? throw new ArgumentNullException(nameof(apiModelMapper));
             _restClient = restClient;
             _defaultCulture = config.DefaultLocale;
         }
@@ -106,7 +101,6 @@ namespace Oddin.OddsFeedSdk.API
             var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/competitors/{id}/profile";
             var result = _restClient.SendRequest<competitorProfileEndpoint>(route, HttpMethod.Get, culture);
             return result.Data.competitor;
-
         }
 
         public TournamentInfoModel GetTournament(URN id, CultureInfo culture = null)
@@ -187,6 +181,13 @@ namespace Oddin.OddsFeedSdk.API
 
             var route = $"v1/descriptions/{culture.TwoLetterISOLanguageName}/markets";
             var response = await _restClient.SendRequestAsync<MarketDescriptionsModel>(route, HttpMethod.Get);
+            return response.Data;
+        }
+
+        public async Task<MarketVoidReasonsModel> GetMarketVoidReasonsAsync()
+        {
+            var route = "v1/descriptions/void_reasons";
+            var response = await _restClient.SendRequestAsync<MarketVoidReasonsModel>(route, HttpMethod.Get);
             return response.Data;
         }
 

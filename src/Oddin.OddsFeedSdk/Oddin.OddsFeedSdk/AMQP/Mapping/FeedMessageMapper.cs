@@ -1,16 +1,16 @@
-using Oddin.OddsFeedSdk.Common;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Linq;
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.AMQP.Messages;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using Oddin.OddsFeedSdk.Managers.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Globalization;
 
 namespace Oddin.OddsFeedSdk.AMQP.Mapping
 {
@@ -276,7 +276,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 marketDescriptionFactory: _marketDescriptionFactory,
                 sportEvent: sportEvent,
                 exceptionHandlingStrategy: _configuration.ExceptionHandlingStrategy,
-                voidReason: message.void_reasonSpecified ? message.void_reason : default(int?));
+                voidReason: message.void_reasonSpecified ? message.void_reason : default,
+                voidReasonId: message.void_reason_idSpecified ? message.void_reason_id : default,
+                voidReasonParams: message.void_reason_paramsSpecified ? message.void_reason_params : default
+            );
         }
 
         private IEnumerable<IOutcomeSettlement> GetOutcomeSettlements(
@@ -345,7 +348,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 marketDescriptionFactory: _marketDescriptionFactory,
                 sportEvent: sportEvent,
                 exceptionHandlingStrategy: _configuration.ExceptionHandlingStrategy,
-                voidReason: message.void_reasonSpecified ? message.void_reason : default);
+                voidReason: message.void_reasonSpecified ? message.void_reason : default,
+                voidReasonId: message.void_reason_idSpecified ? message.void_reason_id : default,
+                voidReasonParams: message.void_reason_paramsSpecified ? message.void_reason_params : default
+            );
         }
 
         public IFixtureChange<T> MapFixtureChange<T>(fixture_change message, IEnumerable<CultureInfo> cultures, byte[] rawMessage) where T : ISportEvent

@@ -36,6 +36,12 @@ namespace Oddin.OddsFeedSdk.Managers
                 => _marketDescriptionFactory.GetMarketDescriptions(culture));
         }
 
+        public IEnumerable<IMarketVoidReason> GetMarketVoidReasons()
+        {
+            return _exceptionWrapper.Wrap(()
+                => _marketDescriptionFactory.GetMarketVoidReasons());
+        }
+
         public void DeleteVariantMarketDescriptionFromCache(int marketId, string variantValue)
             => _cacheManager.MarketDescriptionCache.ClearCacheItem(marketId, variantValue);
     }

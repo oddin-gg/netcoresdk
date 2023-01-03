@@ -1,31 +1,31 @@
-using Microsoft.Extensions.Logging;
-using Oddin.OddsFeedSdk.API;
-using Oddin.OddsFeedSdk.API.Abstractions;
-using Oddin.OddsFeedSdk.Dispatch;
-using Oddin.OddsFeedSdk.Managers;
-using Oddin.OddsFeedSdk.Managers.Abstractions;
-using Oddin.OddsFeedSdk.AMQP;
-using Oddin.OddsFeedSdk.Configuration;
 using System;
-using RabbitMQ.Client.Events;
-using RabbitMQ.Client;
-using Oddin.OddsFeedSdk.API.Entities.Abstractions;
-using Oddin.OddsFeedSdk.AMQP.Abstractions;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Oddin.OddsFeedSdk.Configuration.Abstractions;
-using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
-using Oddin.OddsFeedSdk.AMQP.Mapping;
-using Oddin.OddsFeedSdk.Abstractions;
-using Oddin.OddsFeedSdk.Sessions.Abstractions;
-using Oddin.OddsFeedSdk.Sessions;
-using Oddin.OddsFeedSdk.Dispatch.EventArguments;
-using Oddin.OddsFeedSdk.Managers.Recovery;
-using Oddin.OddsFeedSdk.Exceptions;
-using Oddin.OddsFeedSdk.Common;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Oddin.OddsFeedSdk.Abstractions;
+using Oddin.OddsFeedSdk.AMQP;
+using Oddin.OddsFeedSdk.AMQP.Abstractions;
+using Oddin.OddsFeedSdk.AMQP.Mapping;
+using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
+using Oddin.OddsFeedSdk.API;
+using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
+using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Configuration;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
+using Oddin.OddsFeedSdk.Dispatch;
+using Oddin.OddsFeedSdk.Dispatch.EventArguments;
+using Oddin.OddsFeedSdk.Exceptions;
+using Oddin.OddsFeedSdk.Managers;
+using Oddin.OddsFeedSdk.Managers.Abstractions;
+using Oddin.OddsFeedSdk.Managers.Recovery;
+using Oddin.OddsFeedSdk.Sessions;
+using Oddin.OddsFeedSdk.Sessions.Abstractions;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 namespace Oddin.OddsFeedSdk
 {
@@ -116,6 +116,7 @@ namespace Oddin.OddsFeedSdk
                 .AddSingleton<IMarketDescriptionCache, MarketDescriptionCache>()
                 .AddSingleton<IMarketDescriptionFactory, MarketDescriptionFactory>()
                 .AddSingleton<IReplayManager, ReplayManager>()
+                .AddSingleton<IMarketVoidReasonsCache, MarketVoidReasonsCache>()
                 .AddSingleton(exchangeNameProvider)
                 .BuildServiceProvider();
 

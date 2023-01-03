@@ -12,11 +12,16 @@ namespace Oddin.OddsFeedSdk.API
     {
         private readonly IFeedConfiguration _feedConfiguration;
         private readonly IMarketDescriptionCache _marketDescriptionCache;
+        private readonly IMarketVoidReasonsCache _marketVoidReasonsCache;
 
-        public MarketDescriptionFactory(IFeedConfiguration feedConfiguration, IMarketDescriptionCache marketDescriptionCache)
+        public MarketDescriptionFactory(
+            IFeedConfiguration feedConfiguration,
+            IMarketDescriptionCache marketDescriptionCache,
+            IMarketVoidReasonsCache marketVoidReasonsCache)
         {
             _feedConfiguration = feedConfiguration;
             _marketDescriptionCache = marketDescriptionCache;
+            _marketVoidReasonsCache = marketVoidReasonsCache;
         }
 
         public IMarketDescription GetMarketDescription(int marketId, IReadOnlyDictionary<string, string> specifiers, IEnumerable<CultureInfo> cultures)
@@ -39,7 +44,12 @@ namespace Oddin.OddsFeedSdk.API
                     k.Variant,
                     _marketDescriptionCache,
                     _feedConfiguration.ExceptionHandlingStrategy,
-                    new[] { culture }));
+                    new[] {culture}));
+        }
+
+        public IEnumerable<IMarketVoidReason> GetMarketVoidReasons()
+        {
+            return _marketVoidReasonsCache.GetMarketVoidReasons();
         }
     }
 }
