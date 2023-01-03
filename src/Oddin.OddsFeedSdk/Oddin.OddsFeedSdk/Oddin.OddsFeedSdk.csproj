@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>Oddin.OddsFeedSdk</AssemblyName>
     <RootNamespace>Oddin.OddsFeedSdk</RootNamespace>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <LangVersion>9.0</LangVersion>
-    <AssemblyVersion>1.1.15.0</AssemblyVersion>
-    <FileVersion>1.1.15.0</FileVersion>
-    <Version>1.1.15</Version>
+    <AssemblyVersion>1.1.16.0</AssemblyVersion>
+    <FileVersion>1.1.16.0</FileVersion>
+    <Version>1.1.16</Version>
   </PropertyGroup>
 
   <ItemGroup>
