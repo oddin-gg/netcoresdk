@@ -4,7 +4,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Enums
     {
         ACTIVE = 1,
 
-        INACTIVE = 0,
+        DEACTIVATED = 0,
+
+        // This field is deprecated, please use DEACTIVATED
+        INACTIVE = DEACTIVATED,
 
         SUSPENDED = -1,
 
