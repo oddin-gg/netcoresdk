@@ -257,6 +257,98 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 rawMessage);
         }
 
+        public IRollbackBetSettlement<T> MapRollbackBetSettlement<T>(rollback_bet_settlement message, IEnumerable<CultureInfo> cultures, byte[] rawMessage)
+            where T : ISportEvent
+        {
+            if (message is null)
+                throw new ArgumentNullException($"{nameof(message)}");
+
+            var messageTimestamp = new MessageTimestamp(
+                message.GeneratedAt,
+                message.SentAt,
+                message.ReceivedAt,
+                Timestamp.Now());
+
+            var sportEvent = MapSportEvent(
+                string.IsNullOrEmpty(message?.event_id)
+                    ? null
+                    : new URN(message.event_id),
+                cultures);
+
+            return new RollbackBetSettlement<T>(
+                messageTimestamp,
+                _producerManager.Get(message.product),
+                (T)sportEvent,
+                message.request_idSpecified ? (long?)message.request_id : null,
+                message.market.Select(m => GetRollbackBetSettlementMarket(m, sportEvent)),
+                rawMessage);
+        }
+
+        private IMarket GetRollbackBetSettlementMarket(rollback_bet_settlementMarket message, ISportEvent sportEvent)
+        {
+            if (message is null)
+                throw new ArgumentNullException(nameof(message));
+
+            var specifiers = GetSpecifiers(message.specifiers);
+
+            return new Market(
+                id: message.id,
+                refId: 0,
+                specifiers: specifiers,
+                extendedSpecifiers: null,
+                groups: null,
+                marketDescriptionFactory: _marketDescriptionFactory,
+                sportEvent: sportEvent,
+                exceptionHandlingStrategy: _configuration.ExceptionHandlingStrategy
+            );
+        }
+
+        public IRollbackBetCancel<T> MapRollbackBetCancel<T>(rollback_bet_cancel message, IEnumerable<CultureInfo> cultures, byte[] rawMessage)
+            where T : ISportEvent
+        {
+            if (message is null)
+                throw new ArgumentNullException($"{nameof(message)}");
+
+            var messageTimestamp = new MessageTimestamp(
+                message.GeneratedAt,
+                message.SentAt,
+                message.ReceivedAt,
+                Timestamp.Now());
+
+            var sportEvent = MapSportEvent(
+                string.IsNullOrEmpty(message?.event_id)
+                    ? null
+                    : new URN(message.event_id),
+                cultures);
+
+            return new RollbackBetCancel<T>(
+                messageTimestamp,
+                _producerManager.Get(message.product),
+                (T)sportEvent,
+                message.request_idSpecified ? (long?)message.request_id : null,
+                message.market.Select(m => GetRollbackBetCancelMarket(m, sportEvent)),
+                rawMessage);
+        }
+
+        private IMarket GetRollbackBetCancelMarket(rollback_bet_cancelMarket message, ISportEvent sportEvent)
+        {
+            if (message is null)
+                throw new ArgumentNullException(nameof(message));
+
+            var specifiers = GetSpecifiers(message.specifiers);
+
+            return new Market(
+                id: message.id,
+                refId: 0,
+                specifiers: specifiers,
+                extendedSpecifiers: null,
+                groups: null,
+                marketDescriptionFactory: _marketDescriptionFactory,
+                sportEvent: sportEvent,
+                exceptionHandlingStrategy: _configuration.ExceptionHandlingStrategy
+            );
+        }
+
         private IMarketWithSettlement GetMarketWithResults(betSettlementMarket message, ISportEvent sportEvent)
         {
             if (message is null)

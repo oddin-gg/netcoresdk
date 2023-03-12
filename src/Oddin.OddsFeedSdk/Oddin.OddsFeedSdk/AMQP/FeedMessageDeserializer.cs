@@ -37,6 +37,18 @@ namespace Oddin.OddsFeedSdk.AMQP
                 return true;
             }
 
+            if (XmlHelper.TryDeserialize(message, out rollback_bet_settlement rollbackBetSettlement))
+            {
+                feedMessage = rollbackBetSettlement;
+                return true;
+            }
+
+            if (XmlHelper.TryDeserialize(message, out rollback_bet_cancel rollbackBetCancel))
+            {
+                feedMessage = rollbackBetCancel;
+                return true;
+            }
+
             if (XmlHelper.TryDeserialize(message, out bet_cancel betCancel))
             {
                 feedMessage = betCancel;

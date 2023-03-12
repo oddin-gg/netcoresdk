@@ -12,6 +12,10 @@ namespace Oddin.OddsFeedSdk.Dispatch.Abstractions
 
         event EventHandler<BetSettlementEventArgs<T>> OnBetSettlement;
 
+        event EventHandler<RollbackBetSettlementEventArgs<T>> OnRollbackBetSettlement;
+
+        event EventHandler<RollbackBetCancelEventArgs<T>> OnRollbackBetCancel;
+
         event EventHandler<BetCancelEventArgs<T>> OnBetCancel;
 
         event EventHandler<FixtureChangeEventArgs<T>> OnFixtureChange;
