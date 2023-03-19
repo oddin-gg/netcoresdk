@@ -6,7 +6,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions
     {
         double? DeadHeatFactor { get; }
 
-        VoidFactor? VoidFactor { get; }
+        double? VoidFactor { get; }
 
         OutcomeResult OutcomeResult { get; }
     }

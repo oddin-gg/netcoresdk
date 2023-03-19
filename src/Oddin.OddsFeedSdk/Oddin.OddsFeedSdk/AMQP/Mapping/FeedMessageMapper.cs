@@ -294,7 +294,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                     b.id,
                     b.refid,
                     b.result,
-                    b.void_factorSpecified ? b.void_factor : default(double?),
+                    b.void_factorSpecified ? b.void_factor : null,
                     _marketDescriptionFactory,
                     _configuration,
                     marketId,
