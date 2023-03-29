@@ -358,6 +358,17 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var provider = session.Feed.SportDataProvider;
             var sport3 = await provider.GetSportAsync(sportId);
             Console.WriteLine($"Icon Path: {sport3.IconPath}");
+            
+            foreach (var m in eventArgs.GetBetSettlement().Markets)
+            {
+                foreach (var outcome in m.OutcomeSettlements)
+                {
+                    if (outcome.VoidFactor != null)
+                    {
+                        Console.WriteLine($"Outcome with void factor: {outcome.VoidFactor}");
+                    }
+                }
+            }
         }
 
         private static async void OnBetStopReceived(object sender, BetStopEventArgs<ISportEvent> eventArgs)
