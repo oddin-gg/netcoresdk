@@ -77,6 +77,8 @@ namespace Oddin.OddsFeedSdk.Sessions
         public event EventHandler<OddsChangeEventArgs<ISportEvent>> OnOddsChange;
         public event EventHandler<BetStopEventArgs<ISportEvent>> OnBetStop;
         public event EventHandler<BetSettlementEventArgs<ISportEvent>> OnBetSettlement;
+        public event EventHandler<RollbackBetSettlementEventArgs<ISportEvent>> OnRollbackBetSettlement;
+        public event EventHandler<RollbackBetCancelEventArgs<ISportEvent>> OnRollbackBetCancel;
         public event EventHandler<BetCancelEventArgs<ISportEvent>> OnBetCancel;
         public event EventHandler<FixtureChangeEventArgs<ISportEvent>> OnFixtureChange;
 
@@ -129,6 +131,28 @@ namespace Oddin.OddsFeedSdk.Sessions
                 eventArgs.RawMessage);
 
             Dispatch(OnBetSettlement, betSettlementEventArgs, nameof(OnBetSettlement));
+        }
+
+        private void CreateAndDispatchRollbackBetSettlement(object sender, SimpleMessageEventArgs<rollback_bet_settlement> eventArgs)
+        {
+            var rollbackBetSettlementEventArgs = new RollbackBetSettlementEventArgs<ISportEvent>(
+                _feedMessageMapper,
+                eventArgs.FeedMessage,
+                new[] {_configuration.DefaultLocale},
+                eventArgs.RawMessage);
+
+            Dispatch(OnRollbackBetSettlement, rollbackBetSettlementEventArgs, nameof(OnRollbackBetSettlement));
+        }
+
+        private void CreateAndDispatchRollbackBetCancel(object sender, SimpleMessageEventArgs<rollback_bet_cancel> eventArgs)
+        {
+            var rollbackBetCancelEventArgs = new RollbackBetCancelEventArgs<ISportEvent>(
+                _feedMessageMapper,
+                eventArgs.FeedMessage,
+                new[] {_configuration.DefaultLocale},
+                eventArgs.RawMessage);
+
+            Dispatch(OnRollbackBetCancel, rollbackBetCancelEventArgs, nameof(OnRollbackBetCancel));
         }
 
         private void CreateAndDispatchBetCancel(object sender, SimpleMessageEventArgs<bet_cancel> eventArgs)
@@ -329,6 +353,16 @@ namespace Oddin.OddsFeedSdk.Sessions
                     var betSettlementMessageArgs = new SimpleMessageEventArgs<bet_settlement>(betSettlement, body);
                     CreateAndDispatchFeedMessageEventArgs<BetSettlementEventArgs<ISportEvent>, bet_settlement>(
                         CreateAndDispatchBetSettlement, sender, betSettlementMessageArgs);
+                    break;
+                case rollback_bet_settlement rollbackBetSettlement:
+                    var rollbackBetSettlementMessageArgs = new SimpleMessageEventArgs<rollback_bet_settlement>(rollbackBetSettlement, body);
+                    CreateAndDispatchFeedMessageEventArgs<RollbackBetSettlementEventArgs<ISportEvent>, rollback_bet_settlement>(
+                        CreateAndDispatchRollbackBetSettlement, sender, rollbackBetSettlementMessageArgs);
+                    break;
+                case rollback_bet_cancel rollbackBetCancel:
+                    var rollbackBetCancelMessageArgs = new SimpleMessageEventArgs<rollback_bet_cancel>(rollbackBetCancel, body);
+                    CreateAndDispatchFeedMessageEventArgs<RollbackBetCancelEventArgs<ISportEvent>, rollback_bet_cancel>(
+                        CreateAndDispatchRollbackBetCancel, sender, rollbackBetCancelMessageArgs);
                     break;
                 case fixture_change fixtureChange:
                     var fixtureChangeMessageArgs = new SimpleMessageEventArgs<fixture_change>(fixtureChange, body);

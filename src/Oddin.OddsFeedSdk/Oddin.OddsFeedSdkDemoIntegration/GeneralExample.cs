@@ -240,6 +240,8 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             session.OnOddsChange += OnOddsChangeReceived;
             session.OnBetStop += OnBetStopReceived;
             session.OnBetSettlement += OnBetSettlement;
+            session.OnRollbackBetSettlement += OnRollbackBetSettlement;
+            session.OnRollbackBetCancel += OnRollbackBetCancel;
             session.OnUnparsableMessageReceived += OnUnparsableMessageReceived;
             session.OnBetCancel += Session_OnBetCancel;
             session.OnFixtureChange += Session_OnFixtureChange;
@@ -251,6 +253,8 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             session.OnOddsChange -= OnOddsChangeReceived;
             session.OnBetStop -= OnBetStopReceived;
             session.OnBetSettlement -= OnBetSettlement;
+            session.OnRollbackBetSettlement -= OnRollbackBetSettlement;
+            session.OnRollbackBetCancel -= OnRollbackBetCancel;
             session.OnUnparsableMessageReceived -= OnUnparsableMessageReceived;
             session.OnBetCancel -= Session_OnBetCancel;
             session.OnFixtureChange -= Session_OnFixtureChange;
@@ -371,6 +375,42 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             }
         }
 
+        private static async void OnRollbackBetSettlement(object sender, RollbackBetSettlementEventArgs<ISportEvent> eventArgs)
+        {
+            var sportEvent = eventArgs.GetRollbackBetSettlement(CultureEn).Event;
+
+            // Match
+            var match = (IMatch) sportEvent;
+            var name = await match.GetNameAsync(CultureEn);
+            Console.WriteLine($"Match Id: {match.Id}; name: {name}");
+
+            foreach (var market in eventArgs.GetRollbackBetSettlement(CultureEn).Markets)
+            {
+                var specifiers = string.Join(", ", market.Specifiers.Select(s => $"{s.Key}={s.Value}"));
+
+                Console.WriteLine(
+                    $"Rollback Bet Settlement: {market.Id}: '{market.GetName(CultureEn)}'; specifiers: {specifiers}");
+            }
+        }
+        
+        private static async void OnRollbackBetCancel(object sender, RollbackBetCancelEventArgs<ISportEvent> eventArgs)
+        {
+            var sportEvent = eventArgs.GetRollbackBetCancel(CultureEn).Event;
+
+            // Match
+            var match = (IMatch) sportEvent;
+            var name = await match.GetNameAsync(CultureEn);
+            Console.WriteLine($"Match Id: {match.Id}; name: {name}");
+
+            foreach (var market in eventArgs.GetRollbackBetCancel(CultureEn).Markets)
+            {
+                var specifiers = string.Join(", ", market.Specifiers.Select(s => $"{s.Key}={s.Value}"));
+
+                Console.WriteLine(
+                    $"Rollback Bet Cancel: {market.Id}: '{market.GetName(CultureEn)}'; specifiers: {specifiers}");
+            }
+        }
+        
         private static async void OnBetStopReceived(object sender, BetStopEventArgs<ISportEvent> eventArgs)
         {
             Console.WriteLine(
