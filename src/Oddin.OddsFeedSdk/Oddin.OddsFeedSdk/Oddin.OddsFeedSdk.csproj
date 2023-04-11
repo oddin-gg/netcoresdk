@@ -6,9 +6,9 @@
     <RootNamespace>Oddin.OddsFeedSdk</RootNamespace>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <LangVersion>9.0</LangVersion>
-    <AssemblyVersion>1.1.17.0</AssemblyVersion>
-    <FileVersion>1.1.17.0</FileVersion>
-    <Version>1.1.17</Version>
+    <AssemblyVersion>1.1.18.0</AssemblyVersion>
+    <FileVersion>1.1.18.0</FileVersion>
+    <Version>1.1.18</Version>
   </PropertyGroup>
 
   <ItemGroup>
