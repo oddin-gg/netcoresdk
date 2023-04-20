@@ -12,6 +12,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Oddin.OddsFeedSdk.Abstractions;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdkDemoIntegration
 {
@@ -19,11 +20,11 @@ namespace Oddin.OddsFeedSdkDemoIntegration
     {
         private static readonly CultureInfo CultureEn = CultureInfo.GetCultureInfoByIetfLanguageTag("en");
 
-        internal static async Task Run(string token, string matchId)
+        internal static async Task Run(string token, string matchId, IFeedConfiguration config = null)
         {
             var loggerFactory = CreateLoggerFactory();
 
-            var config = Feed
+             config ??= Feed
                 .GetConfigurationBuilder()
                 .SetAccessToken(token)
                 .SelectReplay()

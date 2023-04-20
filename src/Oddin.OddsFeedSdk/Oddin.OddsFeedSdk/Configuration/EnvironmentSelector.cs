@@ -28,6 +28,11 @@ namespace Oddin.OddsFeedSdk.Configuration
             return new ConfigurationBuilder(_accessToken, _sectionProvider, SdkDefaults.ProductionHost, SdkDefaults.ProductionApiHost, SdkDefaults.DefaultPort);
         }
 
+        public IConfigurationBuilder SelectTest()
+        {
+            return new ConfigurationBuilder(_accessToken, _sectionProvider, SdkDefaults.TestHost, SdkDefaults.TestApiHost, SdkDefaults.DefaultPort);
+        }
+
         public IReplayConfigurationBuilder SelectReplay()
         {
             return new ReplayConfigurationBuilder(_accessToken, _sectionProvider);

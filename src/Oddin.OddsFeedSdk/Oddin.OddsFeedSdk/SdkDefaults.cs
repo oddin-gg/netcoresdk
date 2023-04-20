@@ -8,6 +8,9 @@ namespace Oddin.OddsFeedSdk
         public const string IntegrationHost = "mq.integration.oddin.gg";
         public const string IntegrationApiHost = "api-mq.integration.oddin.gg";
 
+        public const string TestHost = "mq-test.integration.oddin.gg";
+        public const string TestApiHost = "api-mq-test.integration.oddin.gg";
+
         public const int DefaultPort = 5672;
 
         public const int UnknownProducerId = 99;

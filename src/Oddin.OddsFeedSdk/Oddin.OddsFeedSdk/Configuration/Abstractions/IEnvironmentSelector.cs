@@ -6,6 +6,8 @@ namespace Oddin.OddsFeedSdk.Configuration.Abstractions
 
         IConfigurationBuilder SelectProduction();
 
+        IConfigurationBuilder SelectTest();
+
         IReplayConfigurationBuilder SelectReplay();
 
         IConfigurationBuilder SelectEnvironment(string host, string apiHost, int port = SdkDefaults.DefaultPort);
