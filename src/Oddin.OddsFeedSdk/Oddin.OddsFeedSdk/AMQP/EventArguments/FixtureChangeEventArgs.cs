@@ -20,14 +20,8 @@ namespace Oddin.OddsFeedSdk.AMQP.EventArguments
             IEnumerable<CultureInfo> defaultCultures,
             byte[] rawMessage)
         {
-            if (messageMapper is null)
-                throw new ArgumentNullException($"{nameof(messageMapper)}");
-
-            if (feedMessage is null)
-                throw new ArgumentNullException($"{nameof(feedMessage)}");
-
-            _messageMapper = messageMapper;
-            _feedMessage = feedMessage;
+            _messageMapper = messageMapper ?? throw new ArgumentNullException($"{nameof(messageMapper)}");
+            _feedMessage = feedMessage ?? throw new ArgumentNullException($"{nameof(feedMessage)}");
             _defaultCultures = defaultCultures;
             _rawMessage = rawMessage;
 

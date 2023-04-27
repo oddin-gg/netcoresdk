@@ -1,5 +1,6 @@
 ﻿using Oddin.OddsFeedSdk.AMQP.Messages;
 using System;
+using Oddin.OddsFeedSdk.Common;
 
 namespace Oddin.OddsFeedSdk.AMQP
 {
@@ -10,9 +11,12 @@ namespace Oddin.OddsFeedSdk.AMQP
         public const int MESSAGE_TYPE_SECTION_INDEX = 3;
         public const int LIVE_SECTION_INDEX = 2;
         public const int PRE_SECTION_INDEX = 1;
+        public const int SPORT_SECTION_INDEX = 4;
 
         public const string PRE_PRODUCER_STRING = "pre";
         public const string LIVE_PRODUCER_STRING = "live";
+
+        private const string SPORT_ID_PREFIX = "od:sport:";
 
         private static string[] GetSections(string topic)
         {
@@ -62,6 +66,18 @@ namespace Oddin.OddsFeedSdk.AMQP
             var sections = GetSections(topic);
             // INFO: "-" in event ID section means ID is not specified
             return sections[EVENT_ID_SECTION_INDEX] == "-" ? string.Empty : sections[EVENT_ID_SECTION_INDEX];
+        }
+
+        public static URN GetSportURN(string topic)
+        {
+            if (string.IsNullOrEmpty(topic))
+            {
+                return null;
+            }
+
+            var sections = GetSections(topic);
+            // INFO: "-" in event ID section means ID is not specified
+            return sections[SPORT_SECTION_INDEX] == "-" ? null : new URN(SPORT_ID_PREFIX + sections[SPORT_SECTION_INDEX]);
         }
     }
 }

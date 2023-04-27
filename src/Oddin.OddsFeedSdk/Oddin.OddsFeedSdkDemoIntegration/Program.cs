@@ -46,12 +46,8 @@ namespace Oddin.OddsFeedSdkDemoIntegration
                         .SetInitialSnapshotTimeInMinutes(5)
                         .Build()
                 };
-
                 await GeneralExample.Run(token, config);
-            }
-
-            if (envMode == "REPLAY")
-            {
+            } else if (envMode == "REPLAY") {
                 await ReplayExample.Run(token, "od:match:61695");
             } else {
                 // if no environment is set, run interactive prompt
