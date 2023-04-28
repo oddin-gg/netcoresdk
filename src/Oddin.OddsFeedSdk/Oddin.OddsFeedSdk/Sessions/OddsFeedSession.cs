@@ -242,12 +242,13 @@ namespace Oddin.OddsFeedSdk.Sessions
             return true;
         }
 
-        private void SetMessageTimes(FeedMessageModel message, BasicDeliverEventArgs eventArgs, long receivedAt)
+        private void SetMessageMetaData(FeedMessageModel message, BasicDeliverEventArgs eventArgs, long receivedAt)
         {
             message.ReceivedAt = receivedAt;
             message.SentAt = TryGetMessageSentTime(eventArgs, out var sentTime) == false
                 ? message.GeneratedAt
                 : sentTime;
+            message.RoutingKey = eventArgs.RoutingKey;
         }
 
         private bool FilterFeedMessage(FeedMessageModel feedMessage, MessageInterest messageInterest)
@@ -297,7 +298,7 @@ namespace Oddin.OddsFeedSdk.Sessions
                 return;
             }
 
-            SetMessageTimes(message, eventArgs, receivedAt);
+            SetMessageMetaData(message, eventArgs, receivedAt);
 
             if (!FilterFeedMessage(message, MessageInterest) || !FilterFixtureChanges(message))
             {

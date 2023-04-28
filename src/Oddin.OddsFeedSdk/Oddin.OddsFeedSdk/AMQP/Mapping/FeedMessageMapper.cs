@@ -160,12 +160,21 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 : (int?) null;
         }
 
-        private ISportEvent MapSportEvent(URN id, IEnumerable<CultureInfo> cultures)
+        private ISportEvent MapSportEvent(URN id, URN sport, IEnumerable<CultureInfo> cultures)
         {
             if (cultures is null || cultures.Any() == false)
                 cultures = new[] { _configuration.DefaultLocale };
 
-            return _sportDataBuilder.BuildMatch(id, cultures);
+            switch (id?.Type)
+            {
+                case URN.TypeTournament:
+                    if (sport is null) throw new ArgumentNullException(nameof(sport));
+                    return _sportDataBuilder.BuildTournament(id, sport, cultures);
+                case URN.TypeMatch:
+                    return _sportDataBuilder.BuildMatch(id, cultures);
+                default:
+                    throw new ArgumentException($"Sport event of unknown type '{id?.Type}'");
+            }
         }
 
         public IOddsChange<T> MapOddsChange<T>(odds_change message, IEnumerable<CultureInfo> cultures, byte[] rawMessage)
@@ -184,6 +193,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 string.IsNullOrEmpty(message?.event_id)
                     ? null
                     : new URN(message.event_id),
+                message.GetSportURNFromRoutingKey(),
                 cultures);
 
             return new OddsChange<T>(
@@ -213,6 +223,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 string.IsNullOrEmpty(message?.event_id)
                     ? null
                     : new URN(message.event_id),
+                message.GetSportURNFromRoutingKey(),
                 cultures);
 
             var marketStatus = message.market_statusSpecified
@@ -245,6 +256,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 string.IsNullOrEmpty(message?.event_id)
                     ? null
                     : new URN(message.event_id),
+                message.GetSportURNFromRoutingKey(),
                 cultures);
 
             return new BetSettlement<T>(
@@ -273,6 +285,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 string.IsNullOrEmpty(message?.event_id)
                     ? null
                     : new URN(message.event_id),
+                message.GetSportURNFromRoutingKey(),
                 cultures);
 
             return new RollbackBetSettlement<T>(
@@ -319,6 +332,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 string.IsNullOrEmpty(message?.event_id)
                     ? null
                     : new URN(message.event_id),
+                message.GetSportURNFromRoutingKey(),
                 cultures);
 
             return new RollbackBetCancel<T>(
@@ -412,6 +426,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 string.IsNullOrEmpty(message?.event_id)
                     ? null
                     : new URN(message.event_id),
+                message.GetSportURNFromRoutingKey(),
                  cultures);
 
             return new BetCancel<T>(
@@ -461,6 +476,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping
                 string.IsNullOrEmpty(message?.event_id)
                     ? null
                     : new URN(message.event_id),
+                message.GetSportURNFromRoutingKey(),
                 cultures);
 
             return new FixtureChange<T>(

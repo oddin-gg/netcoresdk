@@ -66,7 +66,7 @@ namespace Oddin.OddsFeedSdk.API
         {
             var id = string.IsNullOrEmpty(e?.event_id) ? null : new URN(e.event_id);
 
-            if (id?.Type == "match")
+            if (id != null)
             {
                 _log.LogDebug($"Invalidating Tournament cache from FEED for: {id}");
                 _cache.Remove(id.ToString());

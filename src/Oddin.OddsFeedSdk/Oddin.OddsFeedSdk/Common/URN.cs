@@ -4,8 +4,11 @@ namespace Oddin.OddsFeedSdk.Common
 {
     public class URN
     {
+        public const string TypeMatch = "match";
+        public const string TypeTournament = "tournament";
+
         public string Prefix { get; }
-        
+
         public string Type { get; }
 
         public long Id { get; }
@@ -66,7 +69,7 @@ namespace Oddin.OddsFeedSdk.Common
         public static bool operator ==(URN firstUrn, URN secondUrn)
         {
             if (firstUrn is null)
-            { 
+            {
                 if (secondUrn is null)
                     return true;
 
