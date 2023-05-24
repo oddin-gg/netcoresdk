@@ -40,12 +40,13 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         public event EventHandler<ProducerStatusChangeEventArgs> EventProducerDown;
         public event EventHandler<ProducerStatusChangeEventArgs> EventProducerUp;
 
-        public  RecoveryManager(
+        public RecoveryManager(
             IFeedConfiguration oddsFeedConfiguration,
             IProducerManager producerManager,
             IApiClient apiClient,
             IRequestIdFactory requestIdFactory
-        ) {
+        )
+        {
             _oddsFeedConfiguration = oddsFeedConfiguration ?? throw new ArgumentNullException(nameof(oddsFeedConfiguration));
             _producerManager = producerManager ?? throw new ArgumentNullException(nameof(producerManager));
             _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
@@ -116,7 +117,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
                 if (timestamp != null)
                 {
-                    FindOrMakeProducerRecoveryData(producerId).LastProcessedMessageGenTimestamp = (long) timestamp;
+                    FindOrMakeProducerRecoveryData(producerId).LastProcessedMessageGenTimestamp = (long)timestamp;
                 }
 
                 bool started = _messageProcessingTimes.TryGetValue(sessionId, out var start);
@@ -148,13 +149,17 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             {
                 var producerRecoveryData = FindOrMakeProducerRecoveryData(producerId);
 
-                if (producerRecoveryData.IsDisabled) {
+                if (producerRecoveryData.IsDisabled)
+                {
                     return;
                 }
 
-                if (messageInterest.MessageInterestType == MessageInterest.SystemAliveOnlyMessages.MessageInterestType) {
+                if (messageInterest.MessageInterestType == MessageInterest.SystemAliveOnlyMessages.MessageInterestType)
+                {
                     SystemSessionAliveReceived(timestamp, isSubscribed, producerRecoveryData);
-                } else {
+                }
+                else
+                {
                     producerRecoveryData.LastUserSessionAliveReceivedTimestamp = timestamp.Created;
                 }
             }
@@ -176,17 +181,21 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
                 if (producerRecoveryData.IsDisabled)
                 {
                     _log.LogInformation($"Received snapshot recovery complete for disabled producer {producerId}");
-                } else if (!producerRecoveryData.IsKnownRecovery(requestId))
+                }
+                else if (!producerRecoveryData.IsKnownRecovery(requestId))
                 {
                     _log.LogInformation(
                         $"Unknown snapshot recovery complete received for request {requestId} and producer {producerId}"
                     );
-                } else if (producerRecoveryData.ValidateSnapshotComplete(requestId, messageInterest)) {
+                }
+                else if (producerRecoveryData.ValidateSnapshotComplete(requestId, messageInterest))
+                {
                     SnapshotRecoveryFinished(
                         requestId,
                         producerRecoveryData
                     );
-                } else if (producerRecoveryData.ValidateEventSnapshotComplete(requestId, messageInterest))
+                }
+                else if (producerRecoveryData.ValidateEventSnapshotComplete(requestId, messageInterest))
                 {
                     EventRecoveryFinished(
                         requestId,
@@ -201,7 +210,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             return MakeEventRecovery(producer, eventId, _apiClient.PostEventRecoveryRequest);
         }
 
-        public HttpStatusCode InitiateEventStatefulMessagesRecovery(IProducer producer, URN eventId) {
+        public HttpStatusCode InitiateEventStatefulMessagesRecovery(IProducer producer, URN eventId)
+        {
             return MakeEventRecovery(producer, eventId, _apiClient.PostEventStatefulRecoveryRequest);
         }
 
@@ -212,7 +222,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             var finished = Timestamp.Now();
             _log.LogInformation($"Recovery finished for request {requestId} in {finished - started} ms");
 
-            if (producerRecoveryData.RecoveryState == RecoveryState.Interrupted) {
+            if (producerRecoveryData.RecoveryState == RecoveryState.Interrupted)
+            {
                 MakeSnapshotRecovery(
                     producerRecoveryData,
                     producerRecoveryData.LastValidAliveGenTimestampInRecovery
@@ -294,7 +305,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             ProducerRecoveryData producerRecoveryData)
         {
             producerRecoveryData.LastMessageReceivedTimestamp = timestamp.Received;
-            if (!subscribed) {
+            if (!subscribed)
+            {
                 if (!producerRecoveryData.IsFlaggedDown)
                 {
                     ProducerDown(producerRecoveryData, ProducerDownReason.Other);
@@ -318,7 +330,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             if (isBackFromInactivity)
             {
                 ProducerUp(producerRecoveryData, ProducerUpReason.ReturnedFromInactivity);
-            } else if (isInRecovery)
+            }
+            else if (isInRecovery)
             {
                 if (producerRecoveryData.IsFlaggedDown &&
                     !producerRecoveryData.IsPerformingRecovery &&
@@ -327,9 +340,10 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
                     MakeSnapshotRecovery(producerRecoveryData, producerRecoveryData.TimestampForRecovery);
                 }
 
-                var recoveryTiming = now - ( producerRecoveryData.LastRecoveryStartedAt ?? 0 );
+                var recoveryTiming = now - (producerRecoveryData.LastRecoveryStartedAt ?? 0);
                 var maxInterval = Timestamp.FromMinutes(_oddsFeedConfiguration.MaxRecoveryExecutionMinutes);
-                if (producerRecoveryData.IsPerformingRecovery && recoveryTiming > maxInterval) {
+                if (producerRecoveryData.IsPerformingRecovery && recoveryTiming > maxInterval)
+                {
                     // @TODO recoveryId 0
                     producerRecoveryData.SetProducerRecoveryState(0, 0, RecoveryState.Error);
                     MakeSnapshotRecovery(producerRecoveryData, producerRecoveryData.TimestampForRecovery);
@@ -369,7 +383,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             long recoveryFrom = 0;
             if (fromTimestamp != null)
             {
-                recoveryFrom = (long) fromTimestamp;
+                recoveryFrom = (long)fromTimestamp;
             }
 
             if (recoveryFrom == 0 && _oddsFeedConfiguration.InitialSnapshotTimeInMinutes != default)
@@ -419,18 +433,19 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
 
         private void TimerTick(object sender)
         {
-            lock(_lock)
+            lock (_lock)
             {
                 var now = Timestamp.Now();
 
                 foreach (var it in _producerRecoveryData)
                 {
                     var producerRecoveryData = it.Value;
-                    if (producerRecoveryData.IsDisabled) {
+                    if (producerRecoveryData.IsDisabled)
+                    {
                         continue;
                     }
 
-                    var aliveInterval = now - ( producerRecoveryData.LastSystemAliveReceivedTimestamp ?? 0L );
+                    var aliveInterval = now - (producerRecoveryData.LastSystemAliveReceivedTimestamp ?? 0L);
 
                     if (aliveInterval > Timestamp.FromSeconds(_oddsFeedConfiguration.MaxInactivitySeconds))
                     {
@@ -438,7 +453,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
                             producerRecoveryData,
                             ProducerDownReason.AliveIntervalViolation
                         );
-                    } else if (!CalculateTiming(producerRecoveryData, now))
+                    }
+                    else if (!CalculateTiming(producerRecoveryData, now))
                     {
                         ProducerDown(
                             producerRecoveryData,
@@ -463,7 +479,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
                 producerRecoveryData.SetProducerDown(downReason);
             }
 
-            if (producerRecoveryData.RecoveryState == RecoveryState.Started && downReason != ProducerDownReason.ProcessingQueueDelayViolation) {
+            if (producerRecoveryData.RecoveryState == RecoveryState.Started && downReason != ProducerDownReason.ProcessingQueueDelayViolation)
+            {
                 producerRecoveryData.InterruptProducerRecovery();
             }
 
@@ -509,9 +526,9 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         {
             var maxInactivity = Timestamp.FromSeconds(_oddsFeedConfiguration.MaxInactivitySeconds);
             var messageProcessingDelay = timestamp - producerRecoveryData.LastProcessedMessageGenTimestamp;
-            var userAliveDelay = timestamp - ( producerRecoveryData.LastUserSessionAliveReceivedTimestamp ?? 0L );
+            var userAliveDelay = timestamp - (producerRecoveryData.LastUserSessionAliveReceivedTimestamp ?? 0L);
 
-            return messageProcessingDelay < maxInactivity && userAliveDelay < maxInactivity;
+            return Math.Abs(messageProcessingDelay) < maxInactivity && Math.Abs(userAliveDelay) < maxInactivity;
         }
 
         private static ProducerStatusReason DownReasonToProducerReason(ProducerDownReason reason)
@@ -544,7 +561,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
     {
         internal readonly int ProducerId;
         private readonly IProducerManager _producerManager;
-        private readonly ConcurrentDictionary<long,EventRecovery> _eventRecoveries;
+        private readonly ConcurrentDictionary<long, EventRecovery> _eventRecoveries;
 
         private RecoveryData _currentRecovery;
         internal long? LastUserSessionAliveReceivedTimestamp;
@@ -588,7 +605,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
         internal void SystemAliveReceived(long receivedTimestamp, long aliveGenTimestamp)
         {
             LastSystemAliveReceivedTimestamp = receivedTimestamp;
-            if (!IsFlaggedDown) {
+            if (!IsFlaggedDown)
+            {
                 var producer = ((Producer)_producerManager.Get(ProducerId)).ProducerData;
                 producer.LastAliveReceivedGenTimestamp = aliveGenTimestamp;
             }
@@ -599,7 +617,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             }
         }
 
-        internal bool ValidateSnapshotComplete(long recoveryId, MessageInterest messageInterest) {
+        internal bool ValidateSnapshotComplete(long recoveryId, MessageInterest messageInterest)
+        {
             if (!IsPerformingRecovery)
             {
                 return false;
@@ -618,7 +637,8 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             return ValidateProducerSnapshotCompletes(interests);
         }
 
-        internal bool ValidateEventSnapshotComplete(long recoveryId, MessageInterest messageInterest) {
+        internal bool ValidateEventSnapshotComplete(long recoveryId, MessageInterest messageInterest)
+        {
             var found = _eventRecoveries.TryGetValue(recoveryId, out var eventRecovery);
             if (!found || eventRecovery == null)
             {
@@ -690,25 +710,29 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
             RecoveryState = Recovery.RecoveryState.Interrupted;
         }
 
-        internal void SetProducerDown(ProducerDownReason producerDownReason) {
+        internal void SetProducerDown(ProducerDownReason producerDownReason)
+        {
             var producer = ((Producer)_producerManager.Get(ProducerId)).ProducerData;
             producer.FlaggedDown = true;
             ProducerDownReason = producerDownReason;
             _eventRecoveries.Clear();
         }
 
-        internal void SetProducerUp() {
+        internal void SetProducerUp()
+        {
             var producer = ((Producer)_producerManager.Get(ProducerId)).ProducerData;
             producer.FlaggedDown = false;
             ProducerDownReason = null;
         }
 
 
-        internal void SetEventRecoveryState(URN eventId, long recoveryId, long recoveryStartedAt) {
+        internal void SetEventRecoveryState(URN eventId, long recoveryId, long recoveryStartedAt)
+        {
             if (recoveryId == 0 && recoveryStartedAt == 0)
             {
                 _eventRecoveries.TryRemove(recoveryId, out _);
-            } else
+            }
+            else
             {
                 var eventRecovery = new EventRecovery(eventId, recoveryId, recoveryStartedAt);
                 _eventRecoveries.AddOrUpdate(recoveryId, eventRecovery, (_, _) => eventRecovery);
@@ -736,7 +760,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
                     _ => true
                 };
             }).Contains(false);
-            return (bool) (notFinished != null ? !notFinished : true);
+            return (bool)(notFinished != null ? !notFinished : true);
         }
 
     }
@@ -745,7 +769,7 @@ namespace Oddin.OddsFeedSdk.Managers.Recovery
     {
         internal readonly long RecoveryId;
         internal readonly long RecoveryStartedAt;
-        private readonly ConcurrentDictionary<MessageInterest,bool> _interestsOfSnapshotComplete;
+        private readonly ConcurrentDictionary<MessageInterest, bool> _interestsOfSnapshotComplete;
 
         internal RecoveryData(long recoveryId, long recoveryStartedAt)
         {
