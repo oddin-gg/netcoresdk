@@ -30,7 +30,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             config ??= Feed
                 .GetConfigurationBuilder()
                 .SetAccessToken(token)
-                .SelectIntegration()
+                .SelectIntegration(Region.DEFAULT)
                 .SetInitialSnapshotTimeInMinutes(60)
                 // or .LoadFromConfigFile()
                 .Build();
@@ -266,7 +266,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var oddsChangeOther = eventArgs.GetOddsChange(Feed.AvailableLanguages().Last());
 
             var e = eventArgs.GetOddsChange().Event;
-            var match = (IMatch) e;
+            var match = (IMatch)e;
             Console.WriteLine($"Odds changed in {match.Status}");
             Console.WriteLine($"Raw message: {Encoding.UTF8.GetString(oddsChange.RawMessage.Take(40).ToArray())}...");
             Console.WriteLine($"{string.Join(", ", match.HomeCompetitor.Abbreviations)}");
@@ -339,7 +339,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var sportEvent = eventArgs.GetBetSettlement().Event;
 
             // Match
-            var match = (IMatch) sportEvent;
+            var match = (IMatch)sportEvent;
             Console.WriteLine($"Match Id: {match.Id}");
 
             // Tournament
@@ -358,11 +358,11 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             Console.WriteLine($"Sport Name: {sportName}");
 
             // Get Sport Using SportDataProvider
-            var session = (IOddsFeedSession) sender;
+            var session = (IOddsFeedSession)sender;
             var provider = session.Feed.SportDataProvider;
             var sport3 = await provider.GetSportAsync(sportId);
             Console.WriteLine($"Icon Path: {sport3.IconPath}");
-            
+
             foreach (var m in eventArgs.GetBetSettlement().Markets)
             {
                 foreach (var outcome in m.OutcomeSettlements)
@@ -380,7 +380,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
             var sportEvent = eventArgs.GetRollbackBetSettlement(CultureEn).Event;
 
             // Match
-            var match = (IMatch) sportEvent;
+            var match = (IMatch)sportEvent;
             var name = await match.GetNameAsync(CultureEn);
             Console.WriteLine($"Match Id: {match.Id}; name: {name}");
 
@@ -392,13 +392,13 @@ namespace Oddin.OddsFeedSdkDemoIntegration
                     $"Rollback Bet Settlement: {market.Id}: '{market.GetName(CultureEn)}'; specifiers: {specifiers}");
             }
         }
-        
+
         private static async void OnRollbackBetCancel(object sender, RollbackBetCancelEventArgs<ISportEvent> eventArgs)
         {
             var sportEvent = eventArgs.GetRollbackBetCancel(CultureEn).Event;
 
             // Match
-            var match = (IMatch) sportEvent;
+            var match = (IMatch)sportEvent;
             var name = await match.GetNameAsync(CultureEn);
             Console.WriteLine($"Match Id: {match.Id}; name: {name}");
 
@@ -410,7 +410,7 @@ namespace Oddin.OddsFeedSdkDemoIntegration
                     $"Rollback Bet Cancel: {market.Id}: '{market.GetName(CultureEn)}'; specifiers: {specifiers}");
             }
         }
-        
+
         private static async void OnBetStopReceived(object sender, BetStopEventArgs<ISportEvent> eventArgs)
         {
             Console.WriteLine(

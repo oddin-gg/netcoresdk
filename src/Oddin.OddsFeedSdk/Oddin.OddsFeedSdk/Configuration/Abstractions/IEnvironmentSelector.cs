@@ -2,11 +2,11 @@ namespace Oddin.OddsFeedSdk.Configuration.Abstractions
 {
     public interface IEnvironmentSelector
     {
-        IConfigurationBuilder SelectIntegration();
+        IConfigurationBuilder SelectIntegration(string region = Region.DEFAULT);
 
-        IConfigurationBuilder SelectProduction();
+        IConfigurationBuilder SelectProduction(string region = Region.DEFAULT);
 
-        IConfigurationBuilder SelectTest();
+        IConfigurationBuilder SelectTest(string region = Region.DEFAULT);
 
         IReplayConfigurationBuilder SelectReplay();
 

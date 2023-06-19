@@ -16,9 +16,9 @@ namespace Oddin.OddsFeedSdk.Configuration
             return new FeedConfiguration(
                 accessToken: AccessToken,
                 defaultLocale: DefaultLocale,
-                host: SdkDefaults.IntegrationHost,
+                host: SdkDefaults.GetIntegrationHost(),
                 port: SdkDefaults.DefaultPort,
-                apiHost: SdkDefaults.IntegrationApiHost,
+                apiHost: SdkDefaults.GetIntegrationApiHost(),
                 useSsl: true,
                 useApiSsl: true,
                 maxInactivitySeconds: SdkDefaults.MaxInactivitySeconds,
