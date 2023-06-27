@@ -18,19 +18,19 @@ namespace Oddin.OddsFeedSdk.Configuration
             _sectionProvider = sectionProvider ?? throw new ArgumentNullException(nameof(sectionProvider));
         }
 
-        public IConfigurationBuilder SelectIntegration()
+        public IConfigurationBuilder SelectIntegration(string region = Region.DEFAULT)
         {
-            return new ConfigurationBuilder(_accessToken, _sectionProvider, SdkDefaults.IntegrationHost, SdkDefaults.IntegrationApiHost, SdkDefaults.DefaultPort);
+            return new ConfigurationBuilder(_accessToken, _sectionProvider, SdkDefaults.GetIntegrationHost(region), SdkDefaults.GetIntegrationApiHost(region), SdkDefaults.DefaultPort);
         }
 
-        public IConfigurationBuilder SelectProduction()
+        public IConfigurationBuilder SelectProduction(string region = Region.DEFAULT)
         {
-            return new ConfigurationBuilder(_accessToken, _sectionProvider, SdkDefaults.ProductionHost, SdkDefaults.ProductionApiHost, SdkDefaults.DefaultPort);
+            return new ConfigurationBuilder(_accessToken, _sectionProvider, SdkDefaults.GetProductionHost(region), SdkDefaults.GetProductionApiHost(region), SdkDefaults.DefaultPort);
         }
 
-        public IConfigurationBuilder SelectTest()
+        public IConfigurationBuilder SelectTest(string region = Region.DEFAULT)
         {
-            return new ConfigurationBuilder(_accessToken, _sectionProvider, SdkDefaults.TestHost, SdkDefaults.TestApiHost, SdkDefaults.DefaultPort);
+            return new ConfigurationBuilder(_accessToken, _sectionProvider, SdkDefaults.GetTestHost(region), SdkDefaults.GetTestApiHost(region), SdkDefaults.DefaultPort);
         }
 
         public IReplayConfigurationBuilder SelectReplay()
