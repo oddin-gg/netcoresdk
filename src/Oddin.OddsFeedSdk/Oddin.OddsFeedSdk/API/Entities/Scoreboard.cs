@@ -25,6 +25,19 @@ namespace Oddin.OddsFeedSdk.API.Entities
         public int? HomePoints { get; }
         public int? AwayPoints { get; }
         public int? RemainingGameTime { get; }
+        // eCricket
+        public int? HomeRuns { get; }
+        public int? AwayRuns { get; }
+        public int? HomeWicketsFallen { get; }
+        public int? AwayWicketsFallen { get; }
+        public int? HomeOversPlayed { get; }
+        public int? AwayOversPlayed { get; }
+        public int? HomeBallsPlayed { get; }
+        public int? AwayBallsPlayed { get; }
+        public bool? HomeWonCoinToss { get; }
+        public bool? HomeBatting { get; }
+        public bool? AwayBatting { get; }
+        public int? Inning { get; }
 
         public Scoreboard(
             int? currentCtTeam,
@@ -47,7 +60,20 @@ namespace Oddin.OddsFeedSdk.API.Entities
             // VirtualBasketballScoreboard
             int? homePoints,
             int? awayPoints,
-            int? remainingGameTime
+            int? remainingGameTime,
+            // eCricket
+            int? homeRuns,
+            int? awayRuns,
+            int? homeWicketsFallen,
+            int? awayWicketsFallen,
+            int? homeOversPlayed,
+            int? awayOversPlayed,
+            int? homeBallsPlayed,
+            int? awayBallsPlayed,
+            bool? homeWonCoinToss,
+            bool? homeBatting,
+            bool? awayBatting,
+            int? inning
         )
         {
             CurrentCtTeam = currentCtTeam;
@@ -71,6 +97,19 @@ namespace Oddin.OddsFeedSdk.API.Entities
             HomePoints = homePoints;
             AwayPoints = awayPoints;
             RemainingGameTime = remainingGameTime;
+            // eCricket
+            HomeRuns = homeRuns;
+            AwayRuns = awayRuns;
+            HomeWicketsFallen = homeWicketsFallen;
+            AwayWicketsFallen = awayWicketsFallen;
+            HomeOversPlayed = homeOversPlayed;
+            AwayOversPlayed = awayOversPlayed;
+            HomeBallsPlayed = homeBallsPlayed;
+            AwayBallsPlayed = awayBallsPlayed;
+            HomeWonCoinToss = homeWonCoinToss;
+            HomeBatting = homeBatting;
+            AwayBatting = awayBatting;
+            Inning = inning;
         }
     }
 }

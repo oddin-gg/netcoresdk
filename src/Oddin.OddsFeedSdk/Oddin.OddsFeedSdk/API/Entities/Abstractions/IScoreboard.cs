@@ -23,5 +23,18 @@ namespace Oddin.OddsFeedSdk.API.Entities.Abstractions
         int? HomePoints { get; }
         int? AwayPoints { get; }
         int? RemainingGameTime { get; }
+        // eCricket
+        int? HomeRuns { get; }
+        int? AwayRuns { get; }
+        int? HomeWicketsFallen { get; }
+        int? AwayWicketsFallen { get; }
+        int? HomeOversPlayed { get; }
+        int? AwayOversPlayed { get; }
+        int? HomeBallsPlayed { get; }
+        int? AwayBallsPlayed { get; }
+        bool? HomeWonCoinToss { get; }
+        bool? HomeBatting { get; }
+        bool? AwayBatting { get; }
+        int? Inning { get; }
     }
 }

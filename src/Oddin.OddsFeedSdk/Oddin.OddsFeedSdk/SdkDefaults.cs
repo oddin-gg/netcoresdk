@@ -58,12 +58,12 @@ namespace Oddin.OddsFeedSdk
 
         public static string GetTestHost(string region = Region.DEFAULT)
         {
-            return "mq.test.integration." + region + "oddin.gg";
+            return "mq-test.integration." + region + "oddin.gg";
         }
 
         public static string GetTestApiHost(string region = Region.DEFAULT)
         {
-            return "api-mq.test.integration." + region + "oddin.gg";
+            return "api-mq-test.integration." + region + "oddin.gg";
         }
 
     }

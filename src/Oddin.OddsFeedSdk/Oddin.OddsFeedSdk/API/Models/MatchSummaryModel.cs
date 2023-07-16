@@ -481,6 +481,33 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public int away_kills { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int home_runs { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int away_runs { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int home_wickets_fallen { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int away_wickets_fallen { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int home_overs_played { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int home_balls_played { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int away_overs_played { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int away_balls_played { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public bool home_won_coin_toss { get; set; }
     }
 
     /// <remarks/>
