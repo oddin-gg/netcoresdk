@@ -30,5 +30,18 @@ namespace Oddin.OddsFeedSdk.API.Models
         [XmlAttribute] public int home_points { get; set; }
         [XmlAttribute] public int away_points { get; set; }
         [XmlAttribute] public int remaining_game_time { get; set; }
+        // eCricket
+        [XmlAttribute] public int home_runs { get; set; }
+        [XmlAttribute] public int away_runs { get; set; }
+        [XmlAttribute] public int home_wickets_fallen { get; set; }
+        [XmlAttribute] public int away_wickets_fallen { get; set; }
+        [XmlAttribute] public int home_overs_played { get; set; }
+        [XmlAttribute] public int home_balls_played { get; set; }
+        [XmlAttribute] public int away_overs_played { get; set; }
+        [XmlAttribute] public int away_balls_played { get; set; }
+        [XmlAttribute] public bool home_won_coin_toss { get; set; }
+        [XmlAttribute] public bool home_batting { get; set; }
+        [XmlAttribute] public bool away_batting { get; set; }
+        [XmlAttribute] public int inning { get; set; }
     }
 }

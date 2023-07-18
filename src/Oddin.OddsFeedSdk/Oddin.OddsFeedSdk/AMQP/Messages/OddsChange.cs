@@ -65,108 +65,138 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         }
 
         /// <remarks/>
-        public sportEventStatus sport_event_status {
-            get {
+        public sportEventStatus sport_event_status
+        {
+            get
+            {
                 return this.sport_event_statusField;
             }
-            set {
+            set
+            {
                 this.sport_event_statusField = value;
             }
         }
 
         /// <remarks/>
-        public oddsGenerationProperties odds_generation_properties {
-            get {
+        public oddsGenerationProperties odds_generation_properties
+        {
+            get
+            {
                 return this.odds_generation_propertiesField;
             }
-            set {
+            set
+            {
                 this.odds_generation_propertiesField = value;
             }
         }
 
         /// <remarks/>
-        public odds_changeOdds odds {
-            get {
+        public odds_changeOdds odds
+        {
+            get
+            {
                 return this.oddsField;
             }
-            set {
+            set
+            {
                 this.oddsField = value;
             }
         }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public int product {
-            get {
+        public int product
+        {
+            get
+            {
                 return this.productField;
             }
-            set {
+            set
+            {
                 this.productField = value;
             }
         }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string event_id {
-            get {
+        public string event_id
+        {
+            get
+            {
                 return this.event_idField;
             }
-            set {
+            set
+            {
                 this.event_idField = value;
             }
         }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public long timestamp {
-            get {
+        public long timestamp
+        {
+            get
+            {
                 return this.timestampField;
             }
-            set {
+            set
+            {
                 this.timestampField = value;
             }
         }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public long request_id {
-            get {
+        public long request_id
+        {
+            get
+            {
                 return this.request_idField;
             }
-            set {
+            set
+            {
                 this.request_idField = value;
             }
         }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool request_idSpecified {
-            get {
+        public bool request_idSpecified
+        {
+            get
+            {
                 return this.request_idFieldSpecified;
             }
-            set {
+            set
+            {
                 this.request_idFieldSpecified = value;
             }
         }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public int odds_change_reason {
-            get {
+        public int odds_change_reason
+        {
+            get
+            {
                 return this.odds_change_reasonField;
             }
-            set {
+            set
+            {
                 this.odds_change_reasonField = value;
             }
         }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool odds_change_reasonSpecified {
-            get {
+        public bool odds_change_reasonSpecified
+        {
+            get
+            {
                 return this.odds_change_reasonFieldSpecified;
             }
-            set {
+            set
+            {
                 this.odds_change_reasonFieldSpecified = value;
             }
         }
@@ -199,6 +229,19 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         [XmlAttribute] public int home_points { get; set; }
         [XmlAttribute] public int away_points { get; set; }
         [XmlAttribute] public int remaining_game_time { get; set; }
+        // eCricket
+        [XmlAttribute] public int home_runs { get; set; }
+        [XmlAttribute] public int away_runs { get; set; }
+        [XmlAttribute] public int home_wickets_fallen { get; set; }
+        [XmlAttribute] public int away_wickets_fallen { get; set; }
+        [XmlAttribute] public int home_overs_played { get; set; }
+        [XmlAttribute] public int home_balls_played { get; set; }
+        [XmlAttribute] public int away_overs_played { get; set; }
+        [XmlAttribute] public int away_balls_played { get; set; }
+        [XmlAttribute] public bool home_won_coin_toss { get; set; }
+        [XmlAttribute] public bool home_batting { get; set; }
+        [XmlAttribute] public bool away_batting { get; set; }
+        [XmlAttribute] public int inning { get; set; }
     }
 
     [Serializable]
@@ -1333,6 +1376,32 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public int away_goals { get; set; }
 
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int home_runs { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int away_runs { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int home_wickets_fallen { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int away_wickets_fallen { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int home_overs_played { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int home_balls_played { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int away_overs_played { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int away_balls_played { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public bool home_won_coin_toss { get; set; }
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]

@@ -165,7 +165,20 @@ namespace Oddin.OddsFeedSdk.API
                 // VirtualBasketballScoreboard
                 scoreboard.home_points,
                 scoreboard.away_points,
-                scoreboard.remaining_game_time
+                scoreboard.remaining_game_time,
+                // eCricket
+                scoreboard.home_runs,
+                scoreboard.away_runs,
+                scoreboard.home_wickets_fallen,
+                scoreboard.away_wickets_fallen,
+                scoreboard.home_overs_played,
+                scoreboard.away_overs_played,
+                scoreboard.home_balls_played,
+                scoreboard.away_balls_played,
+                scoreboard.home_won_coin_toss,
+                scoreboard.home_batting,
+                scoreboard.away_batting,
+                scoreboard.inning
             );
         }
 
@@ -195,7 +208,20 @@ namespace Oddin.OddsFeedSdk.API
                 // VirtualBasketballScoreboard
                 scoreboard.home_points,
                 scoreboard.away_points,
-                scoreboard.remaining_game_time
+                scoreboard.remaining_game_time,
+                // eCricket
+                scoreboard.home_runs,
+                scoreboard.away_runs,
+                scoreboard.home_wickets_fallen,
+                scoreboard.away_wickets_fallen,
+                scoreboard.home_overs_played,
+                scoreboard.away_overs_played,
+                scoreboard.home_balls_played,
+                scoreboard.away_balls_played,
+                scoreboard.home_won_coin_toss,
+                scoreboard.home_batting,
+                scoreboard.away_batting,
+                scoreboard.inning
             );
         }
 
@@ -214,7 +240,17 @@ namespace Oddin.OddsFeedSdk.API
                         s.home_goals,
                         s.away_goals,
                         s.home_points,
-                        s.away_points))
+                        s.away_points,
+                        s.home_runs,
+                        s.away_runs,
+                        s.home_wickets_fallen,
+                        s.away_wickets_fallen,
+                        s.home_overs_played,
+                        s.away_overs_played,
+                        s.home_balls_played,
+                        s.away_balls_played,
+                        s.home_won_coin_toss
+                        ))
                 .OrderBy(s => s.PeriodNumber)
                 .ToList();
 
@@ -233,7 +269,17 @@ namespace Oddin.OddsFeedSdk.API
                         s.home_goals,
                         s.away_goals,
                         s.home_points,
-                        s.away_points))
+                        s.away_points,
+                        s.home_runs,
+                        s.away_runs,
+                        s.home_wickets_fallen,
+                        s.away_wickets_fallen,
+                        s.home_overs_played,
+                        s.away_overs_played,
+                        s.home_balls_played,
+                        s.away_balls_played,
+                        s.home_won_coin_toss
+                        ))
                 .OrderBy(s => s.PeriodNumber)
                 .ToList();
 
