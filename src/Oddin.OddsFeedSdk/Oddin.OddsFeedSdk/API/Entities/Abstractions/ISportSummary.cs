@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Oddin.OddsFeedSdk.Common;
@@ -8,6 +9,7 @@ public interface ISportSummary
 {
     URN Id { get; }
 
+    [Obsolete("Do not use this field, it will be removed in future.")]
     URN RefId { get; }
 
     IReadOnlyDictionary<CultureInfo, string> Names { get; }

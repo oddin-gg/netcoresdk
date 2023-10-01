@@ -50,7 +50,7 @@ internal static class GeneralExample
         feed.Open();
 
         var ctrlCPressed = new TaskCompletionSource<bool>();
-        Console.CancelKeyPress += (s, e) =>
+        Console.CancelKeyPress += (_, e) =>
         {
             e.Cancel = true;
             ctrlCPressed.TrySetResult(true);
@@ -107,10 +107,15 @@ internal static class GeneralExample
         var matchUrn = new URN("od:match:36856");
         var tournamentUrn = new URN("od:tournament:1524");
         var sportUrn = new URN("od:sport:1");
+        var playerUrn = new URN("od:player:111");
 
         provider.DeleteCompetitorFromCache(competitorUrn);
         provider.DeleteMatchFromCache(matchUrn);
         provider.DeleteTournamentFromCache(tournamentUrn);
+        provider.DeleteCompetitorFromCache(playerUrn);
+
+        var player = provider.GetPlayer(playerUrn);
+        Console.WriteLine($"Player: {player.GetFullName(CultureEn)}");
 
         var activeTournaments = provider.GetActiveTournaments(CultureEn);
         var act = activeTournaments.First();
@@ -135,7 +140,6 @@ internal static class GeneralExample
         Console.WriteLine($"ID: {competitor.Id}");
         Console.WriteLine($"Is virtual: {competitor.IsVirtual}");
         Console.WriteLine($"Name: {competitor.Names[CultureEn]}");
-        Console.WriteLine($"Ref ID: {competitor.RefId}");
         Console.WriteLine($"Short name: {competitor.ShortName}");
         Console.WriteLine($"Icon Path: {competitor.IconPath}");
 
@@ -164,7 +168,6 @@ internal static class GeneralExample
         Console.WriteLine($"ID: {sport.Id}");
         Console.WriteLine($"Icon Path: {sport.IconPath}");
         Console.WriteLine($"Name: {sport.Names.FirstOrDefault()}");
-        Console.WriteLine($"Ref ID: {sport.RefId}");
         Console.WriteLine($"Tournament ID: {sport.Tournaments.FirstOrDefault()?.Id}");
     }
 
@@ -173,16 +176,15 @@ internal static class GeneralExample
         var manager = feed.MarketDescriptionManager;
         var marketDescriptionsEn = manager.GetMarketDescriptions(CultureEn);
 
-        var description = marketDescriptionsEn.First();
-        var specifiers = string.Join(", ", description.Specifiers.Select(s => $"Name:{s.Name} Type:{s.Type}"));
-        var outcomes = string.Join(", ",
-            description.Outcomes.Select(o =>
-                $"Id:{o.Id}/{o.RefId} Name:{o.GetName(CultureEn)} Description:{o.GetDescription(CultureEn)}"));
-
-        Console.WriteLine(
-            $"Market Description - Name: {description.GetName(CultureEn)} Id:{description.Id} RefId:{description.RefId} OutcomeType/Variant:{description.OutcomeType}");
-        Console.WriteLine($"Specifiers:{specifiers}");
-        Console.WriteLine($"Outcomes:{outcomes}");
+        foreach (var market in marketDescriptionsEn)
+        {
+            var specifiers = string.Join(", ", market.Specifiers.Select(s => $"Name:{s.Name} Type:{s.Type}"));
+            var outcomes = string.Join(", ",
+                market.Outcomes.Select(o =>
+                    $"Id:{o.Id} Name:{o.GetName(CultureEn)} Description:{o.GetDescription(CultureEn)}"));
+            Console.WriteLine(
+                $"MarketName: {market.GetName(CultureEn)} Id:{market.Id} Variant:{market.Variant} OutcomeOfType: {market.IncludesOutcomesOfType} OutcomeType:{market.OutcomeType} Specifiers:{specifiers} Outcomes:{outcomes}");
+        }
 
         var marketVoidReasons = manager.GetMarketVoidReasons();
         foreach (var voidReason in marketVoidReasons)
@@ -261,51 +263,65 @@ internal static class GeneralExample
     private static async void OnOddsChangeReceived(object sender, OddsChangeEventArgs<ISportEvent> eventArgs)
     {
         var oddsChange = eventArgs.GetOddsChange();
-        var oddsChangeOther = eventArgs.GetOddsChange(Feed.AvailableLanguages().Last());
-
         var e = eventArgs.GetOddsChange().Event;
-        var match = (IMatch)e;
-        Console.WriteLine($"Odds changed in {match.Status}");
-        Console.WriteLine($"Raw message: {Encoding.UTF8.GetString(oddsChange.RawMessage.Take(40).ToArray())}...");
-        Console.WriteLine($"{string.Join(", ", match.HomeCompetitor.Abbreviations)}");
-        Console.WriteLine($"{match.LiveOddsAvailability}");
-        Console.WriteLine($"{match.Fixture.Id}");
-        Console.WriteLine($"{await match.GetNameAsync(CultureEn)}");
-        Console.WriteLine($"{await match.GetScheduledTimeAsync()}");
-        Console.WriteLine($"Sport ID: {await e.GetSportIdAsync()}");
-        Console.WriteLine($"Scheduled time: {await e.GetScheduledTimeAsync()}");
+
+        if (e is IMatch match)
+        {
+            Console.WriteLine($"Odds changed in {match.Status}");
+            Console.WriteLine($"Raw message: {Encoding.UTF8.GetString(oddsChange.RawMessage.Take(40).ToArray())}...");
+            Console.WriteLine($"{string.Join(", ", match.HomeCompetitor.Abbreviations)}");
+            Console.WriteLine($"{match.LiveOddsAvailability}");
+            Console.WriteLine($"{match.Fixture.Id}");
+            Console.WriteLine($"{await match.GetNameAsync(CultureEn)}");
+            Console.WriteLine($"{await match.GetScheduledTimeAsync()}");
+            Console.WriteLine($"Sport ID: {await match.GetSportIdAsync()}");
+            Console.WriteLine($"Scheduled time: {await match.GetScheduledTimeAsync()}");
+
+            // Tournament
+            Console.WriteLine($"Tournament Id: {match.Tournament.Id}");
+            Console.WriteLine($"Risk Tier: {match.Tournament.RiskTier()}");
+
+            var competitor = match.Competitors.FirstOrDefault();
+            Console.WriteLine($"Odds change competitor icon path: {competitor?.IconPath}");
+            Console.WriteLine(
+                $"Odds change competitor sports: {string.Join(", ", competitor?.GetSports().Select(s => s.Id) ?? Enumerable.Empty<URN>())}");
+
+
+            // Scoreboard
+            if (match.Status.IsScoreboardAvailable)
+            {
+                var scoreboard = match.Status.Scoreboard;
+                if (scoreboard != null)
+                {
+                    Console.WriteLine($"Home Goals: {scoreboard.HomeGoals}");
+                    Console.WriteLine($"Away Goals: {scoreboard.AwayGoals}");
+                    Console.WriteLine($"Scoreboard Time: {scoreboard.Time}");
+                    Console.WriteLine($"Scoreboard GameTime: {scoreboard.GameTime}");
+                }
+            }
+        }
+
+        if (e is ITournament tournament)
+            Console.WriteLine($"Odds changed in {tournament.Id}: {await tournament.GetNameAsync(CultureEn)}");
+
 
         // Market
         var market = oddsChange.Markets?.FirstOrDefault();
-        Console.WriteLine($"Odds changed market: {market?.GetName(CultureEn)}");
-        Console.WriteLine($"Odds changed market: {market?.Status}");
-
-        // Outcome
-        var outcome = oddsChangeOther.Markets?.FirstOrDefault()?.OutcomeOdds.FirstOrDefault();
-        Console.WriteLine($"Odds changed market outcome: {outcome?.GetName(CultureEn)}");
-        Console.WriteLine($"Odds changed market outcome: {outcome?.Id} {outcome?.RefId} {outcome?.Probabilities}");
-
-        var competitor = match.Competitors.FirstOrDefault();
-        Console.WriteLine($"Odds change competitor icon path: {competitor?.IconPath}");
-        Console.WriteLine(
-            $"Odds change competitor sports: {string.Join(", ", competitor?.GetSports().Select(s => s.Id) ?? Enumerable.Empty<URN>())}");
-
-        // Tournament
-        var tournament = match.Tournament;
-        Console.WriteLine($"Tournament Id: {tournament.Id}");
-        Console.WriteLine($"Risk Tier: {tournament.RiskTier()}");
-
-        // Scoreboard
-        if (match.Status.IsScoreboardAvailable)
+        if (market != null)
         {
-            var scoreboard = match.Status.Scoreboard;
-            if (scoreboard != null)
+            if (market?.GetName(CultureEn) == null)
             {
-                Console.WriteLine($"Home Goals: {scoreboard.HomeGoals}");
-                Console.WriteLine($"Away Goals: {scoreboard.AwayGoals}");
-                Console.WriteLine($"Scoreboard Time: {scoreboard.Time}");
-                Console.WriteLine($"Scoreboard GameTime: {scoreboard.GameTime}");
+                Console.WriteLine(System.Text.Encoding.Default.GetString(oddsChange.RawMessage));
+                Console.WriteLine("?");
             }
+
+            Console.WriteLine($"Odds changed market: {market?.GetName(CultureEn)}");
+            Console.WriteLine($"Odds changed market: {market?.Status}");
+
+            // Outcome
+            var outcome = market.OutcomeOdds.FirstOrDefault();
+            Console.WriteLine($"Odds changed market outcome: {outcome?.GetName(CultureEn)}");
+            Console.WriteLine($"Odds changed market outcome: {outcome?.Id} {outcome?.RefId} {outcome?.Probabilities}");
         }
     }
 
@@ -332,32 +348,26 @@ internal static class GeneralExample
 
     private static async void OnBetSettlement(object sender, BetSettlementEventArgs<ISportEvent> eventArgs)
     {
-        var sportEvent = eventArgs.GetBetSettlement().Event;
+        var e = eventArgs.GetBetSettlement().Event;
 
-        // Match
-        var match = (IMatch)sportEvent;
-        Console.WriteLine($"Match Id: {match.Id}");
+        if (e is IMatch match)
+        {
+            Console.WriteLine($"Match Id: {match.Id}");
 
-        // Tournament
-        var tournament = match.Tournament;
-        Console.WriteLine($"Tournament Id: {tournament.Id}");
-        Console.WriteLine($"Risk Tier: {tournament.RiskTier()}");
+            // Tournament
+            Console.WriteLine($"Tournament Id: {match.Tournament.Id}");
 
-        // Get Sport from Match
-        var sport1 = await match.GetSportAsync();
-        var sportId = sport1.Id;
-        Console.WriteLine($"Sport Id: {sportId}");
+            // Get Sport from Match
+            var sport1 = await match.GetSportAsync();
+            var sportId = sport1.Id;
+            Console.WriteLine($"Sport Id: {sportId}");
+        }
 
-        // Get Sport from Tournament
-        var sport2 = await tournament.GetSportAsync();
-        var sportName = sport2.GetName(CultureEn);
-        Console.WriteLine($"Sport Name: {sportName}");
-
-        // Get Sport Using SportDataProvider
-        var session = (IOddsFeedSession)sender;
-        var provider = session.Feed.SportDataProvider;
-        var sport3 = await provider.GetSportAsync(sportId);
-        Console.WriteLine($"Icon Path: {sport3.IconPath}");
+        if (e is ITournament tournament)
+        {
+            Console.WriteLine($"Tournament Id: {tournament.Id}");
+            Console.WriteLine($"Risk Tier: {tournament.RiskTier()}");
+        }
 
         foreach (var m in eventArgs.GetBetSettlement().Markets)
         foreach (var outcome in m.OutcomeSettlements)
@@ -368,12 +378,19 @@ internal static class GeneralExample
     private static async void OnRollbackBetSettlement(object sender,
         RollbackBetSettlementEventArgs<ISportEvent> eventArgs)
     {
-        var sportEvent = eventArgs.GetRollbackBetSettlement(CultureEn).Event;
+        var e = eventArgs.GetRollbackBetSettlement(CultureEn).Event;
 
-        // Match
-        var match = (IMatch)sportEvent;
-        var name = await match.GetNameAsync(CultureEn);
-        Console.WriteLine($"Match Id: {match.Id}; name: {name}");
+        if (e is IMatch match)
+        {
+            var name = await match.GetNameAsync(CultureEn);
+            Console.WriteLine($"Match Id: {match.Id}; name: {name}");
+        }
+
+        if (e is ITournament tournament)
+        {
+            var name = await tournament.GetNameAsync(CultureEn);
+            Console.WriteLine($"Tournament Id: {tournament.Id}; name: {name}");
+        }
 
         foreach (var market in eventArgs.GetRollbackBetSettlement(CultureEn).Markets)
         {
@@ -386,12 +403,19 @@ internal static class GeneralExample
 
     private static async void OnRollbackBetCancel(object sender, RollbackBetCancelEventArgs<ISportEvent> eventArgs)
     {
-        var sportEvent = eventArgs.GetRollbackBetCancel(CultureEn).Event;
+        var e = eventArgs.GetRollbackBetCancel(CultureEn).Event;
 
-        // Match
-        var match = (IMatch)sportEvent;
-        var name = await match.GetNameAsync(CultureEn);
-        Console.WriteLine($"Match Id: {match.Id}; name: {name}");
+        if (e is IMatch match)
+        {
+            var name = await match.GetNameAsync(CultureEn);
+            Console.WriteLine($"Match Id: {match.Id}; name: {name}");
+        }
+
+        if (e is ITournament tournament)
+        {
+            var name = await tournament.GetNameAsync(CultureEn);
+            Console.WriteLine($"Tournament Id: {tournament.Id}; name: {name}");
+        }
 
         foreach (var market in eventArgs.GetRollbackBetCancel(CultureEn).Markets)
         {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -34,6 +35,7 @@ internal class Competitor : ICompetitor
 
     public URN Id { get; }
 
+    [Obsolete("Do not use this field, it will be removed in future.")]
     public URN RefId => FetchCompetitor(_cultures)?.RefId;
 
     public IReadOnlyDictionary<CultureInfo, string> Names

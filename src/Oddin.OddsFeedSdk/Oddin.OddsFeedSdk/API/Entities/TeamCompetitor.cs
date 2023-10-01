@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ internal class TeamCompetitor : ITeamCompetitor
 
     public URN Id => _competitor.Id;
 
+    [Obsolete("Do not use this field, it will be removed in future.")]
     public URN RefId => _competitor.RefId;
 
     public string IconPath => _competitor.IconPath;

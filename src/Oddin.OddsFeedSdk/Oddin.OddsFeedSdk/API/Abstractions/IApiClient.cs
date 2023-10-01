@@ -23,6 +23,9 @@ public interface IApiClient
 
     Task<MarketDescriptionsModel> GetMarketDescriptionsAsync(CultureInfo culture = null);
 
+    Task<MarketDescriptionsModel> GetMarketDescriptionsWithDynamicOutcomesAsync(int marketTypeId, string marketVariant,
+        CultureInfo desiredCulture = null);
+
     Task<HttpStatusCode> PostEventRecoveryRequest(string producerName, URN sportEventId, long requestId, int? nodeId);
 
     Task<MarketVoidReasonsModel> GetMarketVoidReasonsAsync();
@@ -35,6 +38,8 @@ public interface IApiClient
     TournamentInfoModel GetTournament(URN id, CultureInfo culture = null);
 
     teamExtended GetCompetitorProfile(URN id, CultureInfo culture);
+
+    player_profilePlayer GetPlayerProfile(URN id, CultureInfo culture = null);
 
     MatchSummaryModel GetMatchSummary(URN sportEventId, CultureInfo desiredCulture);
 

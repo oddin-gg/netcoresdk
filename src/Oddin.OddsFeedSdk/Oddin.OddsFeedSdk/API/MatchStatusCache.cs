@@ -20,7 +20,7 @@ internal class MatchStatusCache : IMatchStatusCache
 
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(MatchStatusCache));
-    private readonly TimeSpan _cacheTTL = TimeSpan.FromMinutes(20);
+    private readonly TimeSpan _cacheTtl = TimeSpan.FromMinutes(20);
 
     private readonly Semaphore _semaphore = new(1, 1);
     private readonly IDisposable _subscription;
@@ -119,7 +119,7 @@ internal class MatchStatusCache : IMatchStatusCache
                 item.Scoreboard = MakeFeedScoreboard(status.scoreboard);
         }
 
-        _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
+        _cache.Set(id.ToString(), item, _cacheTtl.AsCachePolicy());
     }
 
     private void RefreshOrInsertApiItem(URN id, Models.sportEventStatus summary)
@@ -152,7 +152,7 @@ internal class MatchStatusCache : IMatchStatusCache
                 item.Scoreboard = MakeApiScoreboard(summary.scoreboard);
         }
 
-        _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
+        _cache.Set(id.ToString(), item, _cacheTtl.AsCachePolicy());
     }
 
     private Scoreboard MakeApiScoreboard(ScoreboardModel scoreboard)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -29,6 +30,7 @@ internal class Sport : ISport
 
     public URN Id { get; }
 
+    [Obsolete("Do not use this field, it will be removed in future.")]
     public URN RefId
         => FetchSport(_cultures)?.RefId;
 

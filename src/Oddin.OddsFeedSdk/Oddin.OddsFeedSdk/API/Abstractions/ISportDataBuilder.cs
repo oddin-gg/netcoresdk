@@ -24,6 +24,8 @@ internal interface ISportDataBuilder
 
     ICompetitor BuildCompetitor(URN id, IEnumerable<CultureInfo> cultures);
 
+    IPlayer BuildPlayer(URN id, IEnumerable<CultureInfo> cultures);
+
     IFixture BuildFixture(URN id, IEnumerable<CultureInfo> cultures);
 
     IMatchStatus BuildMatchStatus(URN id, IEnumerable<CultureInfo> cultures);

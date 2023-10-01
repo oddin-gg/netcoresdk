@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
@@ -22,7 +23,7 @@ internal class Outcome : IOutcome
     private readonly ISportEvent _sportEvent;
 
     public Outcome(
-        long id,
+        string id,
         long refId,
         IMarketDescriptionFactory marketDescriptionFactory,
         IFeedConfiguration configuration,
@@ -39,7 +40,7 @@ internal class Outcome : IOutcome
         _sportEvent = sportEvent;
     }
 
-    public long Id { get; }
+    public string Id { get; }
 
     public long RefId { get; }
 
@@ -48,12 +49,35 @@ internal class Outcome : IOutcome
         try
         {
             var marketDescription =
-                _marketDescriptionFactory.GetMarketDescription(_marketId, _marketSpecifiers, new[] { culture });
+                _marketDescriptionFactory.MarketDescriptionByIdAndSpecifiers(_marketId, _marketSpecifiers,
+                    new[] { culture });
             var outcomeName = marketDescription?.Outcomes?.FirstOrDefault(o => o.Id == Id)?.GetName(culture);
+
+            // market with dynamic outcomes can have also non-dynamic outcome, that's reason why outcome with outcomeID exists at first
+            if (outcomeName == null && marketDescription?.OutcomeType != null)
+            {
+                if (marketDescription.OutcomeType == OutcomeType.Player)
+                {
+                    var player = _marketDescriptionFactory.PlayerCache.GetPlayer(new URN(Id), new[] { culture });
+                    if (player != null && player.Name.Count > 0)
+                    {
+                        outcomeName = player.Name.Values.First();
+                    }
+                }
+                else if (marketDescription.OutcomeType == OutcomeType.Competitor)
+                {
+                    var competitor =
+                        _marketDescriptionFactory.CompetitorCache.GetCompetitor(new URN(Id), new[] { culture });
+                    if (competitor != null && competitor.Name.Count > 0)
+                    {
+                        outcomeName = competitor.Name.Values.First();
+                    }
+                }
+            }
 
             if (outcomeName is null)
                 if (_configuration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
-                    throw new ItemNotFoundException(Id.ToString(), "Cannot find outcome name!");
+                    throw new ItemNotFoundException(Id, "Cannot find outcome name!");
                 else
                     return null;
 

@@ -8,13 +8,13 @@ internal class OutcomeDescription : IOutcomeDescription
 {
     private readonly LocalizedOutcomeDescription _localizedOutcomeDescription;
 
-    public OutcomeDescription(long id, LocalizedOutcomeDescription localizedOutcomeDescription)
+    public OutcomeDescription(string id, LocalizedOutcomeDescription localizedOutcomeDescription)
     {
         Id = id;
         _localizedOutcomeDescription = localizedOutcomeDescription;
     }
 
-    public long Id { get; }
+    public string Id { get; }
 
     public long? RefId => _localizedOutcomeDescription?.RefId;
 
