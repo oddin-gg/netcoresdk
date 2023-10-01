@@ -4,7 +4,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping.Abstractions;
 
 public interface IOutcome
 {
-    long Id { get; }
+    string Id { get; }
 
     long RefId { get; }
 

@@ -12,6 +12,8 @@ internal class LocalizedMatch : ILocalizedItem
     public LocalizedMatch(URN id) => Id = id;
 
     internal URN Id { get; }
+
+    [Obsolete("Do not use this field, it will be removed in future.")]
     internal URN RefId { get; set; }
 
     internal DateTime? ScheduledTime { get; set; }

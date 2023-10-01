@@ -8,6 +8,8 @@ public interface IMarketDescriptionManager
 {
     IEnumerable<IMarketDescription> GetMarketDescriptions(CultureInfo culture = null);
 
+    IMarketDescription GetMarketDescriptionByIdAndVariant(int marketId, string? variant);
+
     void DeleteVariantMarketDescriptionFromCache(int marketId, string variantValue);
 
     // Get MarketVoidReasons from cache

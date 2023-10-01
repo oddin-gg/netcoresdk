@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
+using Oddin.OddsFeedSdk.AMQP.Enums;
 
 namespace Oddin.OddsFeedSdk.API.Entities.Abstractions;
 
@@ -16,7 +17,14 @@ public interface IMarketDescription
     /// <summary>
     ///     Variant
     /// </summary>
-    string OutcomeType { get; }
+    string Variant { get; }
+
+    string IncludesOutcomesOfType { get; }
+
+    /// <summary>
+    ///     OutcomeType
+    /// </summary>
+    OutcomeType? OutcomeType { get; }
 
     string GetName(CultureInfo culture);
 }

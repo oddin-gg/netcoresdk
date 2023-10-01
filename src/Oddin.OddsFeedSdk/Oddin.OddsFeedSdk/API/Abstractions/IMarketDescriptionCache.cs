@@ -6,9 +6,10 @@ namespace Oddin.OddsFeedSdk.API.Abstractions;
 
 internal interface IMarketDescriptionCache
 {
-    IEnumerable<CompositeKey> GetMarketDescriptions(CultureInfo culture);
+    IReadOnlyDictionary<CompositeKey, LocalizedMarketDescription> LocalizedMarketDescriptions(CultureInfo culture);
 
-    LocalizedMarketDescription GetMarketDescription(int marketId, string variant, IEnumerable<CultureInfo> cultures);
+    LocalizedMarketDescription
+        GetMarketDescriptionById(int marketId, string variant, IEnumerable<CultureInfo> cultures);
 
     LocalizedMarketDescription GetMarketDescription(CompositeKey key);
 

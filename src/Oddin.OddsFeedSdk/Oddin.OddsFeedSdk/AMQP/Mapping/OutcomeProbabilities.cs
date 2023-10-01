@@ -12,7 +12,7 @@ internal class OutcomeProbabilities : Outcome, IOutcomeProbabilities
         bool? active,
         double? probabilities,
         IAdditionalProbabilities additionalProbabilities,
-        long outcomeId,
+        string outcomeId,
         long outcomeRefId,
         IMarketDescriptionFactory marketDescriptionFactory,
         IFeedConfiguration configuration,

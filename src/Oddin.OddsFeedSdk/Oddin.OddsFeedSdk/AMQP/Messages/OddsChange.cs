@@ -685,7 +685,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
     public class oddsChangeMarketOutcome
     {
 
-        private long idField;
+        private string idField;
 
         private double oddsField;
 
@@ -724,7 +724,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         private bool teamFieldSpecified;
 
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public long id
+        public string id
         {
             get
             {

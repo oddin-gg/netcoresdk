@@ -11,6 +11,7 @@ internal class CacheManager : ICacheManager, IDisposable
         ISportDataCache sportDataCache,
         ITournamentsCache tournamentsCache,
         ICompetitorCache competitorCache,
+        IPlayerCache playerCache,
         IMatchCache matchCache,
         ILocalizedStaticDataCache localizedStaticDataCache,
         IFixtureCache fixtureCache,
@@ -20,6 +21,7 @@ internal class CacheManager : ICacheManager, IDisposable
         SportDataCache = sportDataCache;
         TournamentsCache = tournamentsCache;
         CompetitorCache = competitorCache;
+        PlayerCache = playerCache;
         MatchCache = matchCache;
         LocalizedStaticDataCache = localizedStaticDataCache;
         FixtureCache = fixtureCache;
@@ -43,11 +45,14 @@ internal class CacheManager : ICacheManager, IDisposable
 
     public ICompetitorCache CompetitorCache { get; }
 
+    public IPlayerCache PlayerCache { get; }
+
     public IMatchCache MatchCache { get; }
 
     public void Dispose()
     {
         CompetitorCache.Dispose();
+        PlayerCache.Dispose();
         MatchCache.Dispose();
         TournamentsCache.Dispose();
         SportDataCache.Dispose();

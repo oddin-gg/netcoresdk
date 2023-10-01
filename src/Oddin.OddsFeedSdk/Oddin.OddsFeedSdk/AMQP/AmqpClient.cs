@@ -62,10 +62,7 @@ internal class AmqpClient : DispatcherBase, IAmqpClient
 
             _channel = _connection.CreateModel();
 
-            var queueInfo = _channel.QueueDeclare(
-                "", // should be left blank
-                false,
-                true);
+            var queueInfo = _channel.QueueDeclare();
 
             _channel.ExchangeDeclare(
                 _exchangeNameProvider.ExchangeName,

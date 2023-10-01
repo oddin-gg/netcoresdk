@@ -18,7 +18,7 @@ internal class TournamentsCache : ITournamentsCache
 
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(TournamentsCache));
-    private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(12);
+    private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(12);
 
     private readonly Semaphore _semaphore = new(1, 1);
     private readonly IDisposable _subscription;
@@ -199,6 +199,6 @@ internal class TournamentsCache : ITournamentsCache
             }
         }
 
-        _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
+        _cache.Set(id.ToString(), item, _cacheTtl.AsCachePolicy());
     }
 }

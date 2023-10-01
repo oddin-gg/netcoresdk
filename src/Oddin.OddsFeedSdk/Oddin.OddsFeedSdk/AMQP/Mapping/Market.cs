@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -41,6 +42,7 @@ internal class Market : IMarket
 
     public int Id { get; }
 
+    [Obsolete("Do not use this field, it will be removed in future.")]
     public int RefId { get; }
 
     public IReadOnlyDictionary<string, string> Specifiers { get; }
@@ -53,7 +55,8 @@ internal class Market : IMarket
     {
         try
         {
-            var marketDescription = _marketDescriptionFactory.GetMarketDescription(Id, Specifiers, new[] { culture });
+            var marketDescription =
+                _marketDescriptionFactory.MarketDescriptionByIdAndSpecifiers(Id, Specifiers, new[] { culture });
             var marketName = marketDescription?.GetName(culture);
 
             if (marketName is null)

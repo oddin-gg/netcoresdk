@@ -21,6 +21,7 @@ public interface ISportDataProvider
     IMatch GetMatch(URN id, CultureInfo culture = null);
 
     ICompetitor GetCompetitor(URN id, CultureInfo culture = null);
+    IPlayer GetPlayer(URN id, CultureInfo culture = null);
 
     IEnumerable<IFixtureChange> GetFixtureChanges(CultureInfo culture = null);
 
@@ -28,5 +29,6 @@ public interface ISportDataProvider
 
     void DeleteTournamentFromCache(URN id);
     void DeleteCompetitorFromCache(URN id);
+    void DeletePlayerFromCache(URN id);
     void DeleteMatchFromCache(URN id);
 }

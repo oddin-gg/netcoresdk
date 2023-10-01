@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
@@ -11,6 +12,7 @@ internal class LocalizedSport : ILocalizedItem
 
     internal URN Id { get; }
 
+    [Obsolete("Do not use this field, it will be removed in future.")]
     internal URN RefId { get; set; }
 
     internal string IconPath { get; set; }

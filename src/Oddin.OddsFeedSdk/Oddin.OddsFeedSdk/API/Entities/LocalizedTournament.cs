@@ -12,6 +12,7 @@ internal class LocalizedTournament : ILocalizedItem
 
     public URN Id { get; }
 
+    [Obsolete("Do not use this field, it will be removed in future.")]
     public URN RefId { get; set; }
 
     internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();

@@ -26,6 +26,7 @@ internal class ApiClient : IApiClient
         _defaultCulture = config.DefaultLocale;
     }
 
+
     public fixtureChangesEndpoint GetFixtureChanges(CultureInfo culture)
     {
         culture ??= _defaultCulture;
@@ -102,6 +103,19 @@ internal class ApiClient : IApiClient
         var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/competitors/{id}/profile";
         var result = _restClient.SendRequest<competitorProfileEndpoint>(route, HttpMethod.Get, culture);
         return result.Data.competitor;
+    }
+
+    public player_profilePlayer GetPlayerProfile(URN id, CultureInfo culture = null)
+    {
+        if (id is null)
+            throw new ArgumentNullException(nameof(id));
+
+        culture ??= _defaultCulture;
+        ValidateCulture(culture);
+
+        var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/players/{id}/profile";
+        var result = _restClient.SendRequest<player_profile>(route, HttpMethod.Get, culture);
+        return result.Data.player;
     }
 
     public TournamentInfoModel GetTournament(URN id, CultureInfo culture = null)
@@ -181,6 +195,20 @@ internal class ApiClient : IApiClient
         ValidateCulture(culture);
 
         var route = $"v1/descriptions/{culture.TwoLetterISOLanguageName}/markets";
+        var response = await _restClient.SendRequestAsync<MarketDescriptionsModel>(route, HttpMethod.Get);
+        return response.Data;
+    }
+
+    public async Task<MarketDescriptionsModel> GetMarketDescriptionsWithDynamicOutcomesAsync(
+        int marketTypeId,
+        string marketVariant,
+        CultureInfo desiredCulture = null)
+    {
+        var culture = desiredCulture ?? _defaultCulture;
+        ValidateCulture(culture);
+
+        var route =
+            $"v1/descriptions/{culture.TwoLetterISOLanguageName}/markets/{marketTypeId}/variants/{marketVariant}";
         var response = await _restClient.SendRequestAsync<MarketDescriptionsModel>(route, HttpMethod.Get);
         return response.Data;
     }

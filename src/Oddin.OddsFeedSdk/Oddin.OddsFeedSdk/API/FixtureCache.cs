@@ -16,7 +16,7 @@ internal class FixtureCache : IFixtureCache
 
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(FixtureCache));
-    private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(12);
+    private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(12);
 
     public FixtureCache(IApiClient apiClient) => _apiClient = apiClient;
 
@@ -67,7 +67,7 @@ internal class FixtureCache : IFixtureCache
             )
         );
 
-        _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
+        _cache.Set(id.ToString(), item, _cacheTtl.AsCachePolicy());
     }
 
     private static CultureInfo StringToCultureInfoOrDefault(string cultureString)

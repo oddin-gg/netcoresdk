@@ -8,9 +8,11 @@ public interface IPlayer
 {
     URN Id { get; }
 
-    URN RefId { get; }
-
     IReadOnlyDictionary<CultureInfo, string> Names { get; }
 
+    IReadOnlyDictionary<CultureInfo, string> FullNames { get; }
+
     string GetName(CultureInfo culture);
+
+    string GetFullName(CultureInfo culture);
 }

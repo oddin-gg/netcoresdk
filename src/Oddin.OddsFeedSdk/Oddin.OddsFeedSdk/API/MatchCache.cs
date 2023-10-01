@@ -19,7 +19,7 @@ internal class MatchCache : IMatchCache
 
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(MatchCache));
-    private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(12);
+    private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(12);
     private readonly Semaphore _semaphore = new(1, 1);
     private readonly IDisposable _subscription;
 
@@ -162,7 +162,7 @@ internal class MatchCache : IMatchCache
 
         item.Name[culture] = model.name;
 
-        _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
+        _cache.Set(id.ToString(), item, _cacheTtl.AsCachePolicy());
     }
 
     private void HandleMatchData(CultureInfo culture, List<sportEvent> tournaments)
