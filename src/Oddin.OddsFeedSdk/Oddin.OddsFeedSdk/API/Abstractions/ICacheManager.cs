@@ -8,6 +8,8 @@ internal interface ICacheManager
 
     ICompetitorCache CompetitorCache { get; }
 
+    IPlayerCache PlayerCache { get; }
+
     IMatchCache MatchCache { get; }
 
     ILocalizedStaticDataCache LocalizedStaticDataCache { get; }

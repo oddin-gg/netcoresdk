@@ -9,6 +9,7 @@ public interface ISportEvent
 {
     public URN Id { get; }
 
+    [Obsolete("Do not use this field, it will be removed in future.")]
     public URN RefId { get; }
 
     public Task<string> GetNameAsync(CultureInfo culture);

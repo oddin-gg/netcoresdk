@@ -97,6 +97,16 @@ internal class SportDataProvider : ISportDataProvider
             => _builder.BuildCompetitor(id, new[] { culture }));
     }
 
+    public void DeletePlayerFromCache(URN id) => _cacheManager.PlayerCache.ClearCacheItem(id);
+
+    public IPlayer GetPlayer(URN id, CultureInfo culture = null)
+    {
+        culture ??= _feedConfiguration.DefaultLocale;
+
+        return _exceptionWrapper.Wrap(()
+            => _builder.BuildPlayer(id, new[] { culture }));
+    }
+
     public IMatch GetMatch(URN id, CultureInfo culture = null)
     {
         culture ??= _feedConfiguration.DefaultLocale;

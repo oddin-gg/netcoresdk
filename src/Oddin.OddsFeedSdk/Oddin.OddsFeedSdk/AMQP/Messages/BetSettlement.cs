@@ -373,7 +373,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
     public partial class betSettlementMarketOutcome
     {
 
-        private long idField;
+        private string idField;
 
         private int resultField;
 
@@ -402,7 +402,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public long id
+        public string id
         {
             get
             {

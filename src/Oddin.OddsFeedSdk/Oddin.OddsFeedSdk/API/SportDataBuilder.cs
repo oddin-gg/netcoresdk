@@ -18,6 +18,7 @@ internal class SportDataBuilder : ISportDataBuilder
     private readonly ILocalizedStaticDataCache _localizedStaticDataCache;
     private readonly IMatchCache _matchCache;
     private readonly IMatchStatusCache _matchStatusCache;
+    private readonly IPlayerCache _playerCache;
     private readonly ISportDataCache _sportDataCache;
     private readonly ITournamentsCache _tournamentsCache;
 
@@ -25,6 +26,7 @@ internal class SportDataBuilder : ISportDataBuilder
         ISportDataCache sportDataCache,
         ITournamentsCache tournamentsCache,
         ICompetitorCache competitorCache,
+        IPlayerCache playerCache,
         IMatchCache matchCache,
         IMatchStatusCache matchStatusCache,
         ILocalizedStaticDataCache localizedStaticDataCache,
@@ -34,6 +36,7 @@ internal class SportDataBuilder : ISportDataBuilder
         _sportDataCache = sportDataCache;
         _tournamentsCache = tournamentsCache;
         _competitorCache = competitorCache;
+        _playerCache = playerCache;
         _matchCache = matchCache;
         _matchStatusCache = matchStatusCache;
         _localizedStaticDataCache = localizedStaticDataCache;
@@ -96,6 +99,14 @@ internal class SportDataBuilder : ISportDataBuilder
         new Competitor(
             id,
             _competitorCache,
+            this,
+            _configuration.ExceptionHandlingStrategy,
+            cultures);
+
+    public IPlayer BuildPlayer(URN id, IEnumerable<CultureInfo> cultures) =>
+        new Player(
+            id,
+            _playerCache,
             this,
             _configuration.ExceptionHandlingStrategy,
             cultures);

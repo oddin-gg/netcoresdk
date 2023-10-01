@@ -18,7 +18,7 @@ internal class CompetitorCache : ICompetitorCache
 
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(CompetitorCache));
-    private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(24);
+    private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(24);
     private readonly Semaphore _semaphore = new(1, 1);
     private readonly IDisposable _subscription;
 
@@ -167,7 +167,7 @@ internal class CompetitorCache : ICompetitorCache
             item.IconPathLoaded = true;
         }
 
-        _cache.Set(id.ToString(), item, _cacheTTL.AsCachePolicy());
+        _cache.Set(id.ToString(), item, _cacheTtl.AsCachePolicy());
     }
 
     private void HandleTeamData(CultureInfo culture, team[] teams)

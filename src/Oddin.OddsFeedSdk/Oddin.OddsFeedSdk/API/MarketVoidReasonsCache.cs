@@ -18,7 +18,7 @@ internal class MarketVoidReasonsCache : IMarketVoidReasonsCache
 
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(MarketVoidReasonsCache));
-    private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(24);
+    private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(24);
     private readonly object _lock = new();
 
     public MarketVoidReasonsCache(IApiClient apiClient) => _apiClient = apiClient;
@@ -31,7 +31,7 @@ internal class MarketVoidReasonsCache : IMarketVoidReasonsCache
             if (voidReasons == null)
             {
                 voidReasons = LoadItems();
-                _cache.Set(MemoryCacheKey, voidReasons, _cacheTTL.AsCachePolicy());
+                _cache.Set(MemoryCacheKey, voidReasons, _cacheTtl.AsCachePolicy());
             }
 
             return voidReasons;

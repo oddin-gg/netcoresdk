@@ -11,7 +11,7 @@ internal class OutcomeSettlement : Outcome, IOutcomeSettlement
 {
     internal OutcomeSettlement(
         double? deadHeatFactor,
-        long id,
+        string id,
         long refId,
         int result,
         double? voidFactor,

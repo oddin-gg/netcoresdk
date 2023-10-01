@@ -210,6 +210,7 @@ public class Feed : DispatcherBase, IOddsFeed
             .AddSingleton<ISportDataCache, SportDataCache>()
             .AddSingleton<ITournamentsCache, TournamentsCache>()
             .AddSingleton<ICompetitorCache, CompetitorCache>()
+            .AddSingleton<IPlayerCache, PlayerCache>()
             .AddSingleton<IMatchCache, MatchCache>()
             .AddSingleton<IFixtureCache, FixtureCache>()
             .AddSingleton<IMatchStatusCache, MatchStatusCache>()

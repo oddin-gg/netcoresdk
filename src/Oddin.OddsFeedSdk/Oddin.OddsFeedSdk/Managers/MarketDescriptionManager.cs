@@ -36,6 +36,12 @@ internal class MarketDescriptionManager : IMarketDescriptionManager
             => _marketDescriptionFactory.GetMarketDescriptions(culture));
     }
 
+    public IMarketDescription GetMarketDescriptionByIdAndVariant(int marketId, string? variant)
+    {
+        var locale = _feedConfiguration.DefaultLocale;
+        return _marketDescriptionFactory.GetMarketDescriptionByIdAndVariant(marketId, variant, new[] { locale });
+    }
+
     public IEnumerable<IMarketVoidReason> GetMarketVoidReasons() =>
         _exceptionWrapper.Wrap(()
             => _marketDescriptionFactory.GetMarketVoidReasons());

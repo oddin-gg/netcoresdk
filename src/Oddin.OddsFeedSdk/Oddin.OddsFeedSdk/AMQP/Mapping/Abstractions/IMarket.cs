@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -7,6 +8,7 @@ public interface IMarket
 {
     int Id { get; }
 
+    [Obsolete("Do not use this field, it will be removed in future.")]
     int RefId { get; }
 
     IReadOnlyDictionary<string, string> Specifiers { get; }

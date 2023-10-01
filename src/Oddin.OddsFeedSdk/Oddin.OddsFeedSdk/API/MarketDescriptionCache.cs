@@ -17,19 +17,20 @@ internal class MarketDescriptionCache : IMarketDescriptionCache
 
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(MarketDescriptionCache));
-    private readonly TimeSpan _cacheTTL = TimeSpan.FromHours(24);
+    private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(24);
 
     private readonly HashSet<CultureInfo> _loadedLocals = new();
     private readonly object _lock = new();
 
     public MarketDescriptionCache(IApiClient apiClient) => _apiClient = apiClient;
 
-    public IEnumerable<CompositeKey> GetMarketDescriptions(CultureInfo culture)
+    public IReadOnlyDictionary<CompositeKey, LocalizedMarketDescription> LocalizedMarketDescriptions(
+        CultureInfo culture)
     {
         lock (_lock)
         {
             if (_loadedLocals.TryGetValue(culture, out _) == false)
-                LoadAndCacheItem(new[] { culture });
+                LoadAndCacheItem(0, null, new[] { culture });
 
             var items = _cache.Where(c =>
             {
@@ -37,19 +38,21 @@ internal class MarketDescriptionCache : IMarketDescriptionCache
                        localizedItem.LoadedLocals.Any(i => i.Equals(culture));
             });
 
-            return items
-                .Select(i =>
-                {
-                    if (CompositeKey.TryParse(i.Key, out var key))
-                        return key;
+            var result = new Dictionary<CompositeKey, LocalizedMarketDescription>();
 
-                    return null;
-                })
-                .Where(k => k != null);
+            foreach (var o in items)
+            {
+                if (CompositeKey.TryParse(o.Key, out var key))
+                {
+                    result[key] = o.Value as LocalizedMarketDescription;
+                }
+            }
+
+            return result;
         }
     }
 
-    public LocalizedMarketDescription GetMarketDescription(int marketId, string variant,
+    public LocalizedMarketDescription GetMarketDescriptionById(int marketId, string variant,
         IEnumerable<CultureInfo> cultures)
     {
         lock (_lock)
@@ -60,7 +63,7 @@ internal class MarketDescriptionCache : IMarketDescriptionCache
 
             var toFetch = cultures.Except(culturesSet);
             if (toFetch.Any())
-                LoadAndCacheItem(toFetch);
+                LoadAndCacheItem(marketId, variant, toFetch);
 
             return _cache.Get(key.Key) as LocalizedMarketDescription;
         }
@@ -72,18 +75,33 @@ internal class MarketDescriptionCache : IMarketDescriptionCache
     public void ClearCacheItem(int marketId, string variant)
         => _cache.Remove(new CompositeKey(marketId, variant).ToString());
 
-    private void LoadAndCacheItem(IEnumerable<CultureInfo> cultures)
+    private void LoadAndCacheItem(
+        int marketId,
+        string variant,
+        IEnumerable<CultureInfo> cultures
+    )
     {
         foreach (var culture in cultures)
         {
             MarketDescriptionsModel marketDescriptions;
             try
             {
-                marketDescriptions = _apiClient
-                    .GetMarketDescriptionsAsync(culture)
-                    .ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
+                if (marketId > 0 && variant != null && isMarketVariantWithDynamicOutcomes(variant))
+                {
+                    marketDescriptions = _apiClient
+                        .GetMarketDescriptionsWithDynamicOutcomesAsync(marketId, variant, culture)
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
+                }
+                else
+                {
+                    marketDescriptions = _apiClient
+                        .GetMarketDescriptionsAsync(culture)
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
+                }
             }
             catch (Exception e)
             {
@@ -117,7 +135,12 @@ internal class MarketDescriptionCache : IMarketDescriptionCache
         {
             var outcomes = marketDescription.outcomes.ToDictionary(o => o.id, o => new LocalizedOutcomeDescription());
 
-            item = new LocalizedMarketDescription(marketDescription.refid, outcomes);
+            item = new LocalizedMarketDescription(
+                marketDescription.refid,
+                outcomes,
+                marketDescription.includes_outcomes_of_type,
+                marketDescription.outcome_type
+            );
         }
 
         foreach (var outcome in marketDescription.outcomes)
@@ -136,6 +159,9 @@ internal class MarketDescriptionCache : IMarketDescriptionCache
         item.Name[culture] = marketDescription.name;
         item.Specifiers = specifiers;
 
-        _cache.Set(key.Key, item, _cacheTTL.AsCachePolicy());
+        _cache.Set(key.Key, item, _cacheTtl.AsCachePolicy());
     }
+
+    private bool isMarketVariantWithDynamicOutcomes(string marketVariant) =>
+        marketVariant.StartsWith("od:dynamic_outcomes:");
 }
