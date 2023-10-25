@@ -60,7 +60,6 @@ internal class MatchStatus : IMatchStatus
                 return new ReadOnlyDictionary<string, object>(properties);
 
             return new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
-            ;
         }
     }
 

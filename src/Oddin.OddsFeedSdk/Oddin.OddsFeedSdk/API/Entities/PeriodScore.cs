@@ -45,7 +45,7 @@ internal class PeriodScore : IPeriodScore
         HomeRuns = homeRuns;
         AwayRuns = awayRuns;
         HomeWicketsFallen = homeWicketsFallen;
-        AwayWicketsFallen = AwayWicketsFallen;
+        AwayWicketsFallen = awayWicketsFallen;
         HomeOversPlayed = homeOversPlayed;
         AwayOversPlayed = awayOversPlayed;
         HomeBallsPlayed = homeBallsPlayed;
