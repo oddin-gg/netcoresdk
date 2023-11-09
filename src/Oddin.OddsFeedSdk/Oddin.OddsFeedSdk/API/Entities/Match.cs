@@ -122,7 +122,7 @@ internal class Match : IMatch
         var item = _matchCache.GetMatch(Id, cultures);
 
         if (item is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
-            throw new ItemNotFoundException(Id.ToString(), "Unable to fetch competitor");
+            throw new ItemNotFoundException(Id.ToString(), "Unable to fetch match");
         return item;
     }
 
