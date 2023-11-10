@@ -173,7 +173,7 @@ public class Feed : DispatcherBase, IOddsFeed
 
     public void Close()
     {
-        _log.LogInformation($"Closing {typeof(Feed)}...");
+        _log.LogInformation("Closing {Unknown}...", typeof(Feed));
 
         foreach (var session in _sessions)
             session.Close();
@@ -260,13 +260,28 @@ public class Feed : DispatcherBase, IOddsFeed
     }
 
     private void OnEventRecoveryCompleted(object sender, EventRecoveryCompletedEventArgs eventArgs) =>
-        Dispatch(EventRecoveryCompleted, eventArgs, nameof(EventRecoveryCompleted));
+        Dispatch(
+            EventRecoveryCompleted,
+            eventArgs,
+            nameof(EventRecoveryCompleted),
+            _config.ExceptionHandlingStrategy
+        );
 
     private void OnProducerDown(object sender, ProducerStatusChangeEventArgs eventArgs) =>
-        Dispatch(ProducerDown, eventArgs, nameof(ProducerDown));
+        Dispatch(
+            ProducerDown,
+            eventArgs,
+            nameof(ProducerDown),
+            _config.ExceptionHandlingStrategy
+        );
 
     private void OnProducerUp(object sender, ProducerStatusChangeEventArgs eventArgs) =>
-        Dispatch(ProducerUp, eventArgs, nameof(ProducerUp));
+        Dispatch(
+            ProducerUp,
+            eventArgs,
+            nameof(ProducerUp),
+            _config.ExceptionHandlingStrategy
+        );
 
     private void AttachToEvents()
     {
@@ -379,33 +394,52 @@ public class Feed : DispatcherBase, IOddsFeed
                 foreach (var service in Services.GetServices<IDisposable>())
                     service.Dispose();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                _log.LogWarning($"An exception has occurred while disposing the {nameof(Feed)} instance. Exception: ",
-                    ex);
+                _log.LogWarning("An exception has occurred while disposing the {FeedName} instance. Exception: {Ex}",
+                    nameof(Feed), e);
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             }
         }
 
         _isDisposed = true;
     }
 
-    private void OnAmqpCallbackException(object sender, CallbackExceptionEventArgs eventArgs) => Dispatch(
-        ConnectionException, new ConnectionExceptionEventArgs(eventArgs.Exception, eventArgs.Detail),
-        nameof(ConnectionException));
+    private void OnAmqpCallbackException(object sender, CallbackExceptionEventArgs eventArgs) =>
+        Dispatch(
+            ConnectionException,
+            new ConnectionExceptionEventArgs(eventArgs.Exception, eventArgs.Detail),
+            nameof(ConnectionException),
+            _config.ExceptionHandlingStrategy
+        );
 
     // This method is called when Rabbit library informs that the connection has been shut down
     private void OnConnectionShutdown(object sender, ShutdownEventArgs shutdownEventArgs)
     {
         _log.LogWarning(
-            $"The AMQP connection was shut down. {shutdownEventArgs.ReplyCode} {shutdownEventArgs.ReplyText} Initiator: {shutdownEventArgs.Initiator} Cause: {shutdownEventArgs.Cause}");
+            "The AMQP connection was shut down. {ReplyCode} {ReplyText} Initiator: {Initiator} Cause: {Cause}",
+            shutdownEventArgs.ReplyCode,
+            shutdownEventArgs.ReplyText,
+            shutdownEventArgs.Initiator,
+            shutdownEventArgs.Cause
+        );
 
         // Starting feed recovery is not necessary because if no alive message is received recovery is started anyway.
 
         if (shutdownEventArgs.Initiator == ShutdownInitiator.Application)
-            Dispatch(Disconnected, EventArgs.Empty, nameof(Disconnected));
+            Dispatch(
+                Disconnected,
+                EventArgs.Empty,
+                nameof(Disconnected),
+                _config.ExceptionHandlingStrategy
+            );
         else
-            Dispatch(Closed, new FeedCloseEventArgs($"{shutdownEventArgs.ReplyCode} {shutdownEventArgs.ReplyText}"),
-                nameof(Closed));
+            Dispatch(
+                Closed,
+                new FeedCloseEventArgs($"{shutdownEventArgs.ReplyCode} {shutdownEventArgs.ReplyText}"),
+                nameof(Closed),
+                _config.ExceptionHandlingStrategy
+            );
     }
 
     internal IOddsFeedSession BuildSession(MessageInterest messageInterest)

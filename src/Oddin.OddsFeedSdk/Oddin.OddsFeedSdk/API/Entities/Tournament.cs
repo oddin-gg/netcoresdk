@@ -13,20 +13,20 @@ namespace Oddin.OddsFeedSdk.API.Entities;
 
 internal class Tournament : ITournament
 {
-    private readonly IFeedConfiguration _configuration;
+    private readonly IFeedConfiguration _config;
     private readonly IEnumerable<CultureInfo> _cultures;
     private readonly ISportDataBuilder _sportDataBuilder;
     private readonly URN _sportId;
     private readonly ITournamentsCache _tournamentsCache;
 
     public Tournament(URN id, URN sportId, ITournamentsCache tournamentsCache, ISportDataBuilder sportDataBuilder,
-        IFeedConfiguration configuration, IEnumerable<CultureInfo> cultures)
+        IFeedConfiguration config, IEnumerable<CultureInfo> cultures)
     {
         Id = id;
         _sportId = sportId;
         _tournamentsCache = tournamentsCache;
         _sportDataBuilder = sportDataBuilder;
-        _configuration = configuration;
+        _config = config;
         _cultures = cultures;
     }
 
@@ -74,7 +74,7 @@ internal class Tournament : ITournament
     private LocalizedTournament FetchTournament(IEnumerable<CultureInfo> cultures)
     {
         var tournament = _tournamentsCache.GetTournament(Id, cultures);
-        if (tournament is null && _configuration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
+        if (tournament is null && _config.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
             throw new ItemNotFoundException(Id.ToString(), $"Competitor {Id} not found");
         return tournament;
     }
@@ -86,7 +86,7 @@ internal class Tournament : ITournament
         var competitorsIds = FetchTournament(cultures)?.CompetitorIds
                              ?? _tournamentsCache.GetTournamentCompetitors(Id, cultures.First());
 
-        if (competitorsIds == null && _configuration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
+        if (competitorsIds == null && _config.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
             throw new ItemNotFoundException(Id.ToString(), "Cannot find competitor ids");
         if (competitorsIds == null)
             return null;

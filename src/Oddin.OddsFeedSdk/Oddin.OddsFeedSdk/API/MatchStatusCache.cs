@@ -10,6 +10,7 @@ using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 using sportEventStatus = Oddin.OddsFeedSdk.AMQP.Messages.sportEventStatus;
 
 namespace Oddin.OddsFeedSdk.API;
@@ -21,13 +22,18 @@ internal class MatchStatusCache : IMatchStatusCache
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(MatchStatusCache));
     private readonly TimeSpan _cacheTtl = TimeSpan.FromMinutes(20);
+    private readonly IFeedConfiguration _config;
 
     private readonly Semaphore _semaphore = new(1, 1);
     private readonly IDisposable _subscription;
 
-    public MatchStatusCache(IApiClient apiClient)
+    public MatchStatusCache(
+        IApiClient apiClient,
+        IFeedConfiguration config
+    )
     {
         _apiClient = apiClient;
+        _config = config;
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
             {
@@ -39,7 +45,7 @@ internal class MatchStatusCache : IMatchStatusCache
                 _semaphore.WaitOne();
                 try
                 {
-                    _log.LogDebug($"Updating Match Status cache from API: {response.Data.GetType()}");
+                    _log.LogDebug("Updating Match Status cache from API: {Type}", response.Data.GetType());
                     RefreshOrInsertApiItem(id, summary.sport_event_status);
                 }
                 finally
@@ -54,7 +60,7 @@ internal class MatchStatusCache : IMatchStatusCache
         if (e.sport_event_status == null)
             return;
 
-        _log.LogDebug($"Updating Match Status cache from FEED for: {e.event_id}");
+        _log.LogDebug("Updating Match Status cache from FEED for: {EEventIdEEventId}", e.event_id);
 
         _semaphore.WaitOne();
         try
@@ -65,6 +71,7 @@ internal class MatchStatusCache : IMatchStatusCache
         catch (Exception ex)
         {
             _log.LogError(ex, "Failed to process message in match status cache");
+            ex.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
         }
         finally
         {

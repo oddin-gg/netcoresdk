@@ -7,6 +7,7 @@ using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API;
 
@@ -17,8 +18,16 @@ internal class FixtureCache : IFixtureCache
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(FixtureCache));
     private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(12);
+    private readonly IFeedConfiguration _config;
 
-    public FixtureCache(IApiClient apiClient) => _apiClient = apiClient;
+    public FixtureCache(
+        IApiClient apiClient,
+        IFeedConfiguration config
+    )
+    {
+        _apiClient = apiClient;
+        _config = config;
+    }
 
     public LocalizedFixture GetFixture(URN id, CultureInfo culture)
     {
@@ -35,7 +44,7 @@ internal class FixtureCache : IFixtureCache
 
         if (id != null)
         {
-            _log.LogDebug($"Invalidating FixtureCache from FEED for: {id}");
+            _log.LogDebug("Invalidating FixtureCache from FEED for: {Id}", id);
             ClearCacheItem(id);
         }
     }
@@ -51,7 +60,9 @@ internal class FixtureCache : IFixtureCache
         }
         catch (Exception e)
         {
-            _log.LogError($"Error while fetching fixture {culture.TwoLetterISOLanguageName}: {e}");
+            _log.LogError("Error while fetching fixture {CultureTwoLetterIsoLanguageName}: {E}",
+                culture.TwoLetterISOLanguageName, e);
+            e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             return;
         }
 
@@ -70,7 +81,7 @@ internal class FixtureCache : IFixtureCache
         _cache.Set(id.ToString(), item, _cacheTtl.AsCachePolicy());
     }
 
-    private static CultureInfo StringToCultureInfoOrDefault(string cultureString)
+    private CultureInfo StringToCultureInfoOrDefault(string cultureString)
     {
         if (string.IsNullOrWhiteSpace(cultureString))
             return default;
@@ -79,9 +90,10 @@ internal class FixtureCache : IFixtureCache
         {
             return CultureInfo.GetCultureInfo(cultureString);
         }
-        catch (CultureNotFoundException)
+        catch (CultureNotFoundException e)
         {
-            _log.LogWarning($"Tv Channel with unparsable language received: {cultureString}");
+            _log.LogWarning("Tv Channel with unparsable language received: {CultureString}", cultureString);
+            e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
         }
 
         return default;

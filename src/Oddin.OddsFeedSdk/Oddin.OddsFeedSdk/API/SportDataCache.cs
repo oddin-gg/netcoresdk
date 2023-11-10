@@ -10,6 +10,7 @@ using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API;
 
@@ -20,15 +21,20 @@ internal class SportDataCache : ISportDataCache
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(SportDataCache));
     private readonly CacheItemPolicy _cachePolicy = new() { Priority = CacheItemPriority.NotRemovable };
+    private readonly IFeedConfiguration _config;
     private readonly IList<CultureInfo> _loadedLocales = new List<CultureInfo>();
 
     private readonly Semaphore _semaphore = new(1, 1);
 
     private readonly IDisposable _subscription;
 
-    public SportDataCache(IApiClient apiClient)
+    public SportDataCache(
+        IApiClient apiClient,
+        IFeedConfiguration config
+    )
     {
         _apiClient = apiClient;
+        _config = config;
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
             {
@@ -47,7 +53,7 @@ internal class SportDataCache : ISportDataCache
                     _semaphore.WaitOne();
                     try
                     {
-                        _log.LogDebug($"Updating SportData cache from API: {response.Data.GetType()}");
+                        _log.LogDebug("Updating SportData cache from API: {Type}", response.Data.GetType());
                         HandleTournamentData(response.Culture, tournamentData);
                     }
                     finally
@@ -112,7 +118,9 @@ internal class SportDataCache : ISportDataCache
             }
             catch (Exception e)
             {
-                _log.LogError($"Error while fetching sport tournaments {culture.TwoLetterISOLanguageName}: {e}");
+                _log.LogError("Error while fetching sport tournaments {CultureTwoLetterIsoLanguageName}: {E}",
+                    culture.TwoLetterISOLanguageName, e);
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
                 return null;
             }
 
@@ -125,7 +133,8 @@ internal class SportDataCache : ISportDataCache
                 }
                 catch (Exception e)
                 {
-                    _log.LogError($"Failed to insert or refresh sport tournaments: {e}");
+                    _log.LogError("Failed to insert or refresh sport tournaments: {E}", e);
+                    e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
                 }
             }
 
@@ -170,7 +179,9 @@ internal class SportDataCache : ISportDataCache
             }
             catch (Exception e)
             {
-                _log.LogError($"Error while fetching sports {culture.TwoLetterISOLanguageName}: {e}");
+                _log.LogError("Error while fetching sports {CultureTwoLetterIsoLanguageName}: {E}",
+                    culture.TwoLetterISOLanguageName, e);
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
                 continue;
             }
 
@@ -183,7 +194,8 @@ internal class SportDataCache : ISportDataCache
                 }
                 catch (Exception e)
                 {
-                    _log.LogError($"Failed to insert or refresh sport: {e}");
+                    _log.LogError("Failed to insert or refresh sport: {E}", e);
+                    e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
                 }
             }
 

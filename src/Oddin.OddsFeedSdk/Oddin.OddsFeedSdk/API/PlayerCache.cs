@@ -9,6 +9,7 @@ using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API;
 
@@ -19,9 +20,17 @@ internal class PlayerCache : IPlayerCache
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(PlayerCache));
     private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(12);
+    private readonly IFeedConfiguration _config;
     private readonly Semaphore _semaphore = new(1, 1);
 
-    public PlayerCache(IApiClient apiClient) => _apiClient = apiClient;
+    public PlayerCache(
+        IApiClient apiClient,
+        IFeedConfiguration config
+    )
+    {
+        _apiClient = apiClient;
+        _config = config;
+    }
 
     public LocalizedPlayer GetPlayer(URN id, IEnumerable<CultureInfo> cultures)
     {
@@ -62,7 +71,8 @@ internal class PlayerCache : IPlayerCache
             }
             catch (Exception e)
             {
-                _log.LogError($"Error while fetching player profile {e}");
+                _log.LogError("Error while fetching player profile {E}", e);
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
                 continue;
             }
 
@@ -72,7 +82,8 @@ internal class PlayerCache : IPlayerCache
             }
             catch (Exception e)
             {
-                _log.LogError($"Error while refreshing player {e}");
+                _log.LogError("Error while refreshing player {E}", e);
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             }
         }
     }
@@ -86,9 +97,17 @@ internal class PlayerCache : IPlayerCache
         }
         else
         {
-            item = new LocalizedPlayer(id);
-            item.Name[culture] = data.name;
-            item.FullName[culture] = data.full_name;
+            item = new LocalizedPlayer(id)
+            {
+                Name =
+                {
+                    [culture] = data.name
+                },
+                FullName =
+                {
+                    [culture] = data.full_name
+                }
+            };
         }
 
         _cache.Set(id.ToString(), item, _cacheTtl.AsCachePolicy());
