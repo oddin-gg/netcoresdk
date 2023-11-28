@@ -182,6 +182,9 @@ internal class MatchStatusCache : IMatchStatusCache
             scoreboard.home_points,
             scoreboard.away_points,
             scoreboard.remaining_game_time,
+            // TableTennis
+            scoreboard.home_games,
+            scoreboard.away_games,
             // eCricket
             scoreboard.home_runs,
             scoreboard.away_runs,
@@ -225,6 +228,9 @@ internal class MatchStatusCache : IMatchStatusCache
             scoreboard.home_points,
             scoreboard.away_points,
             scoreboard.remaining_game_time,
+            // TableTennis
+            scoreboard.home_games,
+            scoreboard.away_games,
             // eCricket
             scoreboard.home_runs,
             scoreboard.away_runs,

@@ -27,6 +27,10 @@ public interface IScoreboard
 
     int? RemainingGameTime { get; }
 
+    // TableTennis
+    int? HomeGames { get; }
+    int? AwayGames { get; }
+
     // eCricket
     int? HomeRuns { get; }
     int? AwayRuns { get; }

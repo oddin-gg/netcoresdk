@@ -37,6 +37,10 @@ public class ScoreboardModel
 
     [XmlAttribute] public int remaining_game_time { get; set; }
 
+    // TableTennis
+    [XmlAttribute] public int home_games { get; set; }
+    [XmlAttribute] public int away_games { get; set; }
+
     // eCricket
     [XmlAttribute] public int home_runs { get; set; }
     [XmlAttribute] public int away_runs { get; set; }
