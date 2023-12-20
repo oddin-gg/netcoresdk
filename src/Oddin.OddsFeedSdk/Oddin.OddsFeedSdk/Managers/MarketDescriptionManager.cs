@@ -11,17 +11,17 @@ namespace Oddin.OddsFeedSdk.Managers;
 internal class MarketDescriptionManager : IMarketDescriptionManager
 {
     private readonly ICacheManager _cacheManager;
+    private readonly IFeedConfiguration _config;
     private readonly IExceptionWrapper _exceptionWrapper;
-    private readonly IFeedConfiguration _feedConfiguration;
     private readonly IMarketDescriptionFactory _marketDescriptionFactory;
 
     public MarketDescriptionManager(
-        IFeedConfiguration feedConfiguration,
+        IFeedConfiguration config,
         IMarketDescriptionFactory marketDescriptionFactory,
         ICacheManager cacheManager,
         IExceptionWrapper exceptionWrapper)
     {
-        _feedConfiguration = feedConfiguration;
+        _config = config;
         _marketDescriptionFactory = marketDescriptionFactory;
         _cacheManager = cacheManager;
         _exceptionWrapper = exceptionWrapper;
@@ -30,7 +30,7 @@ internal class MarketDescriptionManager : IMarketDescriptionManager
     public IEnumerable<IMarketDescription> GetMarketDescriptions(CultureInfo culture = null)
     {
         if (culture is null)
-            culture = _feedConfiguration.DefaultLocale;
+            culture = _config.DefaultLocale;
 
         return _exceptionWrapper.Wrap(()
             => _marketDescriptionFactory.GetMarketDescriptions(culture));
@@ -38,7 +38,7 @@ internal class MarketDescriptionManager : IMarketDescriptionManager
 
     public IMarketDescription GetMarketDescriptionByIdAndVariant(int marketId, string? variant)
     {
-        var locale = _feedConfiguration.DefaultLocale;
+        var locale = _config.DefaultLocale;
         return _marketDescriptionFactory.GetMarketDescriptionByIdAndVariant(marketId, variant, new[] { locale });
     }
 

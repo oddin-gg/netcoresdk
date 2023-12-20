@@ -18,18 +18,18 @@ internal class SportDataProvider : ISportDataProvider
     private readonly IApiClient _apiClient;
     private readonly ISportDataBuilder _builder;
     private readonly ICacheManager _cacheManager;
+    private readonly IFeedConfiguration _config;
     private readonly IExceptionWrapper _exceptionWrapper;
-    private readonly IFeedConfiguration _feedConfiguration;
 
     public SportDataProvider(
         ICacheManager cacheManager,
-        IFeedConfiguration feedConfiguration,
+        IFeedConfiguration config,
         ISportDataBuilder builder,
         IExceptionWrapper exceptionWrapper,
         IApiClient apiClient)
     {
         _cacheManager = cacheManager;
-        _feedConfiguration = feedConfiguration;
+        _config = config;
         _builder = builder;
         _exceptionWrapper = exceptionWrapper;
         _apiClient = apiClient;
@@ -37,7 +37,7 @@ internal class SportDataProvider : ISportDataProvider
 
     public async Task<IEnumerable<ISport>> GetSportsAsync(CultureInfo culture = null)
     {
-        culture ??= _feedConfiguration.DefaultLocale;
+        culture ??= _config.DefaultLocale;
 
         return await _exceptionWrapper.Wrap(async () => await _builder.BuildSports(new[] { culture }));
     }
@@ -50,7 +50,7 @@ internal class SportDataProvider : ISportDataProvider
 
     public IEnumerable<ITournament> GetActiveTournaments(CultureInfo culture = null)
     {
-        culture ??= _feedConfiguration.DefaultLocale;
+        culture ??= _config.DefaultLocale;
 
         var sports = GetSportsAsync(culture).ConfigureAwait(false).GetAwaiter().GetResult();
         var sportTournaments = sports.SelectMany(s => s.Tournaments);
@@ -60,7 +60,7 @@ internal class SportDataProvider : ISportDataProvider
 
     public IEnumerable<ITournament> GetActiveTournaments(string name, CultureInfo culture = null)
     {
-        culture ??= _feedConfiguration.DefaultLocale;
+        culture ??= _config.DefaultLocale;
 
         var sports = GetSportsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         var sport = sports?.FirstOrDefault(s => s.GetName(culture).Equals(name));
@@ -69,7 +69,7 @@ internal class SportDataProvider : ISportDataProvider
 
     public IEnumerable<ITournament> GetAvailableTournaments(URN sportId, CultureInfo culture = null)
     {
-        culture ??= _feedConfiguration.DefaultLocale;
+        culture ??= _config.DefaultLocale;
 
         var result = _exceptionWrapper.Wrap(()
             => _apiClient.GetTournaments(sportId, culture));
@@ -91,7 +91,7 @@ internal class SportDataProvider : ISportDataProvider
 
     public ICompetitor GetCompetitor(URN id, CultureInfo culture = null)
     {
-        culture ??= _feedConfiguration.DefaultLocale;
+        culture ??= _config.DefaultLocale;
 
         return _exceptionWrapper.Wrap(()
             => _builder.BuildCompetitor(id, new[] { culture }));
@@ -101,7 +101,7 @@ internal class SportDataProvider : ISportDataProvider
 
     public IPlayer GetPlayer(URN id, CultureInfo culture = null)
     {
-        culture ??= _feedConfiguration.DefaultLocale;
+        culture ??= _config.DefaultLocale;
 
         return _exceptionWrapper.Wrap(()
             => _builder.BuildPlayer(id, new[] { culture }));
@@ -109,7 +109,7 @@ internal class SportDataProvider : ISportDataProvider
 
     public IMatch GetMatch(URN id, CultureInfo culture = null)
     {
-        culture ??= _feedConfiguration.DefaultLocale;
+        culture ??= _config.DefaultLocale;
 
         return _exceptionWrapper.Wrap(()
             => _builder.BuildMatch(id, new[] { culture }));
@@ -117,7 +117,7 @@ internal class SportDataProvider : ISportDataProvider
 
     public IEnumerable<IMatch> GetMatchesFor(DateTime dateTime, CultureInfo culture = null)
     {
-        culture ??= _feedConfiguration.DefaultLocale;
+        culture ??= _config.DefaultLocale;
 
         return _exceptionWrapper.Wrap(() =>
         {
@@ -129,7 +129,7 @@ internal class SportDataProvider : ISportDataProvider
 
     public IEnumerable<IMatch> GetLiveMatches(CultureInfo culture = null)
     {
-        culture ??= _feedConfiguration.DefaultLocale;
+        culture ??= _config.DefaultLocale;
 
         return _exceptionWrapper.Wrap(() =>
         {
@@ -147,7 +147,7 @@ internal class SportDataProvider : ISportDataProvider
         if (limit is > 1000 or < 1)
             throw new ArgumentException("Requires limit <= 1000 && limit >= 1", nameof(limit));
 
-        culture ??= _feedConfiguration.DefaultLocale;
+        culture ??= _config.DefaultLocale;
 
         return _exceptionWrapper.Wrap(() =>
         {
@@ -160,7 +160,7 @@ internal class SportDataProvider : ISportDataProvider
 
     public IEnumerable<IFixtureChange> GetFixtureChanges(CultureInfo culture = null)
     {
-        culture ??= _feedConfiguration.DefaultLocale;
+        culture ??= _config.DefaultLocale;
 
         return _exceptionWrapper.Wrap(() =>
         {

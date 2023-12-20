@@ -25,9 +25,9 @@ internal class RecoveryManager : DispatcherBase, ISdkRecoveryManager
 {
     private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(RecoveryManager));
     private readonly IApiClient _apiClient;
+    private readonly IFeedConfiguration _config;
     private readonly object _lock = new();
     private readonly ConcurrentDictionary<Guid, long> _messageProcessingTimes;
-    private readonly IFeedConfiguration _oddsFeedConfiguration;
     private readonly IProducerManager _producerManager;
 
     private readonly ConcurrentDictionary<int, ProducerRecoveryData> _producerRecoveryData;
@@ -36,14 +36,14 @@ internal class RecoveryManager : DispatcherBase, ISdkRecoveryManager
     private Timer _timer;
 
     public RecoveryManager(
-        IFeedConfiguration oddsFeedConfiguration,
+        IFeedConfiguration config,
         IProducerManager producerManager,
         IApiClient apiClient,
         IRequestIdFactory requestIdFactory
     )
     {
-        _oddsFeedConfiguration =
-            oddsFeedConfiguration ?? throw new ArgumentNullException(nameof(oddsFeedConfiguration));
+        _config =
+            config ?? throw new ArgumentNullException(nameof(config));
         _producerManager = producerManager ?? throw new ArgumentNullException(nameof(producerManager));
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _requestIdFactory = requestIdFactory ?? throw new ArgumentNullException(nameof(requestIdFactory));
@@ -253,7 +253,12 @@ internal class RecoveryManager : DispatcherBase, ISdkRecoveryManager
         );
 
         var eventArgs = new EventRecoveryCompletedEventArgs(requestId, eventRecovery.EventId);
-        Dispatch(EventRecoveryCompleted, eventArgs, nameof(EventRecoveryCompleted));
+        Dispatch(
+            EventRecoveryCompleted,
+            eventArgs,
+            nameof(EventRecoveryCompleted),
+            _config.ExceptionHandlingStrategy
+        );
 
         producerRecoveryData.EventRecoveryCompleted(requestId);
     }
@@ -274,7 +279,7 @@ internal class RecoveryManager : DispatcherBase, ISdkRecoveryManager
 
             try
             {
-                var nodeId = _oddsFeedConfiguration.NodeId;
+                var nodeId = _config.NodeId;
                 _log.LogInformation(
                     $"Sending recovery request (producer name: {producerName}, request ID: {requestId}, node ID: {nodeId})");
                 var task = apiCall(producerName, eventId, requestId, nodeId);
@@ -283,8 +288,8 @@ internal class RecoveryManager : DispatcherBase, ISdkRecoveryManager
             }
             catch (SdkException e)
             {
-                _log.LogError($"Recovery request to API failed: {e}");
-                e.HandleAccordingToStrategy(GetType().Name, _log, _oddsFeedConfiguration.ExceptionHandlingStrategy);
+                _log.LogError("Recovery request to API failed: {E}", e);
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
                 statusCode = HttpStatusCode.InternalServerError;
             }
 
@@ -339,7 +344,7 @@ internal class RecoveryManager : DispatcherBase, ISdkRecoveryManager
             }
 
             var recoveryTiming = now - ( producerRecoveryData.LastRecoveryStartedAt ?? 0 );
-            var maxInterval = Timestamp.FromMinutes(_oddsFeedConfiguration.MaxRecoveryExecutionMinutes);
+            var maxInterval = Timestamp.FromMinutes(_config.MaxRecoveryExecutionMinutes);
             if (producerRecoveryData.IsPerformingRecovery && recoveryTiming > maxInterval)
             {
                 // @TODO recoveryId 0
@@ -384,9 +389,9 @@ internal class RecoveryManager : DispatcherBase, ISdkRecoveryManager
             recoveryFrom = (long)fromTimestamp;
         }
 
-        if (recoveryFrom == 0 && _oddsFeedConfiguration.InitialSnapshotTimeInMinutes != default)
+        if (recoveryFrom == 0 && _config.InitialSnapshotTimeInMinutes != default)
         {
-            recoveryFrom = now - Timestamp.FromMinutes(_oddsFeedConfiguration.InitialSnapshotTimeInMinutes);
+            recoveryFrom = now - Timestamp.FromMinutes(_config.InitialSnapshotTimeInMinutes);
         }
 
         var maxRecoveryFrom = now - Timestamp.FromMinutes(producerRecoveryData.StatefulRecoveryWindowInMinutes);
@@ -407,7 +412,7 @@ internal class RecoveryManager : DispatcherBase, ISdkRecoveryManager
         bool success;
         try
         {
-            var task = _apiClient.PostRecoveryRequest(producerName, requestId, _oddsFeedConfiguration.NodeId,
+            var task = _apiClient.PostRecoveryRequest(producerName, requestId, _config.NodeId,
                 recoveryFrom);
             task.Wait();
             success = task.Result;
@@ -415,13 +420,13 @@ internal class RecoveryManager : DispatcherBase, ISdkRecoveryManager
         catch (Exception e)
         {
             _log.LogError($"Recovery failed with {e}");
-            e.HandleAccordingToStrategy(GetType().Name, _log, _oddsFeedConfiguration.ExceptionHandlingStrategy);
+            e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             success = false;
         }
 
         var producer = (Producer)_producerManager.Get(producerRecoveryData.ProducerId);
         producer.ProducerData.LastRecoveryInfo =
-            new RecoveryInfo(recoveryFrom, now, requestId, _oddsFeedConfiguration.NodeId, success);
+            new RecoveryInfo(recoveryFrom, now, requestId, _config.NodeId, success);
     }
 
     private ProducerRecoveryData FindOrMakeProducerRecoveryData(int producerId) =>
@@ -443,7 +448,7 @@ internal class RecoveryManager : DispatcherBase, ISdkRecoveryManager
 
                 var aliveInterval = now - ( producerRecoveryData.LastSystemAliveReceivedTimestamp ?? 0L );
 
-                if (aliveInterval > Timestamp.FromSeconds(_oddsFeedConfiguration.MaxInactivitySeconds))
+                if (aliveInterval > Timestamp.FromSeconds(_config.MaxInactivitySeconds))
                 {
                     ProducerDown(
                         producerRecoveryData,
@@ -511,17 +516,27 @@ internal class RecoveryManager : DispatcherBase, ISdkRecoveryManager
 
         if (producerRecoveryData.IsFlaggedDown)
         {
-            Dispatch(EventProducerDown, eventArgs, nameof(EventProducerDown));
+            Dispatch(
+                EventProducerDown,
+                eventArgs,
+                nameof(EventProducerDown),
+                _config.ExceptionHandlingStrategy
+            );
         }
         else
         {
-            Dispatch(EventProducerUp, eventArgs, nameof(EventProducerUp));
+            Dispatch(
+                EventProducerUp,
+                eventArgs,
+                nameof(EventProducerUp),
+                _config.ExceptionHandlingStrategy
+            );
         }
     }
 
     private bool CalculateTiming(ProducerRecoveryData producerRecoveryData, long timestamp)
     {
-        var maxInactivity = Timestamp.FromSeconds(_oddsFeedConfiguration.MaxInactivitySeconds);
+        var maxInactivity = Timestamp.FromSeconds(_config.MaxInactivitySeconds);
         var messageProcessingDelay = timestamp - producerRecoveryData.LastProcessedMessageGenTimestamp;
         var userAliveDelay = timestamp - ( producerRecoveryData.LastUserSessionAliveReceivedTimestamp ?? 0L );
 

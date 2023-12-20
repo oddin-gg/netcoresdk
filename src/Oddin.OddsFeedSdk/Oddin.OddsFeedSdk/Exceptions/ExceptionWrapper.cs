@@ -11,9 +11,9 @@ internal interface IExceptionWrapper
 
 internal class ExceptionWrapper : IExceptionWrapper
 {
-    private readonly IFeedConfiguration _configuration;
+    private readonly IFeedConfiguration _config;
 
-    public ExceptionWrapper(IFeedConfiguration configuration) => _configuration = configuration;
+    public ExceptionWrapper(IFeedConfiguration config) => _config = config;
 
     public T Wrap<T>(Func<T> call)
     {
@@ -23,7 +23,7 @@ internal class ExceptionWrapper : IExceptionWrapper
         }
         catch (Exception)
         {
-            if (_configuration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
+            if (_config.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
             {
                 throw;
             }
@@ -40,7 +40,7 @@ internal class ExceptionWrapper : IExceptionWrapper
         }
         catch (Exception)
         {
-            if (_configuration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
+            if (_config.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
             {
                 throw;
             }

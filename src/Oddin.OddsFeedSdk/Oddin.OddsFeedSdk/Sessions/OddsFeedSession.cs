@@ -30,7 +30,7 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
 
     private readonly IAmqpClient _amqpClient;
     private readonly CacheManager _cacheManager;
-    private readonly IFeedConfiguration _configuration;
+    private readonly IFeedConfiguration _config;
     private readonly IFeedMessageMapper _feedMessageMapper;
     private readonly object _isOpenedLock = new();
     private readonly IProducerManager _producerManager;
@@ -41,7 +41,7 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
 
     public OddsFeedSession(
         IOddsFeed feed,
-        IFeedConfiguration configuration,
+        IFeedConfiguration config,
         IFeedMessageMapper feedMessageMapper,
         MessageInterest messageInterest,
         IProducerManager producerManager,
@@ -53,11 +53,11 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         IExchangeNameProvider exchangeNameProvider
     )
     {
-        _amqpClient = new AmqpClient(configuration, apiClient, onCallbackException, onConnectionShutdown,
+        _amqpClient = new AmqpClient(config, apiClient, onCallbackException, onConnectionShutdown,
             exchangeNameProvider);
         _feedMessageMapper = feedMessageMapper ?? throw new ArgumentNullException(nameof(feedMessageMapper));
         MessageInterest = messageInterest ?? throw new ArgumentNullException(nameof(messageInterest));
-        _configuration = configuration;
+        _config = config;
         _producerManager = producerManager;
         _recoveryMessageProcessor = recoveryMessageProcessor;
         _cacheManager = cacheManager;
@@ -94,8 +94,8 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         {
             var message =
                 $"An exception was thrown when creating an object of type {typeof(TMessageEventArgs).Name} from a message received form AMQP feed!";
-            _log.LogError($"{message} Exception: {e}");
-            if (_configuration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
+            _log.LogError("{Message} Exception: {E}", message, e);
+            if (_config.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
                 throw;
         }
     }
@@ -105,10 +105,15 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         var oddsChangeEventArgs = new OddsChangeEventArgs<ISportEvent>(
             _feedMessageMapper,
             eventArgs.FeedMessage,
-            new[] { _configuration.DefaultLocale },
+            new[] { _config.DefaultLocale },
             eventArgs.RawMessage);
 
-        Dispatch(OnOddsChange, oddsChangeEventArgs, nameof(OnOddsChange));
+        Dispatch(
+            OnOddsChange,
+            oddsChangeEventArgs,
+            nameof(OnOddsChange),
+            _config.ExceptionHandlingStrategy
+        );
     }
 
     private void CreateAndDispatchBetStop(object sender, SimpleMessageEventArgs<bet_stop> eventArgs)
@@ -116,10 +121,15 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         var betStopEventArgs = new BetStopEventArgs<ISportEvent>(
             _feedMessageMapper,
             eventArgs.FeedMessage,
-            new[] { _configuration.DefaultLocale },
+            new[] { _config.DefaultLocale },
             eventArgs.RawMessage);
 
-        Dispatch(OnBetStop, betStopEventArgs, nameof(OnBetStop));
+        Dispatch(
+            OnBetStop,
+            betStopEventArgs,
+            nameof(OnBetStop),
+            _config.ExceptionHandlingStrategy
+        );
     }
 
     private void CreateAndDispatchBetSettlement(object sender, SimpleMessageEventArgs<bet_settlement> eventArgs)
@@ -127,10 +137,15 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         var betSettlementEventArgs = new BetSettlementEventArgs<ISportEvent>(
             _feedMessageMapper,
             eventArgs.FeedMessage,
-            new[] { _configuration.DefaultLocale },
+            new[] { _config.DefaultLocale },
             eventArgs.RawMessage);
 
-        Dispatch(OnBetSettlement, betSettlementEventArgs, nameof(OnBetSettlement));
+        Dispatch(
+            OnBetSettlement,
+            betSettlementEventArgs,
+            nameof(OnBetSettlement),
+            _config.ExceptionHandlingStrategy
+        );
     }
 
     private void CreateAndDispatchRollbackBetSettlement(object sender,
@@ -139,10 +154,15 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         var rollbackBetSettlementEventArgs = new RollbackBetSettlementEventArgs<ISportEvent>(
             _feedMessageMapper,
             eventArgs.FeedMessage,
-            new[] { _configuration.DefaultLocale },
+            new[] { _config.DefaultLocale },
             eventArgs.RawMessage);
 
-        Dispatch(OnRollbackBetSettlement, rollbackBetSettlementEventArgs, nameof(OnRollbackBetSettlement));
+        Dispatch(
+            OnRollbackBetSettlement,
+            rollbackBetSettlementEventArgs,
+            nameof(OnRollbackBetSettlement),
+            _config.ExceptionHandlingStrategy
+        );
     }
 
     private void CreateAndDispatchRollbackBetCancel(object sender,
@@ -151,10 +171,15 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         var rollbackBetCancelEventArgs = new RollbackBetCancelEventArgs<ISportEvent>(
             _feedMessageMapper,
             eventArgs.FeedMessage,
-            new[] { _configuration.DefaultLocale },
+            new[] { _config.DefaultLocale },
             eventArgs.RawMessage);
 
-        Dispatch(OnRollbackBetCancel, rollbackBetCancelEventArgs, nameof(OnRollbackBetCancel));
+        Dispatch(
+            OnRollbackBetCancel,
+            rollbackBetCancelEventArgs,
+            nameof(OnRollbackBetCancel),
+            _config.ExceptionHandlingStrategy
+        );
     }
 
     private void CreateAndDispatchBetCancel(object sender, SimpleMessageEventArgs<bet_cancel> eventArgs)
@@ -162,10 +187,15 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         var betCancelEventArgs = new BetCancelEventArgs<ISportEvent>(
             _feedMessageMapper,
             eventArgs.FeedMessage,
-            new[] { _configuration.DefaultLocale },
+            new[] { _config.DefaultLocale },
             eventArgs.RawMessage);
 
-        Dispatch(OnBetCancel, betCancelEventArgs, nameof(OnBetCancel));
+        Dispatch(
+            OnBetCancel,
+            betCancelEventArgs,
+            nameof(OnBetCancel),
+            _config.ExceptionHandlingStrategy
+        );
     }
 
     private void CreateAndDispatchFixtureChange(object sender, SimpleMessageEventArgs<fixture_change> eventArgs)
@@ -173,10 +203,15 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         var fixtureChangeEventArgs = new FixtureChangeEventArgs<ISportEvent>(
             _feedMessageMapper,
             eventArgs.FeedMessage,
-            new[] { _configuration.DefaultLocale },
+            new[] { _config.DefaultLocale },
             eventArgs.RawMessage);
 
-        Dispatch(OnFixtureChange, fixtureChangeEventArgs, nameof(OnFixtureChange));
+        Dispatch(
+            OnFixtureChange,
+            fixtureChangeEventArgs,
+            nameof(OnFixtureChange),
+            _config.ExceptionHandlingStrategy
+        );
     }
 
     private void PublishUnparsableMessage(byte[] messageBody, string messageRoutingKey)
@@ -192,13 +227,16 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         }
         catch (ArgumentException)
         {
-            if (_configuration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
+            if (_config.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
                 throw;
         }
 
-        Dispatch(OnUnparsableMessageReceived,
+        Dispatch(
+            OnUnparsableMessageReceived,
             new UnparsableMessageEventArgs(messageType, producer, eventId, messageBody),
-            nameof(OnUnparsableMessageReceived));
+            nameof(OnUnparsableMessageReceived),
+            _config.ExceptionHandlingStrategy
+        );
     }
 
     private void PublishRawMessage(byte[] messageBody, string messageRoutingKey)
@@ -214,14 +252,20 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         }
         catch (ArgumentException)
         {
-            if (_configuration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
+            if (_config.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
                 throw;
         }
 
-        Dispatch(OnRawFeedMessageReceived,
-            new RawMessageEventArgs(messageType, MessageInterest, messageRoutingKey, producer, eventId,
-                messageBody),
-            nameof(OnRawFeedMessageReceived));
+        Dispatch(
+            OnRawFeedMessageReceived,
+            new RawMessageEventArgs(
+                messageType, MessageInterest,
+                messageRoutingKey,
+                producer, eventId,
+                messageBody
+            ),
+            nameof(OnRawFeedMessageReceived),
+            _config.ExceptionHandlingStrategy);
     }
 
     private bool TryGetMessageSentTime(BasicDeliverEventArgs eventArgs, out long sentTime)
@@ -259,7 +303,7 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         var producer = (Producer)_producerManager.Get(producerId);
         if (producer == null)
         {
-            _log.LogDebug($"Unknown producer {producerId} sending message - {feedMessage}");
+            _log.LogDebug("Unknown producer {ProducerId} sending message - {FeedMessage}", producerId, feedMessage);
             return false;
         }
 
@@ -287,7 +331,7 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
     {
         var receivedAt = Timestamp.Now();
         var body = eventArgs.Body.ToArray();
-        var xml = body == null ? "" : Encoding.UTF8.GetString(body);
+        var xml = Encoding.UTF8.GetString(body);
 
         // publish to raw message handler
         PublishRawMessage(body, eventArgs.RoutingKey);

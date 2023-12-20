@@ -13,12 +13,12 @@ namespace Oddin.OddsFeedSdk.Managers;
 
 internal class ProducerManager : IProducerManager
 {
-    private readonly IFeedConfiguration _configuration;
+    private readonly IFeedConfiguration _config;
     private bool _locked;
 
-    public ProducerManager(IApiClient apiClient, IFeedConfiguration configuration)
+    public ProducerManager(IApiClient apiClient, IFeedConfiguration config)
     {
-        _configuration = configuration;
+        _config = config;
         Producers = apiClient
             .GetProducers()
             .ToList();
@@ -149,7 +149,7 @@ internal class ProducerManager : IProducerManager
                 "Unknown",
                 "Unknown producer",
                 true,
-                _configuration.ApiHost,
+                _config.ApiHost,
                 "live|prematch",
                 SdkDefaults.StatefulRecoveryWindowInMinutes
             ));

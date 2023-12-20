@@ -16,11 +16,11 @@ internal class OutcomeSettlement : Outcome, IOutcomeSettlement
         int result,
         double? voidFactor,
         IMarketDescriptionFactory marketDescriptionFactory,
-        IFeedConfiguration configuration,
+        IFeedConfiguration config,
         int marketId,
         IReadOnlyDictionary<string, string> marketSpecifiers,
         ISportEvent sportEvent)
-        : base(id, refId, marketDescriptionFactory, configuration, marketId, marketSpecifiers, sportEvent)
+        : base(id, refId, marketDescriptionFactory, config, marketId, marketSpecifiers, sportEvent)
     {
         DeadHeatFactor = deadHeatFactor;
 

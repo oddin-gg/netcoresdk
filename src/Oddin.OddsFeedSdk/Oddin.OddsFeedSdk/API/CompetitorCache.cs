@@ -9,6 +9,7 @@ using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API;
 
@@ -19,12 +20,17 @@ internal class CompetitorCache : ICompetitorCache
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(CompetitorCache));
     private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(24);
+    private readonly IFeedConfiguration _config;
     private readonly Semaphore _semaphore = new(1, 1);
     private readonly IDisposable _subscription;
 
-    public CompetitorCache(IApiClient apiClient)
+    public CompetitorCache(
+        IApiClient apiClient,
+        IFeedConfiguration config
+    )
     {
         _apiClient = apiClient;
+        _config = config;
 
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
@@ -47,7 +53,7 @@ internal class CompetitorCache : ICompetitorCache
                     _semaphore.WaitOne();
                     try
                     {
-                        _log.LogDebug($"Updating Competitor cache from API: {response.Data.GetType()}");
+                        _log.LogDebug("Updating Competitor cache from API: {Type}", response.Data.GetType());
                         HandleTeamData(response.Culture, competitors);
                     }
                     finally
@@ -114,7 +120,8 @@ internal class CompetitorCache : ICompetitorCache
             }
             catch (Exception e)
             {
-                _log.LogError($"Error while fetching competitor profile {e}");
+                _log.LogError("Error while fetching competitor profile {E}", e);
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
                 continue;
             }
 
@@ -124,7 +131,8 @@ internal class CompetitorCache : ICompetitorCache
             }
             catch (Exception e)
             {
-                _log.LogError($"Error while refreshing competitor {e}");
+                _log.LogError("Error while refreshing competitor {E}", e);
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             }
         }
     }

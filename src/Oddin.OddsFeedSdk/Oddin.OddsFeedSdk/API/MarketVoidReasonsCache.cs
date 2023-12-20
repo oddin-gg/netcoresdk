@@ -8,6 +8,7 @@ using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API;
 
@@ -19,9 +20,17 @@ internal class MarketVoidReasonsCache : IMarketVoidReasonsCache
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(MarketVoidReasonsCache));
     private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(24);
+    private readonly IFeedConfiguration _config;
     private readonly object _lock = new();
 
-    public MarketVoidReasonsCache(IApiClient apiClient) => _apiClient = apiClient;
+    public MarketVoidReasonsCache(
+        IApiClient apiClient,
+        IFeedConfiguration config
+    )
+    {
+        _apiClient = apiClient;
+        _config = config;
+    }
 
     public IEnumerable<IMarketVoidReason> GetMarketVoidReasons()
     {
@@ -51,7 +60,8 @@ internal class MarketVoidReasonsCache : IMarketVoidReasonsCache
         }
         catch (Exception e)
         {
-            _log.LogError($"Unable to get void reasons descriptions from api {e}");
+            _log.LogError("Unable to get void reasons descriptions from api {E}", e);
+            e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             return null;
         }
 

@@ -19,7 +19,7 @@ internal class OutcomeOdds : OutcomeProbabilities, IOutcomeOdds
         string outcomeId,
         long outcomeRefId,
         IMarketDescriptionFactory marketDescriptionFactory,
-        IFeedConfiguration configuration,
+        IFeedConfiguration config,
         int marketId,
         IReadOnlyDictionary<string, string> marketSpecifiers,
         ISportEvent sportEvent)
@@ -30,7 +30,7 @@ internal class OutcomeOdds : OutcomeProbabilities, IOutcomeOdds
             outcomeId,
             outcomeRefId,
             marketDescriptionFactory,
-            configuration,
+            config,
             marketId,
             marketSpecifiers,
             sportEvent) =>

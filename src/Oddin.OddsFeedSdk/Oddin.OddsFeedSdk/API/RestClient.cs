@@ -56,8 +56,8 @@ internal class RestClient : IRestClient, IDisposable
         }
         catch (Exception e)
         {
-            _log.LogError(
-                $"An exception was thrown while waiting for a result of [{method} to {CombineAddress(route)}]!");
+            _log.LogError("An exception was thrown while waiting for a result of [{Method} to {CombineAddress}]!",
+                method, CombineAddress(route));
 
             throw new CommunicationException(
                 "An exception was thrown while waiting for a result of API request!",
@@ -69,7 +69,8 @@ internal class RestClient : IRestClient, IDisposable
 
         if (result.Successful == false)
         {
-            _log.LogError($"API request [{method} to {CombineAddress(route)}] failed. Reason: {result.Message}");
+            _log.LogError("API request [{Method} to {CombineAddress}] failed. Reason: {ResultMessage}", method,
+                CombineAddress(route), result.Message);
 
             throw new CommunicationException(
                 "API request failed!",
@@ -105,8 +106,8 @@ internal class RestClient : IRestClient, IDisposable
         }
         catch (Exception e)
         {
-            _log.LogError(
-                $"An exception was thrown while waiting for a result of [{method} to {CombineAddress(route)}]!");
+            _log.LogError("An exception was thrown while waiting for a result of [{Method} to {CombineAddress}]!",
+                method, CombineAddress(route));
 
             throw new CommunicationException(
                 "An exception was thrown while waiting for a result of API request!",
@@ -118,7 +119,8 @@ internal class RestClient : IRestClient, IDisposable
 
         if (result.Successful == false)
         {
-            _log.LogError($"API request [{method} to {CombineAddress(route)}] failed. Reason: {result.Message}");
+            _log.LogError("API request [{Method} to {CombineAddress}] failed. Reason: {ResultMessage}", method,
+                CombineAddress(route), result.Message);
 
             throw new CommunicationException(
                 "API request failed!",
@@ -177,7 +179,8 @@ internal class RestClient : IRestClient, IDisposable
 
         var requestResultString = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-        _log.LogTrace($"Http response: {httpResponse}, http response content: {requestResultString}");
+        _log.LogTrace("Http response: {HttpResponse}, http response content: {RequestResultString}", httpResponse,
+            requestResultString);
 
         if (httpResponse.IsSuccessStatusCode == false)
         {
@@ -189,7 +192,7 @@ internal class RestClient : IRestClient, IDisposable
                     culture: culture);
             return RequestResult<TData>.Failure(
                 failureMessage:
-                $"Received failure http status code: {httpResponse?.StatusCode} {httpResponse?.ReasonPhrase}",
+                $"Received failure http status code: {httpResponse.StatusCode} {httpResponse.ReasonPhrase}",
                 responseCode: httpResponse.StatusCode);
         }
 

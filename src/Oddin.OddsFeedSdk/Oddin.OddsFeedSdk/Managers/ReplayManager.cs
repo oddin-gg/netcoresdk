@@ -16,13 +16,13 @@ internal class ReplayManager : IReplayManager
     private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(ReplayManager));
     private readonly IApiClient _apiClient;
 
-    private readonly IFeedConfiguration _feedConfiguration;
+    private readonly IFeedConfiguration _config;
     private readonly ISportDataProvider _sportsDataProvider;
 
-    public ReplayManager(IFeedConfiguration feedConfiguration, IApiClient apiClient,
+    public ReplayManager(IFeedConfiguration config, IApiClient apiClient,
         ISportDataProvider sportsDataProvider)
     {
-        _feedConfiguration = feedConfiguration;
+        _config = config;
         _apiClient = apiClient;
         _sportsDataProvider = sportsDataProvider;
     }
@@ -31,16 +31,17 @@ internal class ReplayManager : IReplayManager
     {
         try
         {
-            var data = await _apiClient.GetReplaySetContent(_feedConfiguration.NodeId);
+            var data = await _apiClient.GetReplaySetContent(_config.NodeId);
 
             return data?.replay_event?
                        .Where(e => e.id != null)
-                       .Select(e => string.IsNullOrEmpty(e?.id) ? null : new URN(e.id))
+                       .Select(e => string.IsNullOrEmpty(e.id) ? null : new URN(e.id))
                    ?? Enumerable.Empty<URN>();
         }
         catch (Exception e)
         {
-            _log.LogError($"Failed to fetch replay events with error: {e}");
+            _log.LogError("Failed to fetch replay events with error: {E}", e);
+            e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             return null;
         }
     }
@@ -49,16 +50,17 @@ internal class ReplayManager : IReplayManager
     {
         try
         {
-            var data = await _apiClient.GetReplaySetContent(_feedConfiguration.NodeId);
+            var data = await _apiClient.GetReplaySetContent(_config.NodeId);
 
             return data?.replay_event?
                        .Where(e => e.id != null)
-                       .Select(e => _sportsDataProvider.GetMatch(string.IsNullOrEmpty(e?.id) ? null : new URN(e.id)))
+                       .Select(e => _sportsDataProvider.GetMatch(string.IsNullOrEmpty(e.id) ? null : new URN(e.id)))
                    ?? Enumerable.Empty<ISportEvent>();
         }
         catch (Exception e)
         {
-            _log.LogError($"Failed to fetch replay events with error: {e}");
+            _log.LogError("Failed to fetch replay events with error: {E}", e);
+            e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             return null;
         }
     }
@@ -75,11 +77,12 @@ internal class ReplayManager : IReplayManager
     {
         try
         {
-            return await _apiClient.PutReplayEvent(eventId, _feedConfiguration.NodeId);
+            return await _apiClient.PutReplayEvent(eventId, _config.NodeId);
         }
         catch (Exception e)
         {
-            _log.LogError($"Failed to add replay events with error: {e}");
+            _log.LogError("Failed to add replay events with error: {E}", e);
+            e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             return false;
         }
     }
@@ -96,11 +99,12 @@ internal class ReplayManager : IReplayManager
     {
         try
         {
-            return await _apiClient.DeleteReplayEvent(eventId, _feedConfiguration.NodeId);
+            return await _apiClient.DeleteReplayEvent(eventId, _config.NodeId);
         }
         catch (Exception e)
         {
-            _log.LogError($"Failed to remove event id {eventId} with error: {e}");
+            _log.LogError("Failed to remove event id {EventId} with error: {E}", eventId, e);
+            e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             return false;
         }
     }
@@ -111,7 +115,7 @@ internal class ReplayManager : IReplayManager
         try
         {
             return await _apiClient.PostReplayStart(
-                _feedConfiguration.NodeId,
+                _config.NodeId,
                 speed,
                 maxDelay,
                 useReplayTimestamp,
@@ -120,7 +124,8 @@ internal class ReplayManager : IReplayManager
         }
         catch (Exception e)
         {
-            _log.LogError($"Failed play replay with error: {e}");
+            _log.LogError("Failed play replay with error: {E}", e);
+            e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             return false;
         }
     }
@@ -129,11 +134,12 @@ internal class ReplayManager : IReplayManager
     {
         try
         {
-            return await _apiClient.PostReplayStop(_feedConfiguration.NodeId);
+            return await _apiClient.PostReplayStop(_config.NodeId);
         }
         catch (Exception e)
         {
-            _log.LogError($"Failed to clear replay with: {e}");
+            _log.LogError("Failed to clear replay with: {E}", e);
+            e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             return false;
         }
     }
@@ -142,11 +148,12 @@ internal class ReplayManager : IReplayManager
     {
         try
         {
-            return await _apiClient.PostReplayClear(_feedConfiguration.NodeId);
+            return await _apiClient.PostReplayClear(_config.NodeId);
         }
         catch (Exception e)
         {
-            _log.LogError($"Failed to clear replay with: {e}");
+            _log.LogError("Failed to clear replay with: {E}", e);
+            e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             return false;
         }
     }
@@ -160,7 +167,8 @@ internal class ReplayManager : IReplayManager
         }
         catch (Exception e)
         {
-            _log.LogError($"Failed to get replay status: {e}");
+            _log.LogError("Failed to get replay status: {E}", e);
+            e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             return null;
         }
     }

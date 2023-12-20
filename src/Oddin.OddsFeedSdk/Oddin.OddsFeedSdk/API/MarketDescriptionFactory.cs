@@ -11,19 +11,19 @@ namespace Oddin.OddsFeedSdk.API;
 
 internal class MarketDescriptionFactory : IMarketDescriptionFactory
 {
-    private readonly IFeedConfiguration _feedConfiguration;
+    private readonly IFeedConfiguration _config;
     private readonly IMarketDescriptionCache _marketDescriptionCache;
     private readonly IMarketVoidReasonsCache _marketVoidReasonsCache;
 
     public MarketDescriptionFactory(
-        IFeedConfiguration feedConfiguration,
+        IFeedConfiguration config,
         IMarketDescriptionCache marketDescriptionCache,
         IMarketVoidReasonsCache marketVoidReasonsCache,
         IPlayerCache playerCache,
         ICompetitorCache competitorCache
     )
     {
-        _feedConfiguration = feedConfiguration;
+        _config = config;
         _marketDescriptionCache = marketDescriptionCache;
         _marketVoidReasonsCache = marketVoidReasonsCache;
         PlayerCache = playerCache;
@@ -43,7 +43,7 @@ internal class MarketDescriptionFactory : IMarketDescriptionFactory
 
         if (mds == null)
         {
-            if (_feedConfiguration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
+            if (_config.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
             {
                 throw new ItemNotFoundException(marketId.ToString(), "Market description not found");
             }
@@ -57,7 +57,7 @@ internal class MarketDescriptionFactory : IMarketDescriptionFactory
             mds.OutcomeType,
             variant,
             _marketDescriptionCache,
-            _feedConfiguration.ExceptionHandlingStrategy,
+            _config.ExceptionHandlingStrategy,
             cultures.ToHashSet());
     }
 
@@ -72,7 +72,7 @@ internal class MarketDescriptionFactory : IMarketDescriptionFactory
                 o.Value.OutcomeType,
                 o.Key.Variant,
                 _marketDescriptionCache,
-                _feedConfiguration.ExceptionHandlingStrategy,
+                _config.ExceptionHandlingStrategy,
                 new[] { culture }));
     }
 
