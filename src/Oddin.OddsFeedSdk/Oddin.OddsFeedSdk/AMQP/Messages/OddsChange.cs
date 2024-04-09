@@ -226,12 +226,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         [XmlAttribute] public int game_time { get; set; }
         [XmlAttribute] public int current_def_team { get; set; }
         // VirtualBasketballScoreboard
+        // TableTennis
         [XmlAttribute] public int home_points { get; set; }
         [XmlAttribute] public int away_points { get; set; }
         [XmlAttribute] public int remaining_game_time { get; set; }
-        // TableTennis
-        [XmlAttribute] public int home_games { get; set; }
-        [XmlAttribute] public int away_games { get; set; }
         // eCricket
         [XmlAttribute] public int home_runs { get; set; }
         [XmlAttribute] public int away_runs { get; set; }

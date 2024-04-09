@@ -22,14 +22,11 @@ public interface IScoreboard
     int? CurrentDefenderTeam { get; }
 
     // VirtualBasketballScoreboard
+    // TableTennis
     int? HomePoints { get; }
     int? AwayPoints { get; }
 
     int? RemainingGameTime { get; }
-
-    // TableTennis
-    int? HomeGames { get; }
-    int? AwayGames { get; }
 
     // eCricket
     int? HomeRuns { get; }

@@ -23,12 +23,10 @@ internal class Scoreboard : IScoreboard
         int? gameTime,
         int? currentDefenderTeam,
         // VirtualBasketballScoreboard
+        // TableTennis
         int? homePoints,
         int? awayPoints,
         int? remainingGameTime,
-        // TableTennis
-        int? homeGames,
-        int? awayGames,
         // eCricket
         int? homeRuns,
         int? awayRuns,
@@ -62,12 +60,10 @@ internal class Scoreboard : IScoreboard
         GameTime = gameTime;
         CurrentDefenderTeam = currentDefenderTeam;
         // VirtualBasketballScoreboard
+        // TableTennis
         HomePoints = homePoints;
         AwayPoints = awayPoints;
         RemainingGameTime = remainingGameTime;
-        // TableTennis
-        HomeGames = homeGames;
-        AwayGames = awayGames;
         // eCricket
         HomeRuns = homeRuns;
         AwayRuns = awayRuns;
@@ -82,10 +78,6 @@ internal class Scoreboard : IScoreboard
         AwayBatting = awayBatting;
         Inning = inning;
     }
-
-    // TableTennis
-    public int? HomeGames { get; }
-    public int? AwayGames { get; }
 
     public int? CurrentCtTeam { get; }
     public int? HomeWonRounds { get; }
