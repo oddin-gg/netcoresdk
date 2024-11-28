@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.Abstractions;
@@ -389,12 +390,16 @@ public class Feed : DispatcherBase, IOddsFeed
         _isDisposed = true;
     }
 
-    private void OnAmqpCallbackException(object sender, CallbackExceptionEventArgs eventArgs) => Dispatch(
-        ConnectionException, new ConnectionExceptionEventArgs(eventArgs.Exception, eventArgs.Detail),
-        nameof(ConnectionException));
+    private Task OnAmqpCallbackException(object sender, CallbackExceptionEventArgs eventArgs)
+    {
+        Dispatch(
+            ConnectionException, new ConnectionExceptionEventArgs(eventArgs.Exception, eventArgs.Detail),
+            nameof(ConnectionException));
+        return Task.CompletedTask;
+    }
 
     // This method is called when Rabbit library informs that the connection has been shut down
-    private void OnConnectionShutdown(object sender, ShutdownEventArgs shutdownEventArgs)
+    private Task OnConnectionShutdown(object sender, ShutdownEventArgs shutdownEventArgs)
     {
         _log.LogWarning(
             $"The AMQP connection was shut down. {shutdownEventArgs.ReplyCode} {shutdownEventArgs.ReplyText} Initiator: {shutdownEventArgs.Initiator} Cause: {shutdownEventArgs.Cause}");
@@ -406,6 +411,7 @@ public class Feed : DispatcherBase, IOddsFeed
         else
             Dispatch(Closed, new FeedCloseEventArgs($"{shutdownEventArgs.ReplyCode} {shutdownEventArgs.ReplyText}"),
                 nameof(Closed));
+        return Task.CompletedTask;
     }
 
     internal IOddsFeedSession BuildSession(MessageInterest messageInterest)
