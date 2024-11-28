@@ -429,7 +429,7 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         }
     }
 
-    public void Open(IEnumerable<string> routingKeys)
+    public async Task Open(IEnumerable<string> routingKeys)
     {
         if (TrySetAsOpened() == false)
             throw new InvalidOperationException(
@@ -438,7 +438,7 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         AttachEvents();
         try
         {
-            _amqpClient.Connect(MessageInterest, routingKeys);
+            await _amqpClient.Connect(MessageInterest, routingKeys);
         }
         catch (CommunicationException)
         {
@@ -447,9 +447,9 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         }
     }
 
-    public void Close()
+    public async Task Close()
     {
-        _amqpClient.Disconnect();
+        await _amqpClient.Disconnect();
         DetachEvents();
         SetAsClosed();
     }

@@ -105,7 +105,7 @@ public class Feed : DispatcherBase, IOddsFeed
         }
     }
 
-    public void Open()
+    public async Task Open()
     {
         if (TrySetAsOpened() == false)
             throw new InvalidOperationException($"{nameof(Open)} cannot be called when the feed is already opened!");
@@ -144,7 +144,7 @@ public class Feed : DispatcherBase, IOddsFeed
         if (!hasAliveMessageInterest && !replayOnly)
         {
             _possibleAliveSession = NewSession(MessageInterest.SystemAliveOnlyMessages);
-            _possibleAliveSession.Open(MessageInterest.SystemAliveOnlyMessages.RoutingKeys);
+            await _possibleAliveSession.Open(MessageInterest.SystemAliveOnlyMessages.RoutingKeys);
         }
 
         AttachToEvents();
@@ -156,13 +156,13 @@ public class Feed : DispatcherBase, IOddsFeed
             {
                 var found = sessionRoutingKeys.TryGetValue(session.SessionId, out var routingKeys);
                 if (!found) throw new InvalidOperationException("Missing routing keys for session");
-                session.Open(routingKeys);
+                await session.Open(routingKeys);
             }
         }
         catch (Exception)
         {
             foreach (var openSession in _sessions.Where(s => s.IsOpened()))
-                openSession.Close();
+                await openSession.Close();
 
             DetachFromEvents();
             SetAsClosed();
@@ -172,23 +172,17 @@ public class Feed : DispatcherBase, IOddsFeed
         _recoveryManager.Open(replayOnly);
     }
 
-    public void Close()
+    public async Task Close()
     {
         _log.LogInformation($"Closing {typeof(Feed)}...");
 
         foreach (var session in _sessions)
-            session.Close();
+            await session.Close();
 
         ( (RecoveryManager)_recoveryManager ).Close();
 
         DetachFromEvents();
         SetAsClosed();
-    }
-
-    void IDisposable.Dispose()
-    {
-        InternalDispose(true);
-        GC.SuppressFinalize(this);
     }
 
     public IOddsFeedSessionBuilder CreateBuilder()
@@ -366,12 +360,12 @@ public class Feed : DispatcherBase, IOddsFeed
         return result;
     }
 
-    private void InternalDispose(bool disposing)
+    private async Task InternalDispose(bool disposing)
     {
         if (_isDisposed)
             return;
 
-        Close();
+        await Close();
 
         if (disposing)
         {
@@ -441,4 +435,9 @@ public class Feed : DispatcherBase, IOddsFeed
             OnConnectionShutdown,
             Services.GetService<IExchangeNameProvider>()
         );
+
+    public async ValueTask DisposeAsync() {
+        await InternalDispose(true);
+        GC.SuppressFinalize(this);
+    }
 }
