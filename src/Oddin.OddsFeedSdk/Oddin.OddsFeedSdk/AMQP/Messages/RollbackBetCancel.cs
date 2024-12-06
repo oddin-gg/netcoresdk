@@ -34,6 +34,14 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
 
         private bool request_idFieldSpecified;
 
+        private long start_timeField;
+
+        private bool start_timeFieldSpecified;
+
+        private long end_timeField;
+
+        private bool end_timeFieldSpecified;
+
         public override long GeneratedAt => timestamp;
 
         public override int ProducerId => product;
@@ -102,6 +110,50 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
             }
             set {
                 this.request_idFieldSpecified = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public long start_time {
+            get {
+                return this.start_timeField;
+            }
+            set {
+                this.start_timeField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool start_timeSpecified {
+            get {
+                return this.start_timeFieldSpecified;
+            }
+            set {
+                this.start_timeFieldSpecified = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public long end_time {
+            get {
+                return this.end_timeField;
+            }
+            set {
+                this.end_timeField = value;
+            }
+        }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool end_timeSpecified {
+            get {
+                return this.end_timeFieldSpecified;
+            }
+            set {
+                this.end_timeFieldSpecified = value;
             }
         }
     }
