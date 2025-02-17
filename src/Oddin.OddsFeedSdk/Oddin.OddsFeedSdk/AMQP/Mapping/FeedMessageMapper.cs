@@ -17,21 +17,21 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping;
 internal class FeedMessageMapper : IFeedMessageMapper
 {
     public const MarketStatus DEFAULT_MARKET_STATUS = MarketStatus.SUSPENDED;
-    private readonly IFeedConfiguration _configuration;
+    private readonly IFeedConfiguration _config;
     private readonly IMarketDescriptionFactory _marketDescriptionFactory;
     private readonly IProducerManager _producerManager;
     private readonly ISportDataBuilder _sportDataBuilder;
 
     public FeedMessageMapper(
         IProducerManager producerManager,
-        IFeedConfiguration configuration,
+        IFeedConfiguration config,
         IMarketDescriptionFactory marketDescriptionFactory,
         ISportDataBuilder sportDataBuilder)
     {
         _producerManager = producerManager;
         _marketDescriptionFactory = marketDescriptionFactory;
         _sportDataBuilder = sportDataBuilder;
-        _configuration = configuration;
+        _config = config;
     }
 
     public IOddsChange<T> MapOddsChange<T>(odds_change message, IEnumerable<CultureInfo> cultures, byte[] rawMessage)
@@ -324,7 +324,7 @@ internal class FeedMessageMapper : IFeedMessageMapper
             outcome.id,
             outcome.refid,
             _marketDescriptionFactory,
-            _configuration,
+            _config,
             marketId,
             marketSpecifiers,
             sportEvent
@@ -349,7 +349,7 @@ internal class FeedMessageMapper : IFeedMessageMapper
             oddsChangeMarket.extended_specifiers,
             oddsChangeMarket.groups?.Split("|"),
             _marketDescriptionFactory,
-            _configuration.ExceptionHandlingStrategy,
+            _config.ExceptionHandlingStrategy,
             marketStatus,
             oddsChangeMarket.favouriteSpecified && oddsChangeMarket.favourite == 1,
             oddsChangeMarket.outcome?.Select(outcome =>
@@ -381,7 +381,7 @@ internal class FeedMessageMapper : IFeedMessageMapper
     private ISportEvent MapSportEvent(URN id, URN sport, IEnumerable<CultureInfo> cultures)
     {
         if (cultures is null || cultures.Any() == false)
-            cultures = new[] { _configuration.DefaultLocale };
+            cultures = new[] { _config.DefaultLocale };
 
         switch (id?.Type)
         {
@@ -410,7 +410,7 @@ internal class FeedMessageMapper : IFeedMessageMapper
             null,
             _marketDescriptionFactory,
             sportEvent,
-            _configuration.ExceptionHandlingStrategy
+            _config.ExceptionHandlingStrategy
         );
     }
 
@@ -429,7 +429,7 @@ internal class FeedMessageMapper : IFeedMessageMapper
             null,
             _marketDescriptionFactory,
             sportEvent,
-            _configuration.ExceptionHandlingStrategy
+            _config.ExceptionHandlingStrategy
         );
     }
 
@@ -451,7 +451,7 @@ internal class FeedMessageMapper : IFeedMessageMapper
             GetOutcomeSettlements(message.Items, message.id, specifiers, sportEvent),
             _marketDescriptionFactory,
             sportEvent,
-            _configuration.ExceptionHandlingStrategy,
+            _config.ExceptionHandlingStrategy,
             message.void_reasonSpecified ? message.void_reason : default,
             message.void_reason_idSpecified ? message.void_reason_id : default,
             message.void_reason_paramsSpecified ? message.void_reason_params : default
@@ -471,7 +471,7 @@ internal class FeedMessageMapper : IFeedMessageMapper
                 b.result,
                 b.void_factorSpecified ? b.void_factor : default(double?),
                 _marketDescriptionFactory,
-                _configuration,
+                _config,
                 marketId,
                 marketSpecifiers,
                 sportEvent
@@ -491,7 +491,7 @@ internal class FeedMessageMapper : IFeedMessageMapper
             message.groups?.Split("|"),
             _marketDescriptionFactory,
             sportEvent,
-            _configuration.ExceptionHandlingStrategy,
+            _config.ExceptionHandlingStrategy,
             message.void_reasonSpecified ? message.void_reason : default,
             message.void_reason_idSpecified ? message.void_reason_id : default,
             message.void_reason_paramsSpecified ? message.void_reason_params : default

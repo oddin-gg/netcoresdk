@@ -11,7 +11,7 @@ internal static class Extensions
     public static void HandleAccordingToStrategy(this Exception exception, string catcher, ILogger logger,
         ExceptionHandlingStrategy exceptionHandlingStrategy)
     {
-        logger.LogWarning($"An exception was caught in {catcher}, exception {exception}");
+        logger.LogWarning("An exception was caught in {Catcher}, exception {Exception}", catcher, exception);
         if (exceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
             throw exception;
     }

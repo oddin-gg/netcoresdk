@@ -8,6 +8,7 @@ using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API;
 
@@ -18,11 +19,19 @@ internal class MarketDescriptionCache : IMarketDescriptionCache
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(MarketDescriptionCache));
     private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(24);
+    private readonly IFeedConfiguration _config;
 
     private readonly HashSet<CultureInfo> _loadedLocals = new();
     private readonly object _lock = new();
 
-    public MarketDescriptionCache(IApiClient apiClient) => _apiClient = apiClient;
+    public MarketDescriptionCache(
+        IApiClient apiClient,
+        IFeedConfiguration config
+    )
+    {
+        _apiClient = apiClient;
+        _config = config;
+    }
 
     public IReadOnlyDictionary<CompositeKey, LocalizedMarketDescription> LocalizedMarketDescriptions(
         CultureInfo culture)
@@ -86,7 +95,7 @@ internal class MarketDescriptionCache : IMarketDescriptionCache
             MarketDescriptionsModel marketDescriptions;
             try
             {
-                if (marketId > 0 && variant != null && isMarketVariantWithDynamicOutcomes(variant))
+                if (marketId > 0 && variant != null && IsMarketVariantWithDynamicOutcomes(variant))
                 {
                     marketDescriptions = _apiClient
                         .GetMarketDescriptionsWithDynamicOutcomesAsync(marketId, variant, culture)
@@ -105,7 +114,8 @@ internal class MarketDescriptionCache : IMarketDescriptionCache
             }
             catch (Exception e)
             {
-                _log.LogError($"Unable to get market descriptions from api for culture {culture} {e}");
+                _log.LogError("Unable to get market descriptions from api for culture {Culture} {E}", culture, e);
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
                 continue;
             }
 
@@ -117,7 +127,9 @@ internal class MarketDescriptionCache : IMarketDescriptionCache
                 }
                 catch (Exception e)
                 {
-                    _log.LogError($"Unable to refresh market descriptions in cache for culture {culture} {e}");
+                    _log.LogError("Unable to refresh market descriptions in cache for culture {Culture} {E}", culture,
+                        e);
+                    e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
                 }
 
                 _loadedLocals.Add(culture);
@@ -162,6 +174,6 @@ internal class MarketDescriptionCache : IMarketDescriptionCache
         _cache.Set(key.Key, item, _cacheTtl.AsCachePolicy());
     }
 
-    private bool isMarketVariantWithDynamicOutcomes(string marketVariant) =>
+    private bool IsMarketVariantWithDynamicOutcomes(string marketVariant) =>
         marketVariant.StartsWith("od:dynamic_outcomes:");
 }

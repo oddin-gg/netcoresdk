@@ -3,17 +3,22 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Timers;
+using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
+using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API;
 
 internal class LocalizedStaticDataOfMatchStatusCache : ILocalizedStaticDataCache, IDisposable
 {
+    private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(LocalizedStaticDataOfMatchStatusCache));
+
     private readonly IApiClient _apiClient;
+    private readonly IFeedConfiguration _config;
 
     private readonly IEnumerable<CultureInfo> _locales;
     private readonly object _lock = new();
@@ -23,10 +28,11 @@ internal class LocalizedStaticDataOfMatchStatusCache : ILocalizedStaticDataCache
 
     private readonly Timer _timer;
 
-    public LocalizedStaticDataOfMatchStatusCache(IFeedConfiguration feedConfiguration, IApiClient apiClient)
+    public LocalizedStaticDataOfMatchStatusCache(IFeedConfiguration config, IApiClient apiClient)
     {
         _apiClient = apiClient;
-        _locales = new[] { feedConfiguration.DefaultLocale };
+        _config = config;
+        _locales = new[] { config.DefaultLocale };
         _timer = new Timer
         {
             Interval = TimeSpan.FromHours(24).TotalMilliseconds,
@@ -87,8 +93,9 @@ internal class LocalizedStaticDataOfMatchStatusCache : ILocalizedStaticDataCache
             {
                 statusModel = _apiClient.GetMatchStatusDescriptions(culture);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
                 return false;
             }
 

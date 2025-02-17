@@ -10,6 +10,7 @@ using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API;
 
@@ -20,12 +21,17 @@ internal class MatchCache : IMatchCache
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(MatchCache));
     private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(12);
+    private readonly IFeedConfiguration _config;
     private readonly Semaphore _semaphore = new(1, 1);
     private readonly IDisposable _subscription;
 
-    public MatchCache(IApiClient apiClient)
+    public MatchCache(
+        IApiClient apiClient,
+        IFeedConfiguration config
+    )
     {
         _apiClient = apiClient;
+        _config = config;
 
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
@@ -47,7 +53,7 @@ internal class MatchCache : IMatchCache
                     _semaphore.WaitOne();
                     try
                     {
-                        _log.LogDebug($"Updating Match cache from API: {response.Data.GetType()}");
+                        _log.LogDebug("Updating Match cache from API: {Type}", response.Data.GetType());
                         HandleMatchData(response.Culture, matches);
                     }
                     finally
@@ -66,7 +72,7 @@ internal class MatchCache : IMatchCache
 
         if (id != null)
         {
-            _log.LogDebug($"Invalidating Tournament cache from FEED for: {id}");
+            _log.LogDebug("Invalidating Tournament cache from FEED for: {Id}", id);
             _cache.Remove(id.ToString());
         }
     }
@@ -106,7 +112,9 @@ internal class MatchCache : IMatchCache
             }
             catch (Exception e)
             {
-                _log.LogError($"Error while fetching match summary {culture.TwoLetterISOLanguageName}: {e}");
+                _log.LogError("Error while fetching match summary {CultureTwoLetterIsoLanguageName}: {E}",
+                    culture.TwoLetterISOLanguageName, e);
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
                 continue;
             }
 
@@ -116,7 +124,9 @@ internal class MatchCache : IMatchCache
             }
             catch (Exception e)
             {
-                _log.LogError($"Failed to refresh or load tournament {culture.TwoLetterISOLanguageName}: {e}");
+                _log.LogError("Failed to refresh or load tournament {CultureTwoLetterIsoLanguageName}: {E}",
+                    culture.TwoLetterISOLanguageName, e);
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             }
         }
     }

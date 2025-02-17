@@ -15,7 +15,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Mapping;
 internal class Outcome : IOutcome
 {
     private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(Outcome));
-    private readonly IFeedConfiguration _configuration;
+    private readonly IFeedConfiguration _config;
 
     private readonly IMarketDescriptionFactory _marketDescriptionFactory;
     private readonly int _marketId;
@@ -26,7 +26,7 @@ internal class Outcome : IOutcome
         string id,
         long refId,
         IMarketDescriptionFactory marketDescriptionFactory,
-        IFeedConfiguration configuration,
+        IFeedConfiguration config,
         int marketId,
         IReadOnlyDictionary<string, string> marketSpecifiers,
         ISportEvent sportEvent)
@@ -34,7 +34,7 @@ internal class Outcome : IOutcome
         Id = id;
         RefId = refId;
         _marketDescriptionFactory = marketDescriptionFactory;
-        _configuration = configuration;
+        _config = config;
         _marketId = marketId;
         _marketSpecifiers = marketSpecifiers;
         _sportEvent = sportEvent;
@@ -76,7 +76,7 @@ internal class Outcome : IOutcome
             }
 
             if (outcomeName is null)
-                if (_configuration.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
+                if (_config.ExceptionHandlingStrategy == ExceptionHandlingStrategy.THROW)
                     throw new ItemNotFoundException(Id, "Cannot find outcome name!");
                 else
                     return null;
@@ -85,7 +85,7 @@ internal class Outcome : IOutcome
         }
         catch (SdkException e)
         {
-            e.HandleAccordingToStrategy(GetType().Name, _log, _configuration.ExceptionHandlingStrategy);
+            e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
         }
 
         return null;

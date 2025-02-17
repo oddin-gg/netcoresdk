@@ -9,6 +9,7 @@ using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API;
 
@@ -19,13 +20,18 @@ internal class TournamentsCache : ITournamentsCache
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(TournamentsCache));
     private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(12);
+    private readonly IFeedConfiguration _config;
 
     private readonly Semaphore _semaphore = new(1, 1);
     private readonly IDisposable _subscription;
 
-    public TournamentsCache(IApiClient apiClient)
+    public TournamentsCache(
+        IApiClient apiClient,
+        IFeedConfiguration config
+    )
     {
         _apiClient = apiClient;
+        _config = config;
 
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
@@ -121,9 +127,10 @@ internal class TournamentsCache : ITournamentsCache
             {
                 RefreshOrInsertItem(id, culture, tournament);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                _log.LogError(ex, "Failed to refresh or load tournament");
+                _log.LogError(e, "Failed to refresh or load tournament");
+                e.HandleAccordingToStrategy(GetType().Name, _log, _config.ExceptionHandlingStrategy);
             }
         }
     }
@@ -139,7 +146,8 @@ internal class TournamentsCache : ITournamentsCache
             }
             catch (Exception e)
             {
-                _log.LogError($"Error while fetching tournament {culture.TwoLetterISOLanguageName}: {e}");
+                _log.LogError("Error while fetching tournament {CultureTwoLetterIsoLanguageName}: {E}",
+                    culture.TwoLetterISOLanguageName, e);
                 continue;
             }
 
@@ -149,7 +157,8 @@ internal class TournamentsCache : ITournamentsCache
             }
             catch (Exception e)
             {
-                _log.LogError($"Failed to refresh or load tournament {culture.TwoLetterISOLanguageName}: {e}");
+                _log.LogError("Failed to refresh or load tournament {CultureTwoLetterIsoLanguageName}: {E}",
+                    culture.TwoLetterISOLanguageName, e);
             }
         }
     }

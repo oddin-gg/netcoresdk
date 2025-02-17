@@ -15,11 +15,11 @@ internal class OutcomeProbabilities : Outcome, IOutcomeProbabilities
         string outcomeId,
         long outcomeRefId,
         IMarketDescriptionFactory marketDescriptionFactory,
-        IFeedConfiguration configuration,
+        IFeedConfiguration config,
         int marketId,
         IReadOnlyDictionary<string, string> marketSpecifiers,
         ISportEvent sportEvent)
-        : base(outcomeId, outcomeRefId, marketDescriptionFactory, configuration, marketId, marketSpecifiers, sportEvent)
+        : base(outcomeId, outcomeRefId, marketDescriptionFactory, config, marketId, marketSpecifiers, sportEvent)
     {
         Active = active;
         Probabilities = probabilities;

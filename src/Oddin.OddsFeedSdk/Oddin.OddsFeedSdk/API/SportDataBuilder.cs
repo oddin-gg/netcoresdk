@@ -13,7 +13,7 @@ namespace Oddin.OddsFeedSdk.API;
 internal class SportDataBuilder : ISportDataBuilder
 {
     private readonly ICompetitorCache _competitorCache;
-    private readonly IFeedConfiguration _configuration;
+    private readonly IFeedConfiguration _config;
     private readonly IFixtureCache _fixtureCache;
     private readonly ILocalizedStaticDataCache _localizedStaticDataCache;
     private readonly IMatchCache _matchCache;
@@ -31,7 +31,7 @@ internal class SportDataBuilder : ISportDataBuilder
         IMatchStatusCache matchStatusCache,
         ILocalizedStaticDataCache localizedStaticDataCache,
         IFixtureCache fixtureCache,
-        IFeedConfiguration configuration)
+        IFeedConfiguration config)
     {
         _sportDataCache = sportDataCache;
         _tournamentsCache = tournamentsCache;
@@ -41,7 +41,7 @@ internal class SportDataBuilder : ISportDataBuilder
         _matchStatusCache = matchStatusCache;
         _localizedStaticDataCache = localizedStaticDataCache;
         _fixtureCache = fixtureCache;
-        _configuration = configuration;
+        _config = config;
     }
 
     public async Task<IEnumerable<ISport>> BuildSports(IEnumerable<CultureInfo> locales)
@@ -53,7 +53,7 @@ internal class SportDataBuilder : ISportDataBuilder
                 locales,
                 _sportDataCache,
                 this,
-                _configuration.ExceptionHandlingStrategy));
+                _config.ExceptionHandlingStrategy));
     }
 
     public ISport BuildSport(URN id, IEnumerable<CultureInfo> locales) =>
@@ -62,7 +62,7 @@ internal class SportDataBuilder : ISportDataBuilder
             locales,
             _sportDataCache,
             this,
-            _configuration.ExceptionHandlingStrategy
+            _config.ExceptionHandlingStrategy
         );
 
     public IEnumerable<ITournament> BuildTournaments(IEnumerable<URN> ids, URN sportId,
@@ -73,7 +73,7 @@ internal class SportDataBuilder : ISportDataBuilder
                 sportId,
                 _tournamentsCache,
                 this,
-                _configuration,
+                _config,
                 locales)
         );
 
@@ -83,7 +83,7 @@ internal class SportDataBuilder : ISportDataBuilder
             sportId,
             _tournamentsCache,
             this,
-            _configuration,
+            _config,
             locales);
 
     public IEnumerable<ICompetitor> BuildCompetitors(IEnumerable<URN> ids, IEnumerable<CultureInfo> cultures) =>
@@ -92,7 +92,7 @@ internal class SportDataBuilder : ISportDataBuilder
                 id,
                 _competitorCache,
                 this,
-                _configuration.ExceptionHandlingStrategy,
+                _config.ExceptionHandlingStrategy,
                 cultures));
 
     public ICompetitor BuildCompetitor(URN id, IEnumerable<CultureInfo> cultures) =>
@@ -100,7 +100,7 @@ internal class SportDataBuilder : ISportDataBuilder
             id,
             _competitorCache,
             this,
-            _configuration.ExceptionHandlingStrategy,
+            _config.ExceptionHandlingStrategy,
             cultures);
 
     public IPlayer BuildPlayer(URN id, IEnumerable<CultureInfo> cultures) =>
@@ -108,7 +108,7 @@ internal class SportDataBuilder : ISportDataBuilder
             id,
             _playerCache,
             this,
-            _configuration.ExceptionHandlingStrategy,
+            _config.ExceptionHandlingStrategy,
             cultures);
 
     public IEnumerable<IMatch> BuildMatches(IEnumerable<URN> ids, IEnumerable<CultureInfo> cultures) =>
@@ -118,7 +118,7 @@ internal class SportDataBuilder : ISportDataBuilder
                 null,
                 _matchCache,
                 this,
-                _configuration.ExceptionHandlingStrategy,
+                _config.ExceptionHandlingStrategy,
                 cultures));
 
     public IMatch BuildMatch(URN id, IEnumerable<CultureInfo> cultures, URN sportId = null) =>
@@ -127,7 +127,7 @@ internal class SportDataBuilder : ISportDataBuilder
             sportId,
             _matchCache,
             this,
-            _configuration.ExceptionHandlingStrategy,
+            _config.ExceptionHandlingStrategy,
             cultures);
 
     public IMatchStatus BuildMatchStatus(URN id, IEnumerable<CultureInfo> cultures) =>
@@ -135,13 +135,13 @@ internal class SportDataBuilder : ISportDataBuilder
             id,
             _matchStatusCache,
             _localizedStaticDataCache,
-            _configuration.ExceptionHandlingStrategy,
+            _config.ExceptionHandlingStrategy,
             cultures);
 
     public IFixture BuildFixture(URN id, IEnumerable<CultureInfo> cultures) =>
         new Fixture(
             id,
             _fixtureCache,
-            _configuration.ExceptionHandlingStrategy,
+            _config.ExceptionHandlingStrategy,
             cultures);
 }
