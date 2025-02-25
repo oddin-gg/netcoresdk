@@ -182,6 +182,8 @@ internal class FeedMessageMapper : IFeedMessageMapper
             (T)sportEvent,
             message.request_idSpecified ? message.request_id : null,
             message.market.Select(m => GetRollbackBetCancelMarket(m, sportEvent)),
+            message.start_timeSpecified ? message.start_time : null,
+            message.end_timeSpecified ? message.end_time : null,
             rawMessage);
     }
 
