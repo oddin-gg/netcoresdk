@@ -21,4 +21,8 @@ public interface IMatch : ISportEvent
     ITournament Tournament { get; }
 
     IFixture Fixture { get; }
+
+    SportFormat SportFormat { get; }
+
+    IDictionary<string, string> ExtraInfo { get; }
 }

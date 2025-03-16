@@ -8,8 +8,10 @@ using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.Configuration.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API;
 
@@ -22,6 +24,8 @@ internal class MatchCache : IMatchCache
     private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(12);
     private readonly Semaphore _semaphore = new(1, 1);
     private readonly IDisposable _subscription;
+
+    public const string EXTRA_INFO_KEY_SPORT_FORMAT = "sport_format";
 
     public MatchCache(IApiClient apiClient)
     {
@@ -116,17 +120,38 @@ internal class MatchCache : IMatchCache
             }
             catch (Exception e)
             {
-                _log.LogError($"Failed to refresh or load tournament {culture.TwoLetterISOLanguageName}: {e}");
+                _log.LogError($"Failed to refresh or load match {culture.TwoLetterISOLanguageName}: {e}");
             }
         }
     }
 
     private void RefreshOrInsertItem(URN id, CultureInfo culture, sportEvent model)
     {
-        var homeTeamId = model.competitors?.FirstOrDefault()?.id;
-        var homeTeamQualifier = model.competitors?.FirstOrDefault()?.qualifier;
-        var awayTeamId = model.competitors?.LastOrDefault()?.id;
-        var awayTeamQualifier = model.competitors?.LastOrDefault()?.qualifier;
+        var competitors = model.competitors?.Select(c => new LocalizedMatch.Competitor
+        {
+            Id = new URN(c.id),
+            Qualifier = c.qualifier,
+        }).ToList();
+
+        var sportFormat = SportFormat.Classic;
+
+        foreach (var info in model.extra_info ?? Array.Empty<info>())
+        {
+            if (info.key == EXTRA_INFO_KEY_SPORT_FORMAT)
+            {
+                if (info.value == SportFormat.Classic.Value)
+                {
+                    sportFormat = SportFormat.Classic;
+                } else if (info.value == SportFormat.Race.Value)
+                {
+                    sportFormat = SportFormat.Race;
+                } else
+                {
+                    throw new ArgumentException($"Unknown sport format '{info.value}' for match '{id}'");
+                }
+                break;
+            }
+        }
 
         if (_cache.Get(id.ToString()) is LocalizedMatch item)
         {
@@ -137,11 +162,10 @@ internal class MatchCache : IMatchCache
                 ? null
                 : new URN(model.tournament.sport.id);
             item.TournamentId = string.IsNullOrEmpty(model.tournament?.id) ? null : new URN(model.tournament.id);
-            item.HomeTeamId = string.IsNullOrEmpty(homeTeamId) ? null : new URN(homeTeamId);
-            item.AwayTeamId = string.IsNullOrEmpty(awayTeamId) ? null : new URN(awayTeamId);
+            item.Competitors = competitors;
             item.LiveOddsAvailability = model.liveodds.ParseToLiveOddsAvailability();
-            item.HomeTeamQualifier = homeTeamQualifier;
-            item.AwayTeamQualifier = awayTeamQualifier;
+            item.SportFormat = sportFormat;
+            item.ExtraInfo = model.extra_info?.ToDictionary(x => x.key, x => x.value);
         }
         else
         {
@@ -152,11 +176,10 @@ internal class MatchCache : IMatchCache
                 ScheduledEndTime = model.scheduled_endSpecified ? model.scheduled_end : default(DateTime?),
                 SportId = string.IsNullOrEmpty(model.tournament?.sport?.id) ? null : new URN(model.tournament.sport.id),
                 TournamentId = string.IsNullOrEmpty(model.tournament?.id) ? null : new URN(model.tournament.id),
-                HomeTeamId = string.IsNullOrEmpty(homeTeamId) ? null : new URN(homeTeamId),
-                AwayTeamId = string.IsNullOrEmpty(awayTeamId) ? null : new URN(awayTeamId),
+                Competitors = competitors,
                 LiveOddsAvailability = model.liveodds.ParseToLiveOddsAvailability(),
-                HomeTeamQualifier = homeTeamQualifier,
-                AwayTeamQualifier = awayTeamQualifier
+                SportFormat = sportFormat,
+                ExtraInfo = model.extra_info?.ToDictionary(x => x.key, x => x.value),
             };
         }
 

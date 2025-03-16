@@ -249,7 +249,7 @@ internal class RecoveryManager : DispatcherBase, ISdkRecoveryManager
         var started = eventRecovery.RecoveryStartedAt;
         var finished = Timestamp.Now();
         _log.LogInformation(
-            $"Event ${eventRecovery.EventId} recovery finished for request {requestId} in {finished - started} ms"
+            $"Event {eventRecovery.EventId} recovery finished for request {requestId} in {finished - started} ms"
         );
 
         var eventArgs = new EventRecoveryCompletedEventArgs(requestId, eventRecovery.EventId);
