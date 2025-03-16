@@ -108,12 +108,28 @@ internal static class GeneralExample
         var tournamentUrn = new URN("od:tournament:1524");
         var sportUrn = new URN("od:sport:1");
         var playerUrn = new URN("od:player:111");
+        var raceUrn = new URN("od:match:6516");
 
         provider.DeleteCompetitorFromCache(competitorUrn);
         provider.DeleteMatchFromCache(matchUrn);
+        provider.DeleteMatchFromCache(raceUrn);
         provider.DeleteTournamentFromCache(tournamentUrn);
         provider.DeleteCompetitorFromCache(playerUrn);
 
+        var race = provider.GetMatch(raceUrn);
+        var name = await race.GetNameAsync(CultureEn);
+        Console.WriteLine($"Race name: {name}");
+        Console.WriteLine($"Race sport format: {race.SportFormat}");
+        foreach (var c in race.Competitors)
+        {
+            Console.WriteLine($"Competitor: {c.GetName(CultureEn)}");
+        }
+
+        // if exception handling strategy is CATCH, then following should be null for race match
+        var homeCompetitor = race.HomeCompetitor;
+        var awayCompetitor = race.AwayCompetitor;
+        Console.WriteLine($"Home competitor: {homeCompetitor?.Id}, Away competitor: {awayCompetitor?.Id}");
+        
         var player = provider.GetPlayer(playerUrn);
         Console.WriteLine($"Player: {player.GetFullName(CultureEn)}");
 
@@ -269,7 +285,6 @@ internal static class GeneralExample
         {
             Console.WriteLine($"Odds changed in {match.Status}");
             Console.WriteLine($"Raw message: {Encoding.UTF8.GetString(oddsChange.RawMessage.Take(40).ToArray())}...");
-            Console.WriteLine($"{string.Join(", ", match.HomeCompetitor.Abbreviations)}");
             Console.WriteLine($"{match.LiveOddsAvailability}");
             Console.WriteLine($"{match.Fixture.Id}");
             Console.WriteLine($"{await match.GetNameAsync(CultureEn)}");

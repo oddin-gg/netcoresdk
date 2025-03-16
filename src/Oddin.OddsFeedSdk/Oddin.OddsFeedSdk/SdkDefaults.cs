@@ -45,8 +45,8 @@ public static class SdkDefaults
     public static string GetIntegrationApiHost(string region = Region.DEFAULT) =>
         "api-mq.integration." + region + "oddin.gg";
 
-    public static string GetTestHost(string region = Region.DEFAULT) => "mq-test.integration." + region + "oddin.gg";
+    public static string GetTestHost(string region = Region.DEFAULT) => "mq-test.integration." + region + "oddin.dev";
 
     public static string GetTestApiHost(string region = Region.DEFAULT) =>
-        "api-mq-test.integration." + region + "oddin.gg";
+        "api-mq-test.integration." + region + "oddin.dev";
 }

@@ -122,6 +122,21 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         private string refidField;
 
+        private info[] extra_infoField;
+
+        [System.Xml.Serialization.XmlArrayItemAttribute(IsNullable = true)]
+        public info[] extra_info
+        {
+            get
+            {
+                return this.extra_infoField;
+            }
+            set
+            {
+                this.extra_infoField = value;
+            }
+        }
+
         [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
         public string refid
         {
