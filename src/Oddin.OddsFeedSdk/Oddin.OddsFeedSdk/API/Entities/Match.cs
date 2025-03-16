@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
@@ -14,13 +15,20 @@ namespace Oddin.OddsFeedSdk.API.Entities;
 
 internal class Match : IMatch
 {
+    private static readonly ILogger _log = SdkLoggerFactory.GetLogger(typeof(Match));
+
     private readonly IEnumerable<CultureInfo> _cultures;
     private readonly ExceptionHandlingStrategy _handlingStrategy;
     private readonly IMatchCache _matchCache;
     private readonly ISportDataBuilder _sportDataBuilder;
 
-    public Match(URN id, URN localSportId, IMatchCache matchCache, ISportDataBuilder sportDataBuilder,
-        ExceptionHandlingStrategy handlingStrategy, IEnumerable<CultureInfo> cultures)
+    public Match(
+        URN id,
+        URN localSportId,
+        IMatchCache matchCache,
+        ISportDataBuilder sportDataBuilder,
+        ExceptionHandlingStrategy handlingStrategy,
+        IEnumerable<CultureInfo> cultures)
     {
         Id = id;
         _localSportId = localSportId;
@@ -48,51 +56,99 @@ internal class Match : IMatch
     public IFixture Fixture
         => _sportDataBuilder.BuildFixture(Id, _cultures);
 
-    public ITeamCompetitor HomeCompetitor
+    public SportFormat SportFormat
     {
         get
         {
             var match = FetchMatch(_cultures);
-            if (match is null) return null;
-
-            var competitor = FetchCompetitor(match.HomeTeamId);
-
-            if (competitor != null)
-                return new TeamCompetitor(match.HomeTeamQualifier, competitor);
-            return null;
+            return match?.SportFormat;
         }
     }
 
-    public ITeamCompetitor AwayCompetitor
+    public IDictionary<string, string> ExtraInfo
     {
         get
         {
             var match = FetchMatch(_cultures);
-            if (match is null) return null;
-
-            var competitor = FetchCompetitor(match.AwayTeamId);
-
-            if (competitor != null)
-                return new TeamCompetitor(match.AwayTeamQualifier, competitor);
-            return null;
+            return match?.ExtraInfo;
         }
     }
+
+    private ITeamCompetitor GetHomeAwayCompetitor(bool home)
+    {
+        var match = FetchMatch(_cultures);
+        if (match is null) return null;
+
+        if (match.Competitors.Count() < 2)
+        {
+            var err = $"Match {match.Id} has less than 2 competitors.";
+            _log.LogError(err);
+            if (_handlingStrategy == ExceptionHandlingStrategy.THROW)
+            {
+                throw new ArgumentException(err);
+            }
+
+            return null;
+        }
+
+        if (match.SportFormat != SportFormat.Classic)
+        {
+            var err = $"Match {match.Id} is not in a classic sport format. It is: {match.SportFormat}";
+            _log.LogError(err);
+            if (_handlingStrategy == ExceptionHandlingStrategy.THROW)
+            {
+                throw new ArgumentException(err);
+            }
+
+            return null;
+        }
+
+        if (match.Competitors.Count() > 2)
+        {
+            var err = $"Match {match.Id} has more than 2 competitors.";
+            _log.LogError(err);
+            if (_handlingStrategy == ExceptionHandlingStrategy.THROW)
+            {
+                throw new ArgumentException(err);
+            }
+
+            return null;
+        }
+
+        var c = home ? match.Competitors.FirstOrDefault() : match.Competitors.LastOrDefault();
+        var competitor = FetchCompetitor(c.Id);
+
+        if (competitor != null)
+        {
+            return new TeamCompetitor(c.Qualifier, competitor);
+        }
+
+        return null;
+
+    }
+
+    public ITeamCompetitor HomeCompetitor => GetHomeAwayCompetitor(true);
+
+    public ITeamCompetitor AwayCompetitor => GetHomeAwayCompetitor(false);
 
     public IEnumerable<ITeamCompetitor> Competitors
     {
         get
         {
-            var list = new List<ITeamCompetitor>();
-            var homeCompetitor = HomeCompetitor;
-            var awayCompetitor = AwayCompetitor;
+            var match = FetchMatch(_cultures);
+            if (match is null) return null;
 
-            if (homeCompetitor != null)
-                list.Add(homeCompetitor);
+            var competitors = new List<ITeamCompetitor>();
+            foreach (var c in match.Competitors)
+            {
+                var competitor = FetchCompetitor(c.Id);
+                if (competitor != null)
+                {
+                    competitors.Add(new TeamCompetitor(c.Qualifier, competitor));
+                }
+            }
 
-            if (awayCompetitor != null)
-                list.Add(awayCompetitor);
-
-            return list;
+            return competitors;
         }
     }
 
