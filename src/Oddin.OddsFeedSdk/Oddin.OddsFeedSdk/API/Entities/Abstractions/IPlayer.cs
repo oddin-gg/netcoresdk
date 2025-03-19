@@ -12,7 +12,11 @@ public interface IPlayer
 
     IReadOnlyDictionary<CultureInfo, string> FullNames { get; }
 
+    IReadOnlyDictionary<CultureInfo, string> SportIDs { get; }
+
     string GetName(CultureInfo culture);
 
     string GetFullName(CultureInfo culture);
+
+    string GetSportID(CultureInfo culture);
 }

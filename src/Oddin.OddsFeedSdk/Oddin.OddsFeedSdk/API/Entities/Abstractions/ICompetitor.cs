@@ -41,6 +41,8 @@ public interface ICompetitor
     Task<ISport> GetSportAsync();
 
     IEnumerable<ISport> GetSports();
+
+    IEnumerable<IPlayer> GetPlayers();
 }
 
 public interface ITeamCompetitor : ICompetitor

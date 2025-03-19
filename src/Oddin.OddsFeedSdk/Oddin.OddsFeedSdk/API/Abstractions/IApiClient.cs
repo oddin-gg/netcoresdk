@@ -39,6 +39,8 @@ public interface IApiClient
 
     teamExtended GetCompetitorProfile(URN id, CultureInfo culture);
 
+    competitorProfileEndpoint GetCompetitorProfileWithPlayers(URN id, CultureInfo culture);
+
     player_profilePlayer GetPlayerProfile(URN id, CultureInfo culture = null);
 
     MatchSummaryModel GetMatchSummary(URN sportEventId, CultureInfo desiredCulture);

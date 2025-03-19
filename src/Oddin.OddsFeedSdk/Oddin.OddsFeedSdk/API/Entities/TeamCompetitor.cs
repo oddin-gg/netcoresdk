@@ -47,4 +47,6 @@ internal class TeamCompetitor : ITeamCompetitor
     public Task<ISport> GetSportAsync() => _competitor.GetSportAsync();
 
     public IEnumerable<ISport> GetSports() => _competitor.GetSports();
+
+    public IEnumerable<IPlayer> GetPlayers() => _competitor.GetPlayers();
 }
