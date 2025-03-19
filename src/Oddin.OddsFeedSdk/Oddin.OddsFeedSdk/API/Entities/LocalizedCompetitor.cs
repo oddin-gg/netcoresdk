@@ -21,6 +21,8 @@ internal class LocalizedCompetitor : ILocalizedItem
 
     internal IDictionary<CultureInfo, string> Abbreviation { get; set; } = new Dictionary<CultureInfo, string>();
 
+    internal IEnumerable<URN> PlayerIDs { get; set; } = new List<URN>();
+
     internal IDictionary<CultureInfo, string> Country { get; set; } = new Dictionary<CultureInfo, string>();
 
     public bool? IsVirtual { get; set; }

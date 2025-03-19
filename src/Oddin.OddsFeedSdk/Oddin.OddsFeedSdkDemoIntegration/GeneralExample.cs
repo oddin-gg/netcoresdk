@@ -158,11 +158,20 @@ internal static class GeneralExample
         Console.WriteLine($"Name: {competitor.Names[CultureEn]}");
         Console.WriteLine($"Short name: {competitor.ShortName}");
         Console.WriteLine($"Icon Path: {competitor.IconPath}");
+        Console.WriteLine("Competitor Players:");
+        foreach (var competitorPlayer in competitor.GetPlayers())
+        {
+            Console.WriteLine($"    Localized name: {competitorPlayer.GetName(CultureEn)}");
+            Console.WriteLine($"    Sport ID: {competitorPlayer.GetSportID(CultureEn)}");
+        }
 
         var fixtureChanges = provider.GetFixtureChanges(CultureEn);
-        var fc = fixtureChanges.First();
-        Console.WriteLine($"Sport event ID: {fc.SportEventId}");
-        Console.WriteLine($"Update time: {fc.UpdateTime}");
+        if (fixtureChanges != null)
+        {
+            var fc = fixtureChanges.First();
+            Console.WriteLine($"Sport event ID: {fc.SportEventId}");
+            Console.WriteLine($"Update time: {fc.UpdateTime}");
+        }
 
         var listOfMatches = provider.GetListOfMatches(0, 2, CultureEn);
         var m = listOfMatches.First();
@@ -177,6 +186,14 @@ internal static class GeneralExample
         Console.WriteLine($"ID: {m.Id}");
         Console.WriteLine($"Live odds availability: {m.LiveOddsAvailability}");
         Console.WriteLine($"Status: {m.Status}");
+
+        Console.WriteLine("Home players:");
+        var homePlayers = m.HomeCompetitor.GetPlayers();
+        foreach (var homePlayer in homePlayers)
+        {
+            Console.WriteLine($"    Localized name: {homePlayer.GetName(CultureEn)}");
+            Console.WriteLine($"    Sport ID: {homePlayer.GetSportID(CultureEn)}");
+        }
 
         var sport = await provider.GetSportAsync(sportUrn, CultureEn);
         Console.WriteLine($"Name: {sport.GetName(CultureEn)}");
@@ -385,9 +402,9 @@ internal static class GeneralExample
         }
 
         foreach (var m in eventArgs.GetBetSettlement().Markets)
-        foreach (var outcome in m.OutcomeSettlements)
-            if (outcome.VoidFactor != null)
-                Console.WriteLine($"Outcome with void factor: {outcome.VoidFactor}");
+            foreach (var outcome in m.OutcomeSettlements)
+                if (outcome.VoidFactor != null)
+                    Console.WriteLine($"Outcome with void factor: {outcome.VoidFactor}");
     }
 
     private static async void OnRollbackBetSettlement(object sender,

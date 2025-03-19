@@ -20,8 +20,39 @@ internal class PlayerCache : IPlayerCache
     private readonly MemoryCache _cache = new(nameof(PlayerCache));
     private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(12);
     private readonly Semaphore _semaphore = new(1, 1);
+    private readonly IDisposable _subscription;
 
-    public PlayerCache(IApiClient apiClient) => _apiClient = apiClient;
+    public PlayerCache(IApiClient apiClient)
+    {
+        _apiClient = apiClient;
+
+        _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
+            .Subscribe(response =>
+            {
+                if (response.Culture is null || response.Data is null)
+                    return;
+
+                var players = response.Data switch
+                {
+                    competitorProfileEndpoint f => f.players.ToArray(),
+                    _ => Array.Empty<player_profilePlayer>()
+                };
+
+                if (players.Any())
+                {
+                    _semaphore.WaitOne();
+                    try
+                    {
+                        _log.LogDebug($"Updating Player cache from API: {response.Data.GetType()}");
+                        HandlePlayersData(response.Culture, players);
+                    }
+                    finally
+                    {
+                        _semaphore.Release();
+                    }
+                }
+            });
+    }
 
     public LocalizedPlayer GetPlayer(URN id, IEnumerable<CultureInfo> cultures)
     {
@@ -47,9 +78,7 @@ internal class PlayerCache : IPlayerCache
 
     public void ClearCacheItem(URN id) => _cache.Remove(id.ToString());
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() => _subscription.Dispose();
 
     private void LoadAndCacheItem(URN id, IEnumerable<CultureInfo> cultures)
     {
@@ -83,12 +112,14 @@ internal class PlayerCache : IPlayerCache
         {
             item.Name[culture] = data.name;
             item.FullName[culture] = data.full_name;
+            item.SportID[culture] = data.sportID;
         }
         else
         {
             item = new LocalizedPlayer(id);
             item.Name[culture] = data.name;
             item.FullName[culture] = data.full_name;
+            item.SportID[culture] = data.sportID;
         }
 
         _cache.Set(id.ToString(), item, _cacheTtl.AsCachePolicy());
