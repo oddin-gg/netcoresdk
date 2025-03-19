@@ -92,7 +92,7 @@ internal class ApiClient : IApiClient
         return result.Data;
     }
 
-    public teamExtended GetCompetitorProfile(URN id, CultureInfo culture)
+    public competitorProfileEndpoint GetCompetitorProfile(URN id, CultureInfo culture)
     {
         if (id is null)
             throw new ArgumentNullException(nameof(id));
@@ -102,7 +102,7 @@ internal class ApiClient : IApiClient
 
         var route = $"v1/sports/{culture.TwoLetterISOLanguageName}/competitors/{id}/profile";
         var result = _restClient.SendRequest<competitorProfileEndpoint>(route, HttpMethod.Get, culture);
-        return result.Data.competitor;
+        return result.Data;
     }
 
     public player_profilePlayer GetPlayerProfile(URN id, CultureInfo culture = null)
@@ -230,7 +230,7 @@ internal class ApiClient : IApiClient
         };
 
         if (nodeId.HasValue)
-            parameters.Add(( "node_id", nodeId ));
+            parameters.Add(("node_id", nodeId));
 
         var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post,
             parameters: parameters.ToArray(), deserializeResponse: false, ignoreUnsuccessfulStatusCode: true);
@@ -247,7 +247,7 @@ internal class ApiClient : IApiClient
         };
 
         if (nodeId.HasValue)
-            parameters.Add(( "node_id", nodeId ));
+            parameters.Add(("node_id", nodeId));
 
         var response = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post,
             parameters: parameters.ToArray(), deserializeResponse: false, ignoreUnsuccessfulStatusCode: true);
@@ -265,10 +265,10 @@ internal class ApiClient : IApiClient
         };
 
         if (timestamp != default)
-            parameters.Add(( "after", timestamp ));
+            parameters.Add(("after", timestamp));
 
         if (nodeId != null)
-            parameters.Add(( "node_id", nodeId ));
+            parameters.Add(("node_id", nodeId));
 
         var result = await _restClient.SendRequestAsync<object>(route, HttpMethod.Post,
             parameters: parameters.ToArray(), deserializeResponse: false);
@@ -332,22 +332,22 @@ internal class ApiClient : IApiClient
     {
         var parameters = new List<(string key, object value)>();
         if (nodeId != null)
-            parameters.Add(( "node_id", nodeId ));
+            parameters.Add(("node_id", nodeId));
 
         if (speed != null)
-            parameters.Add(( "speed", speed ));
+            parameters.Add(("speed", speed));
 
         if (maxDelay != null)
-            parameters.Add(( "max_delay", maxDelay ));
+            parameters.Add(("max_delay", maxDelay));
 
         if (useReplayTimestamp != null)
-            parameters.Add(( "use_replay_timestamp", useReplayTimestamp ));
+            parameters.Add(("use_replay_timestamp", useReplayTimestamp));
 
         if (runParallel != null)
-            parameters.Add(( "run_parallel", runParallel ));
+            parameters.Add(("run_parallel", runParallel));
 
         if (product != null)
-            parameters.Add(( "product", product ));
+            parameters.Add(("product", product));
 
         var route = "v1/replay/play";
 
@@ -367,7 +367,7 @@ internal class ApiClient : IApiClient
     private (string key, object value)[] ParametersOrDefault(int? nodeId)
         => nodeId == null
             ? default
-            : new (string key, object value)[] { ( "node_id", nodeId.Value ) };
+            : new (string key, object value)[] { ("node_id", nodeId.Value) };
 
     private void ValidateCulture(CultureInfo culture)
     {

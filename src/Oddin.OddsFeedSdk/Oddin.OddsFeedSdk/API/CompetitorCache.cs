@@ -107,10 +107,10 @@ internal class CompetitorCache : ICompetitorCache
     {
         foreach (var culture in cultures)
         {
-            teamExtended team;
+            competitorProfileEndpoint data;
             try
             {
-                team = _apiClient.GetCompetitorProfile(id, culture);
+                data = _apiClient.GetCompetitorProfile(id, culture);
             }
             catch (Exception e)
             {
@@ -120,7 +120,7 @@ internal class CompetitorCache : ICompetitorCache
 
             try
             {
-                RefreshOrInsertItem(id, culture, team);
+                RefreshOrInsertItem(id, culture, data);
             }
             catch (Exception e)
             {
@@ -129,7 +129,7 @@ internal class CompetitorCache : ICompetitorCache
         }
     }
 
-    private void RefreshOrInsertItem(URN id, CultureInfo culture, team data)
+    private void RefreshOrInsertItem(URN id, CultureInfo culture, Entities.Abstractions.ITeam data)
     {
         if (_cache.Get(id.ToString()) is LocalizedCompetitor item)
         {
@@ -157,13 +157,20 @@ internal class CompetitorCache : ICompetitorCache
         if (data.country != null)
             item.Country[culture] = data.country;
 
-        if (data is teamExtended dataExtended)
+        if (data is competitorProfileEndpoint competitorProfileEndpoint)
         {
-            item.SportIds = dataExtended?.sport?
+            var playersWithSport = new List<Entities.PlayerWithSport>(competitorProfileEndpoint.players.Count);
+            foreach (var player in competitorProfileEndpoint.players)
+            {
+                playersWithSport.Add(new Entities.PlayerWithSport(player.id, player.name, player.full_name, player.SportId));
+            }
+            item.Players[culture] = playersWithSport;
+
+            item.SportIds = competitorProfileEndpoint.competitor?.sport?
                 .Where(s => string.IsNullOrEmpty(s.id) == false)
                 .Select(s => new URN(s.id));
 
-            item.IconPath = dataExtended?.icon_path;
+            item.IconPath = competitorProfileEndpoint.competitor?.icon_path;
             item.IconPathLoaded = true;
         }
 

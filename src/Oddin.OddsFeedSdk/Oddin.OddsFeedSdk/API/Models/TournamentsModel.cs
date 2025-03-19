@@ -84,7 +84,7 @@ namespace Oddin.OddsFeedSdk.API.Models
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    public partial class team
+    public partial class team : Entities.Abstractions.ITeam
     {
 
         private string idField;

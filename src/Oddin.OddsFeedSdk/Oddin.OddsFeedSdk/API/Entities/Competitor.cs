@@ -74,6 +74,18 @@ internal class Competitor : ICompetitor
         }
     }
 
+    public IReadOnlyDictionary<CultureInfo, IEnumerable<PlayerWithSport>> Players
+    {
+        get
+        {
+            var players = FetchCompetitor(_cultures)?.Players;
+            if (players is not null)
+                return new ReadOnlyDictionary<CultureInfo, IEnumerable<PlayerWithSport>>(players);
+
+            return new ReadOnlyDictionary<CultureInfo, IEnumerable<PlayerWithSport>>(new Dictionary<CultureInfo, IEnumerable<PlayerWithSport>>());
+        }
+    }
+
     public bool? IsVirtual => FetchCompetitor(_cultures)?.IsVirtual;
 
     public string CountryCode => FetchCompetitor(_cultures)?.CountryCode;
@@ -97,6 +109,12 @@ internal class Competitor : ICompetitor
     public string GetAbbreviation(CultureInfo culture) =>
         FetchCompetitor(new[] { culture })
             ?.Abbreviation
+            ?.FirstOrDefault(d => d.Key.Equals(culture))
+            .Value;
+
+    public IEnumerable<PlayerWithSport> GetPlayers(CultureInfo culture) =>
+        FetchCompetitor(new[] { culture })
+            ?.Players
             ?.FirstOrDefault(d => d.Key.Equals(culture))
             .Value;
 

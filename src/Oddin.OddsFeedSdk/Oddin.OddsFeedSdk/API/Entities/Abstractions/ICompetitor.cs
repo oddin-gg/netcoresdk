@@ -19,6 +19,8 @@ public interface ICompetitor
 
     IReadOnlyDictionary<CultureInfo, string> Abbreviations { get; }
 
+    IReadOnlyDictionary<CultureInfo, IEnumerable<PlayerWithSport>> Players { get; }
+
     bool? IsVirtual { get; }
 
     string CountryCode { get; }
@@ -34,6 +36,8 @@ public interface ICompetitor
     string GetCountry(CultureInfo culture);
 
     string GetAbbreviation(CultureInfo culture);
+
+    IEnumerable<PlayerWithSport> GetPlayers(CultureInfo culture);
 
     // TODO: Delete in next iteration of updates
     [Obsolete(

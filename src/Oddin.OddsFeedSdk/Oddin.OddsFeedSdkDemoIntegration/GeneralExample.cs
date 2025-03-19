@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk;
 using Oddin.OddsFeedSdk.Abstractions;
 using Oddin.OddsFeedSdk.AMQP.EventArguments;
+using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
@@ -142,6 +143,11 @@ internal static class GeneralExample
         Console.WriteLine($"Name: {competitor.Names[CultureEn]}");
         Console.WriteLine($"Short name: {competitor.ShortName}");
         Console.WriteLine($"Icon Path: {competitor.IconPath}");
+        Console.WriteLine("Competitor Players:");
+        foreach (PlayerWithSport playerWithSport in competitor.GetPlayers(CultureEn))
+        {
+            Console.WriteLine($"    Localized name: {playerWithSport.Name}");
+        }
 
         var fixtureChanges = provider.GetFixtureChanges(CultureEn);
         var fc = fixtureChanges.First();
@@ -370,9 +376,9 @@ internal static class GeneralExample
         }
 
         foreach (var m in eventArgs.GetBetSettlement().Markets)
-        foreach (var outcome in m.OutcomeSettlements)
-            if (outcome.VoidFactor != null)
-                Console.WriteLine($"Outcome with void factor: {outcome.VoidFactor}");
+            foreach (var outcome in m.OutcomeSettlements)
+                if (outcome.VoidFactor != null)
+                    Console.WriteLine($"Outcome with void factor: {outcome.VoidFactor}");
     }
 
     private static async void OnRollbackBetSettlement(object sender,
