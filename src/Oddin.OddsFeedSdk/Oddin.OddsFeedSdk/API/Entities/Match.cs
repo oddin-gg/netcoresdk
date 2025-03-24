@@ -115,7 +115,7 @@ internal class Match : IMatch
             return null;
         }
 
-        var c = home? match.Competitors.FirstOrDefault() : match.Competitors.LastOrDefault();
+        var c = home ? match.Competitors.FirstOrDefault() : match.Competitors.LastOrDefault();
         var competitor = FetchCompetitor(c.Id);
 
         if (competitor != null)

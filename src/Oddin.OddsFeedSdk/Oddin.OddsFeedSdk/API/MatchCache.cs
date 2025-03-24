@@ -24,12 +24,12 @@ internal class MatchCache : IMatchCache
     private readonly TimeSpan _cacheTtl = TimeSpan.FromHours(12);
     private readonly Semaphore _semaphore = new(1, 1);
     private readonly IDisposable _subscription;
-    private readonly IFeedConfiguration _configuration;
 
-    public MatchCache(IApiClient apiClient, IFeedConfiguration configuration)
+    public const string EXTRA_INFO_KEY_SPORT_FORMAT = "sport_format";
+
+    public MatchCache(IApiClient apiClient)
     {
         _apiClient = apiClient;
-        _configuration = configuration;
 
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
@@ -129,7 +129,7 @@ internal class MatchCache : IMatchCache
     {
         var competitors = model.competitors?.Select(c => new LocalizedMatch.Competitor
         {
-            Id =new URN(c.id),
+            Id = new URN(c.id),
             Qualifier = c.qualifier,
         }).ToList();
 
@@ -137,7 +137,7 @@ internal class MatchCache : IMatchCache
 
         foreach (var info in model.extra_info)
         {
-            if (info.key == "sport_format")
+            if (info.key == EXTRA_INFO_KEY_SPORT_FORMAT)
             {
                 if (info.value == SportFormat.Classic.Value)
                 {
