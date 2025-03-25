@@ -15,6 +15,8 @@ internal class LocalizedPlayer : ILocalizedItem
 
     internal IDictionary<CultureInfo, string> FullName { get; set; } = new Dictionary<CultureInfo, string>();
 
+    internal IDictionary<CultureInfo, string> SportID { get; set; } = new Dictionary<CultureInfo, string>();
+
     public IEnumerable<CultureInfo> LoadedLocals => GetLoadedLocals();
 
     private IEnumerable<CultureInfo> GetLoadedLocals()
@@ -27,6 +29,8 @@ internal class LocalizedPlayer : ILocalizedItem
         foreach (var fullName in FullName)
             allCultures.Add(fullName.Key);
 
+        foreach (var sportID in SportID)
+            allCultures.Add(sportID.Key);
 
         return allCultures;
     }

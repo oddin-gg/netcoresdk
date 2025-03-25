@@ -57,6 +57,18 @@ internal class Player : IPlayer
         }
     }
 
+    public IReadOnlyDictionary<CultureInfo, string> SportIDs
+    {
+        get
+        {
+            var sportIDs = FetchPlayer(_cultures)?.SportID;
+            if (sportIDs is not null)
+                return new ReadOnlyDictionary<CultureInfo, string>(sportIDs);
+
+            return new ReadOnlyDictionary<CultureInfo, string>(new Dictionary<CultureInfo, string>());
+        }
+    }
+
     public string GetName(CultureInfo culture) =>
         FetchPlayer(new[] { culture })
             ?.Name
@@ -66,6 +78,12 @@ internal class Player : IPlayer
     public string GetFullName(CultureInfo culture) =>
         FetchPlayer(new[] { culture })
             ?.FullName
+            ?.FirstOrDefault(d => d.Key.Equals(culture))
+            .Value;
+
+    public string GetSportID(CultureInfo culture) =>
+        FetchPlayer(new[] { culture })
+            ?.SportID
             ?.FirstOrDefault(d => d.Key.Equals(culture))
             .Value;
 

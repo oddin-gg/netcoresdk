@@ -38,8 +38,6 @@ internal class TeamCompetitor : ITeamCompetitor
 
     public IReadOnlyDictionary<CultureInfo, string> Names => _competitor.Names;
 
-    public IReadOnlyDictionary<CultureInfo, IEnumerable<PlayerWithSport>> Players => _competitor.Players;
-
 
     public string GetAbbreviation(CultureInfo culture) => _competitor.GetAbbreviation(culture);
 
@@ -47,9 +45,9 @@ internal class TeamCompetitor : ITeamCompetitor
 
     public string GetName(CultureInfo culture) => _competitor.GetName(culture);
 
-    public IEnumerable<PlayerWithSport> GetPlayers(CultureInfo culture) => _competitor.GetPlayers(culture);
-
     public Task<ISport> GetSportAsync() => _competitor.GetSportAsync();
 
     public IEnumerable<ISport> GetSports() => _competitor.GetSports();
+
+    public IEnumerable<IPlayer> GetPlayers() => _competitor.GetPlayers();
 }

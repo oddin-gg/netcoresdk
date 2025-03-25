@@ -74,18 +74,6 @@ internal class Competitor : ICompetitor
         }
     }
 
-    public IReadOnlyDictionary<CultureInfo, IEnumerable<PlayerWithSport>> Players
-    {
-        get
-        {
-            var players = FetchCompetitor(_cultures)?.Players;
-            if (players is not null)
-                return new ReadOnlyDictionary<CultureInfo, IEnumerable<PlayerWithSport>>(players);
-
-            return new ReadOnlyDictionary<CultureInfo, IEnumerable<PlayerWithSport>>(new Dictionary<CultureInfo, IEnumerable<PlayerWithSport>>());
-        }
-    }
-
     public bool? IsVirtual => FetchCompetitor(_cultures)?.IsVirtual;
 
     public string CountryCode => FetchCompetitor(_cultures)?.CountryCode;
@@ -112,12 +100,6 @@ internal class Competitor : ICompetitor
             ?.FirstOrDefault(d => d.Key.Equals(culture))
             .Value;
 
-    public IEnumerable<PlayerWithSport> GetPlayers(CultureInfo culture) =>
-        FetchCompetitor(new[] { culture })
-            ?.Players
-            ?.FirstOrDefault(d => d.Key.Equals(culture))
-            .Value;
-
     public Task<ISport> GetSportAsync() => Task.FromResult(GetSports()?.FirstOrDefault());
 
     public IEnumerable<ISport> GetSports()
@@ -128,6 +110,16 @@ internal class Competitor : ICompetitor
             return null;
         return sportIds
             .Select(s => _sportDataBuilder.BuildSport(s, _cultures));
+    }
+
+    public IEnumerable<IPlayer> GetPlayers()
+    {
+        var playerIDs = FetchCompetitor(_cultures)?.PlayerIDs;
+
+        if (playerIDs is null || playerIDs.Any() == false)
+            return null;
+        return playerIDs
+            .Select(playerID => _sportDataBuilder.BuildPlayer(playerID, _cultures));
     }
 
     private LocalizedCompetitor FetchCompetitor(IEnumerable<CultureInfo> cultures)

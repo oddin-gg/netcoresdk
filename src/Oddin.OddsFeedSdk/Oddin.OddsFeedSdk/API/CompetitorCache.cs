@@ -9,6 +9,7 @@ using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Models;
 using Oddin.OddsFeedSdk.Common;
+using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 
 namespace Oddin.OddsFeedSdk.API;
 
@@ -129,7 +130,7 @@ internal class CompetitorCache : ICompetitorCache
         }
     }
 
-    private void RefreshOrInsertItem(URN id, CultureInfo culture, Entities.Abstractions.ITeam data)
+    private void RefreshOrInsertItem(URN id, CultureInfo culture, ITeam data)
     {
         if (_cache.Get(id.ToString()) is LocalizedCompetitor item)
         {
@@ -159,12 +160,13 @@ internal class CompetitorCache : ICompetitorCache
 
         if (data is competitorProfileEndpoint competitorProfileEndpoint)
         {
-            var playersWithSport = new List<Entities.PlayerWithSport>(competitorProfileEndpoint.players.Count);
+            var playerURNs = new List<URN>(competitorProfileEndpoint.players.Count);
             foreach (var player in competitorProfileEndpoint.players)
             {
-                playersWithSport.Add(new Entities.PlayerWithSport(player.id, player.name, player.full_name, player.SportId));
+                var playerURN = new URN(player.id);
+                playerURNs.Add(playerURN);
             }
-            item.Players[culture] = playersWithSport;
+            item.PlayerIDs = playerURNs;
 
             item.SportIds = competitorProfileEndpoint.competitor?.sport?
                 .Where(s => string.IsNullOrEmpty(s.id) == false)

@@ -19,8 +19,6 @@ public interface ICompetitor
 
     IReadOnlyDictionary<CultureInfo, string> Abbreviations { get; }
 
-    IReadOnlyDictionary<CultureInfo, IEnumerable<PlayerWithSport>> Players { get; }
-
     bool? IsVirtual { get; }
 
     string CountryCode { get; }
@@ -37,14 +35,14 @@ public interface ICompetitor
 
     string GetAbbreviation(CultureInfo culture);
 
-    IEnumerable<PlayerWithSport> GetPlayers(CultureInfo culture);
-
     // TODO: Delete in next iteration of updates
     [Obsolete(
         "GetSportAsync() is deprecated, please use GetSports() instead. Method GetSportAsync() will be removed in the future.")]
     Task<ISport> GetSportAsync();
 
     IEnumerable<ISport> GetSports();
+
+    IEnumerable<IPlayer> GetPlayers();
 }
 
 public interface ITeamCompetitor : ICompetitor

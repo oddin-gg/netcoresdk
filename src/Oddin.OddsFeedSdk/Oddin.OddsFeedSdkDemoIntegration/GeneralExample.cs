@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk;
 using Oddin.OddsFeedSdk.Abstractions;
 using Oddin.OddsFeedSdk.AMQP.EventArguments;
-using Oddin.OddsFeedSdk.API.Entities;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
 using Oddin.OddsFeedSdk.Configuration.Abstractions;
@@ -144,9 +143,10 @@ internal static class GeneralExample
         Console.WriteLine($"Short name: {competitor.ShortName}");
         Console.WriteLine($"Icon Path: {competitor.IconPath}");
         Console.WriteLine("Competitor Players:");
-        foreach (PlayerWithSport playerWithSport in competitor.GetPlayers(CultureEn))
+        foreach (var competitorPlayer in competitor.GetPlayers())
         {
-            Console.WriteLine($"    Localized name: {playerWithSport.Name}");
+            Console.WriteLine($"    Localized name: {competitorPlayer.GetName(CultureEn)}");
+            Console.WriteLine($"    Sport ID: {competitorPlayer.GetSportID(CultureEn)}");
         }
 
         var fixtureChanges = provider.GetFixtureChanges(CultureEn);
@@ -167,6 +167,14 @@ internal static class GeneralExample
         Console.WriteLine($"ID: {m.Id}");
         Console.WriteLine($"Live odds availability: {m.LiveOddsAvailability}");
         Console.WriteLine($"Status: {m.Status}");
+
+        Console.WriteLine("Home players:");
+        var homePlayers = m.HomeCompetitor.GetPlayers();
+        foreach (var homePlayer in homePlayers)
+        {
+            Console.WriteLine($"    Localized name: {homePlayer.GetName(CultureEn)}");
+            Console.WriteLine($"    Sport ID: {homePlayer.GetSportID(CultureEn)}");
+        }
 
         var sport = await provider.GetSportAsync(sportUrn, CultureEn);
         Console.WriteLine($"Name: {sport.GetName(CultureEn)}");

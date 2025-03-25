@@ -21,7 +21,7 @@ internal class LocalizedCompetitor : ILocalizedItem
 
     internal IDictionary<CultureInfo, string> Abbreviation { get; set; } = new Dictionary<CultureInfo, string>();
 
-    internal IDictionary<CultureInfo, IEnumerable<PlayerWithSport>> Players { get; set; } = new Dictionary<CultureInfo, IEnumerable<PlayerWithSport>>();
+    internal IEnumerable<URN> PlayerIDs { get; set; } = new List<URN>();
 
     internal IDictionary<CultureInfo, string> Country { get; set; } = new Dictionary<CultureInfo, string>();
 
@@ -46,9 +46,6 @@ internal class LocalizedCompetitor : ILocalizedItem
 
         foreach (var abbreviation in Abbreviation)
             allCultures.Add(abbreviation.Key);
-
-        foreach (var players in Players)
-            allCultures.Add(players.Key);
 
         foreach (var country in Country)
             allCultures.Add(country.Key);
