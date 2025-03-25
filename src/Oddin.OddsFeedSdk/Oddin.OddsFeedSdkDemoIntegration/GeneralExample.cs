@@ -150,9 +150,12 @@ internal static class GeneralExample
         }
 
         var fixtureChanges = provider.GetFixtureChanges(CultureEn);
-        var fc = fixtureChanges.First();
-        Console.WriteLine($"Sport event ID: {fc.SportEventId}");
-        Console.WriteLine($"Update time: {fc.UpdateTime}");
+        if (fixtureChanges != null)
+        {
+            var fc = fixtureChanges.First();
+            Console.WriteLine($"Sport event ID: {fc.SportEventId}");
+            Console.WriteLine($"Update time: {fc.UpdateTime}");
+        }
 
         var listOfMatches = provider.GetListOfMatches(0, 2, CultureEn);
         var m = listOfMatches.First();

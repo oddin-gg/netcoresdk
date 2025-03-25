@@ -117,7 +117,7 @@ internal class Competitor : ICompetitor
         var playerIDs = FetchCompetitor(_cultures)?.PlayerIDs;
 
         if (playerIDs is null || playerIDs.Any() == false)
-            return null;
+            return Array.Empty<IPlayer>();
         return playerIDs
             .Select(playerID => _sportDataBuilder.BuildPlayer(playerID, _cultures));
     }

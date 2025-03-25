@@ -92,7 +92,14 @@ internal class ApiClient : IApiClient
         return result.Data;
     }
 
-    public competitorProfileEndpoint GetCompetitorProfile(URN id, CultureInfo culture)
+    public teamExtended GetCompetitorProfile(URN id, CultureInfo culture)
+    {
+        competitorProfileEndpoint data = GetCompetitorProfileWithPlayers(id, culture);
+
+        return data.competitor;
+    }
+
+    public competitorProfileEndpoint GetCompetitorProfileWithPlayers(URN id, CultureInfo culture)
     {
         if (id is null)
             throw new ArgumentNullException(nameof(id));

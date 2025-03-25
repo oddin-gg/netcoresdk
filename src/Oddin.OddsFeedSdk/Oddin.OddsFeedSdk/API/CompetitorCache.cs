@@ -111,7 +111,7 @@ internal class CompetitorCache : ICompetitorCache
             competitorProfileEndpoint data;
             try
             {
-                data = _apiClient.GetCompetitorProfile(id, culture);
+                data = _apiClient.GetCompetitorProfileWithPlayers(id, culture);
             }
             catch (Exception e)
             {
