@@ -13,4 +13,6 @@ internal interface ICompetitorCache : IDisposable
     string GetCompetitorIconPath(URN id, CultureInfo culture);
 
     void ClearCacheItem(URN id);
+
+    void LoadAndCacheItem(URN id, IEnumerable<CultureInfo> cultures);
 }

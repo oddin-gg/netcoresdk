@@ -109,16 +109,21 @@ internal class Competitor : ICompetitor
         if (sportIds is null || sportIds.Any() == false)
             return null;
         return sportIds
-            .Select(s => _sportDataBuilder.BuildSport(s, _cultures));
+            .Select(s => _sportDataBuilder.BuildSport(s, _cultures));                                           
     }
 
     public IEnumerable<IPlayer> GetPlayers()
     {
-        var playerIDs = FetchCompetitor(_cultures)?.PlayerIDs;
+        var competitor = FetchCompetitor(_cultures);
 
-        if (playerIDs is null || playerIDs.Any() == false)
+        // If the competitor does not contain any players, try loading them.
+        if (competitor?.PlayerIDs is null || competitor.PlayerIDs.Any() == false) {
+            _competitorCache.LoadAndCacheItem(Id, _cultures);
+        }
+
+        if (competitor?.PlayerIDs is null || competitor.PlayerIDs.Any() == false)
             return Array.Empty<IPlayer>();
-        return playerIDs
+        return competitor.PlayerIDs
             .Select(playerID => _sportDataBuilder.BuildPlayer(playerID, _cultures));
     }
 

@@ -104,7 +104,7 @@ internal class CompetitorCache : ICompetitorCache
 
     public void Dispose() => _subscription.Dispose();
 
-    private void LoadAndCacheItem(URN id, IEnumerable<CultureInfo> cultures)
+    public void LoadAndCacheItem(URN id, IEnumerable<CultureInfo> cultures)
     {
         foreach (var culture in cultures)
         {
