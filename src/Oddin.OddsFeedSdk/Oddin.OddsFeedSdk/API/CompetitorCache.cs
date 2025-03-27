@@ -130,33 +130,67 @@ internal class CompetitorCache : ICompetitorCache
         }
     }
 
-    private void RefreshOrInsertItem(URN id, CultureInfo culture, ITeam data)
+    private struct Team
     {
+        internal URN RefId { get; set; }
+        internal string Name { get; set; }
+        internal string Abbreviation { get; set; }
+        internal string Country { get; set; }
+        internal string CountryCode { get; set; }
+        internal bool? IsVirtual { get; set; }
+        internal string Underage { get; set; }
+    }
+
+    private void RefreshOrInsertItem(URN id, CultureInfo culture, ITeamable data)
+    {
+        var team = data switch
+        {
+            team t => new Team {
+                RefId = string.IsNullOrEmpty(t.refid) ? null : new URN(t.refid),
+                Name = t.name,
+                Abbreviation = t.abbreviation,
+                Country = t.country,
+                CountryCode = t.country_code,
+                IsVirtual = t.virtualSpecified ? t.@virtual : default(bool?),
+                Underage = t.underage
+            },
+            competitorProfileEndpoint e => new Team {
+                RefId = string.IsNullOrEmpty(e.competitor.refid) ? null : new URN(e.competitor.refid),
+                Name = e.competitor.name,
+                Abbreviation = e.competitor.abbreviation,
+                Country = e.competitor.country,
+                CountryCode = e.competitor.country_code,
+                IsVirtual = e.competitor.virtualSpecified ? e.competitor.@virtual : default(bool?),
+                Underage = e.competitor.underage
+            },
+            _ => throw new ArgumentException($"Unknown resource type: {data.GetType().Name}")
+        };
+
         if (_cache.Get(id.ToString()) is LocalizedCompetitor item)
         {
-            item.RefId = string.IsNullOrEmpty(data?.refid) ? null : new URN(data.refid);
-            item.IsVirtual = data.virtualSpecified ? data.@virtual : default(bool?);
-            item.CountryCode = data.country_code;
-            item.Underage = data.underage;
+            item.RefId = team.RefId;
+            item.IsVirtual = team.IsVirtual;
+            item.CountryCode = team.CountryCode;
+            item.Underage = team.Underage;
         }
         else
         {
             item = new LocalizedCompetitor(id)
             {
-                RefId = string.IsNullOrEmpty(data?.refid) ? null : new URN(data.refid),
-                IsVirtual = data.virtualSpecified ? data.@virtual : default(bool?),
-                CountryCode = data.country_code,
-                Underage = data.underage
+                RefId = team.RefId,
+                IsVirtual = team.IsVirtual,
+                CountryCode = team.CountryCode,
+                Underage = team.Underage
             };
         }
 
-        item.Name[culture] = data.name;
+        item.Name[culture] = team.Name;
 
-        if (data.abbreviation != null)
-            item.Abbreviation[culture] = data.abbreviation;
+        if (team.Abbreviation != null)
+            item.Abbreviation[culture] = team.Abbreviation;
 
-        if (data.country != null)
-            item.Country[culture] = data.country;
+        if (team.Country != null)
+            item.Country[culture] = team.Country;
 
         if (data is competitorProfileEndpoint competitorProfileEndpoint)
         {

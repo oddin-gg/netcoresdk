@@ -24,7 +24,7 @@ namespace Oddin.OddsFeedSdk.API.Models
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlRootAttribute("competitor_profile", IsNullable = false)]
-    public partial class competitorProfileEndpoint : ITeam
+    public partial class competitorProfileEndpoint : ITeamable
     {
 
         private teamExtended competitorField;
@@ -78,21 +78,5 @@ namespace Oddin.OddsFeedSdk.API.Models
                 this.generated_atFieldSpecified = value;
             }
         }
-
-        public string refid => competitor?.refid;
-
-        public bool virtualSpecified => competitor?.virtualSpecified ?? false;
-
-        public bool @virtual => competitor?.@virtual ?? false;
-
-        public string country_code => competitor?.country_code;
-
-        public string underage => competitor?.underage;
-
-        public string name => competitor?.name;
-
-        public string abbreviation => competitor?.abbreviation;
-
-        public string country => competitor?.country;
     }
 }

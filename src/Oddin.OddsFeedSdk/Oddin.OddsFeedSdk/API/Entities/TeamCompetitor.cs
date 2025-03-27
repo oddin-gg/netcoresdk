@@ -38,7 +38,6 @@ internal class TeamCompetitor : ITeamCompetitor
 
     public IReadOnlyDictionary<CultureInfo, string> Names => _competitor.Names;
 
-
     public string GetAbbreviation(CultureInfo culture) => _competitor.GetAbbreviation(culture);
 
     public string GetCountry(CultureInfo culture) => _competitor.GetCountry(culture);
