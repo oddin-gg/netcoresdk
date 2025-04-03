@@ -6,6 +6,7 @@ public class URN
 {
     public const string TypeMatch = "match";
     public const string TypeTournament = "tournament";
+    public const string TypePlayer = "player";
 
     public URN(string prefix, string type, long id)
     {
@@ -37,7 +38,7 @@ public class URN
     public override string ToString()
         => $"{Prefix}:{Type}:{Id}";
 
-    private bool TryParseUrn(string urnString, out string prefix, out string type, out long id)
+    internal static bool TryParseUrn(string urnString, out string prefix, out string type, out long id)
     {
         prefix = string.Empty;
         type = string.Empty;

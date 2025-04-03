@@ -130,6 +130,7 @@ internal class MarketDescriptionCache : IMarketDescriptionCache
         var key = new CompositeKey(marketDescription.id, marketDescription.variant);
         var item = _cache.Get(key.Key) as LocalizedMarketDescription;
         var specifiers = marketDescription.specifiers?.Select(s => new Specifier(s.name, s.type));
+        var groups = marketDescription.groups?.Split('|') ?? Array.Empty<string>();
 
         if (item == null)
         {
@@ -139,7 +140,8 @@ internal class MarketDescriptionCache : IMarketDescriptionCache
                 marketDescription.refid,
                 outcomes,
                 marketDescription.includes_outcomes_of_type,
-                marketDescription.outcome_type
+                marketDescription.outcome_type,
+                groups
             );
         }
 
