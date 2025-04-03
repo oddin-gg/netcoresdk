@@ -65,7 +65,7 @@ internal class Market : IMarket
                 else
                     return null;
 
-            return MakeMarketName(marketName, culture);
+            return MakeMarketName(marketName, culture, marketDescription.Groups.ToList());
         }
         catch (SdkException e)
         {
@@ -75,7 +75,7 @@ internal class Market : IMarket
         return null;
     }
 
-    private string MakeMarketName(string marketName, CultureInfo culture)
+    private string MakeMarketName(string marketName, CultureInfo culture, ICollection<string> groups)
     {
         if (Specifiers is null || Specifiers.Any() == false)
             return marketName;
@@ -93,10 +93,34 @@ internal class Market : IMarket
                 "away" => ( _sportEvent as IMatch )?.AwayCompetitor?.GetName(culture),
                 _ => specifier.Value
             };
+            if (IsPropsSpecifier(value, groups))
+            {
+                value = GetPropsSpecifierName(value, culture);
+            }
 
             template = template.Replace(key, value);
         }
 
         return template;
+    }
+
+    private static bool IsPropsSpecifier(string id, ICollection<string> groups)
+    {
+        if (groups is null || !groups.Contains(MarketDescriptionGroups.PlayerProps))
+        {
+            return false;
+        }
+
+        return URN.TryParseUrn(id, out _, out _, out _);
+    }
+
+    private string GetPropsSpecifierName(string id, CultureInfo culture)
+    {
+        var urn = new URN(id);
+        return urn.Type switch
+        {
+            URN.TypePlayer => _marketDescriptionFactory.PlayerCache.GetPlayer(urn, new[] { culture }).Name[culture],
+            _ => id
+        };
     }
 }
