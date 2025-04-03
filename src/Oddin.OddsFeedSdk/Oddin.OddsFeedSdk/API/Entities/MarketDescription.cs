@@ -46,6 +46,8 @@ internal class MarketDescription : IMarketDescription
 
     public IEnumerable<ISpecifier> Specifiers => FetchMarketDescription(_cultures)?.Specifiers;
 
+    public IEnumerable<string> Groups => FetchMarketDescription(_cultures)?.Groups;
+
     public string Variant { get; }
     public OutcomeType? OutcomeType { get; }
 

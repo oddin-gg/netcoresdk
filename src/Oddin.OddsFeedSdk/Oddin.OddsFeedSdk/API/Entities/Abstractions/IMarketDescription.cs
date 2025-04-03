@@ -14,6 +14,8 @@ public interface IMarketDescription
 
     IEnumerable<ISpecifier> Specifiers { get; }
 
+    IEnumerable<string> Groups { get; }
+
     /// <summary>
     ///     Variant
     /// </summary>

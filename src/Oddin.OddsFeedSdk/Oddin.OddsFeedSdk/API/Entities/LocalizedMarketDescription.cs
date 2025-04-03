@@ -12,12 +12,14 @@ internal class LocalizedMarketDescription : ILocalizedItem
         int refId,
         IDictionary<string, LocalizedOutcomeDescription> outcomes,
         string includesOutcomeOfType,
-        string outcomeType
+        string outcomeType,
+        IEnumerable<string> groups
     )
     {
         IncludesOutcomesOfType = includesOutcomeOfType;
         RefId = refId;
         Outcomes = outcomes;
+        Groups = groups;
 
         if (outcomeType != null)
         {
@@ -44,4 +46,6 @@ internal class LocalizedMarketDescription : ILocalizedItem
     public IDictionary<CultureInfo, string> Name { get; } = new Dictionary<CultureInfo, string>();
 
     public IEnumerable<CultureInfo> LoadedLocals => Name.Keys;
+
+    public IEnumerable<string> Groups { get; }
 }

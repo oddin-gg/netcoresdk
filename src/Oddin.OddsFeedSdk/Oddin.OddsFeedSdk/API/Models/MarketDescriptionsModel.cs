@@ -96,6 +96,8 @@ namespace Oddin.OddsFeedSdk.API.Models
 
         private string outcome_typeField;
 
+        private string groupsField;
+
         [System.Xml.Serialization.XmlAttribute(AttributeName = "ref_id")]
         public int refid
         {
@@ -198,6 +200,16 @@ namespace Oddin.OddsFeedSdk.API.Models
             }
             set {
                 this.outcome_typeField = value;
+            }
+        }
+
+        [System.Xml.Serialization.XmlAttributeAttribute(AttributeName = "groups")]
+        public string groups {
+            get {
+                return this.groupsField;
+            }
+            set {
+                this.groupsField = value;
             }
         }
     }
