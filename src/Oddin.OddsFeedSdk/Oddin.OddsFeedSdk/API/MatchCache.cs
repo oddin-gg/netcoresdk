@@ -135,7 +135,7 @@ internal class MatchCache : IMatchCache
 
         var sportFormat = SportFormat.Classic;
 
-        foreach (var info in model.extra_info)
+        foreach (var info in model.extra_info ?? Array.Empty<info>())
         {
             if (info.key == EXTRA_INFO_KEY_SPORT_FORMAT)
             {
@@ -165,7 +165,7 @@ internal class MatchCache : IMatchCache
             item.Competitors = competitors;
             item.LiveOddsAvailability = model.liveodds.ParseToLiveOddsAvailability();
             item.SportFormat = sportFormat;
-            item.ExtraInfo = model.extra_info.ToDictionary(x => x.key, x => x.value);
+            item.ExtraInfo = model.extra_info?.ToDictionary(x => x.key, x => x.value);
         }
         else
         {
@@ -179,7 +179,7 @@ internal class MatchCache : IMatchCache
                 Competitors = competitors,
                 LiveOddsAvailability = model.liveodds.ParseToLiveOddsAvailability(),
                 SportFormat = sportFormat,
-                ExtraInfo = model.extra_info.ToDictionary(x => x.key, x => x.value),
+                ExtraInfo = model.extra_info?.ToDictionary(x => x.key, x => x.value),
             };
         }
 

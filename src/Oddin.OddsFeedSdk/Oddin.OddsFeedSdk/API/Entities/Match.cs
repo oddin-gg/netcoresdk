@@ -91,7 +91,7 @@ internal class Match : IMatch
             return null;
         }
 
-        if (match.SportFormat != SportFormat.Classic)
+        if (!match.SportFormat.IsClassic())
         {
             var err = $"Match {match.Id} is not in a classic sport format. It is: {match.SportFormat}";
             _log.LogError(err);
