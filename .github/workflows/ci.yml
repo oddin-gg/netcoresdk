@@ -22,6 +22,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.x
+          cache: true
           
       - name: Restore NuGet packages for Library
         run: dotnet restore src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.csproj
@@ -54,6 +55,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.x
+          cache: true
           
       - name: Download NuGet Package Artifact
         uses: actions/download-artifact@v4
