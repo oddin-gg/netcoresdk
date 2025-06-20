@@ -23,6 +23,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
           cache: true
+          cache-dependency-path: src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.csproj
           
       - name: Restore NuGet packages for Library
         run: dotnet restore src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.csproj
@@ -56,6 +57,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
           cache: true
+          cache-dependency-path: src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdkDemoIntegration/Oddin.OddsFeedSdkDemoIntegration.csproj
           
       - name: Download NuGet Package Artifact
         uses: actions/download-artifact@v4
