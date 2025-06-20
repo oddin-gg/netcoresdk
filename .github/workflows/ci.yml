@@ -1,0 +1,78 @@
+name: Dotnet SDK CI
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+      - 'develop'
+  push:
+    branches:
+      - 'main'
+      - 'develop'
+
+jobs:
+  build_and_test_library:
+    name: Build & Test Library
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+          cache: true
+          cache-dependency-path: src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.csproj
+          
+      - name: Restore NuGet packages for Library
+        run: dotnet restore src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.csproj
+
+      - name: Build the Library
+        run: dotnet build src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.csproj --configuration Release --no-restore
+
+      - name: Run Library Tests
+        # This step will pass if no tests are found, but will run them once added.
+        run: dotnet test src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.csproj --no-build
+        
+      - name: Create NuGet Package
+        run: dotnet pack src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.csproj --configuration Release -o ./artifacts
+
+      - name: Upload NuGet Package as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-package
+          path: ./artifacts
+
+  build_and_test_examples:
+    name: Build & Test Examples
+    needs: build_and_test_library
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+          cache: true
+          cache-dependency-path: src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdkDemoIntegration/Oddin.OddsFeedSdkDemoIntegration.csproj
+          
+      - name: Download NuGet Package Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-package
+          path: ./local-packages
+
+      - name: Add Local NuGet Source
+        run: dotnet nuget add source "${{ github.workspace }}/local-packages" -n local-feed
+
+      - name: Restore NuGet packages for Examples
+        run: dotnet restore src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdkDemoIntegration/Oddin.OddsFeedSdkDemoIntegration.csproj
+        
+      - name: Build the Examples
+        run: dotnet build src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdkDemoIntegration/Oddin.OddsFeedSdkDemoIntegration.csproj --configuration Release --no-restore
+
+      - name: Run Examples Tests
+        run: dotnet test src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdkDemoIntegration/Oddin.OddsFeedSdkDemoIntegration.csproj --no-build
