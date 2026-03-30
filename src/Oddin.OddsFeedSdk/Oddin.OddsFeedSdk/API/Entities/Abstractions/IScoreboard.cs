@@ -18,6 +18,7 @@ public interface IScoreboard
     int? AwayGoals { get; }
     int? Time { get; }
     int? GameTime { get; }
+    int? ElapsedTime { get; }
 
     int? CurrentDefenderTeam { get; }
 

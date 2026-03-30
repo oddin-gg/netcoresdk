@@ -21,6 +21,7 @@ internal class Scoreboard : IScoreboard
         int? awayGoals,
         int? time,
         int? gameTime,
+        int? elapsedTime,
         int? currentDefenderTeam,
         // VirtualBasketballScoreboard
         int? homePoints,
@@ -60,6 +61,7 @@ internal class Scoreboard : IScoreboard
         AwayGoals = awayGoals;
         Time = time;
         GameTime = gameTime;
+        ElapsedTime = elapsedTime;
         CurrentDefenderTeam = currentDefenderTeam;
         // VirtualBasketballScoreboard
         HomePoints = homePoints;
@@ -103,6 +105,7 @@ internal class Scoreboard : IScoreboard
     public int? AwayGoals { get; }
     public int? Time { get; }
     public int? GameTime { get; }
+    public int? ElapsedTime { get; }
 
     public int? CurrentDefenderTeam { get; }
 
