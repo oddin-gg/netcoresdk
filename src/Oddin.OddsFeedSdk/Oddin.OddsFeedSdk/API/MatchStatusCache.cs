@@ -177,6 +177,7 @@ internal class MatchStatusCache : IMatchStatusCache
             scoreboard.away_goals,
             scoreboard.time,
             scoreboard.game_time,
+            scoreboard.elapsed_time,
             scoreboard.current_def_team,
             // VirtualBasketballScoreboard
             scoreboard.home_points,
@@ -223,6 +224,7 @@ internal class MatchStatusCache : IMatchStatusCache
             scoreboard.away_goals,
             scoreboard.time,
             scoreboard.game_time,
+            scoreboard.elapsed_time,
             scoreboard.current_def_team,
             // VirtualBasketballScoreboard
             scoreboard.home_points,
