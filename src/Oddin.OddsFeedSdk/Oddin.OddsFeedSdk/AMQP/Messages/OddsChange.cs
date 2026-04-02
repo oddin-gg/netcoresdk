@@ -224,7 +224,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         [XmlAttribute] public int away_goals { get; set; }
         [XmlAttribute] public int time { get; set; }
         [XmlAttribute] public int game_time { get; set; }
-        [XmlAttribute] public int? elapsed_time { get; set; }
+        [XmlAttribute] public int elapsed_time { get; set; }
         [XmlAttribute] public int current_def_team { get; set; }
         // VirtualBasketballScoreboard
         [XmlAttribute] public int home_points { get; set; }
