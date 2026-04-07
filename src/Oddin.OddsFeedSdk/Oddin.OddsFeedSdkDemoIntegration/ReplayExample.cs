@@ -38,7 +38,7 @@ internal static class ReplayExample
         AttachEvents(feed);
         AttachEvents(session);
 
-        feed.Open();
+        await feed.Open();
 
         var replayManager = feed.ReplayManager;
 
@@ -71,7 +71,7 @@ internal static class ReplayExample
 
         await replayManager.StopAndClearReplay();
 
-        feed.Close();
+        await feed.Close();
 
         DetachEvents(feed);
         DetachEvents(session);

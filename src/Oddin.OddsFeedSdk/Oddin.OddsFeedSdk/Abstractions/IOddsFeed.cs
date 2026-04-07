@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Dispatch.EventArguments;
 using Oddin.OddsFeedSdk.Managers.Abstractions;
@@ -6,7 +7,7 @@ using Oddin.OddsFeedSdk.Sessions.Abstractions;
 
 namespace Oddin.OddsFeedSdk.Abstractions;
 
-public interface IOddsFeed : IDisposable
+public interface IOddsFeed : IAsyncDisposable
 {
     IProducerManager ProducerManager { get; }
 
@@ -20,8 +21,8 @@ public interface IOddsFeed : IDisposable
 
     IOddsFeedSessionBuilder CreateBuilder();
 
-    void Open();
-    void Close();
+    Task Open();
+    Task Close();
 
     event EventHandler<ConnectionExceptionEventArgs> ConnectionException;
     event EventHandler<EventArgs> Disconnected;
