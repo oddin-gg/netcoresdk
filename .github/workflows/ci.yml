@@ -33,10 +33,33 @@ jobs:
       - name: Build the Library
         run: dotnet build src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.csproj --configuration Release --no-restore
 
-      - name: Run Library Tests
-        # This step will pass if no tests are found, but will run them once added.
-        run: dotnet test src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.csproj --no-build
-        
+      - name: Restore NuGet packages for Tests
+        run: dotnet restore src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.Tests/Oddin.OddsFeedSdk.Tests.csproj
+
+      - name: Run Library Tests with Coverage
+        run: >
+          dotnet test src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.Tests/Oddin.OddsFeedSdk.Tests.csproj
+          --collect:"XPlat Code Coverage"
+          --results-directory ./coverage-results
+
+      - name: Rename Cobertura report for skald
+        run: |
+          # Coverlet writes coverage.cobertura.xml under a guid dir; skald only
+          # accepts coverage.xml, so copy to the expected name at a fixed path.
+          src=$(find ./coverage-results -name 'coverage.cobertura.xml' | head -1)
+          if [ -z "$src" ]; then
+            echo "No coverage report produced — Coverlet did not run."
+            exit 1
+          fi
+          cp "$src" ./coverage.xml
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          if-no-files-found: warn
+
       - name: Extract version from tag
         id: version
         run: |
