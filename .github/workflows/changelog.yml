@@ -10,4 +10,5 @@ jobs:
     uses: oddin-gg/ragnar-notify/.github/workflows/release-changelog.yml@v0.0.6
     with:
       slack-username: netcoresdk
+      slack-icon-url: https://cdn.test.oddin.dev/ragnar-notify/netcoresdk.png
     secrets: inherit
