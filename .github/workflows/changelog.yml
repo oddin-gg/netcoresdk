@@ -1,0 +1,13 @@
+name: Release Changelog
+run-name: Release Changelog - ${{ github.event.release.tag_name }}
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  changelog:
+    uses: oddin-gg/ragnar-notify/.github/workflows/release-changelog.yml@v0.0.6
+    with:
+      slack-username: netcoresdk
+    secrets: inherit
