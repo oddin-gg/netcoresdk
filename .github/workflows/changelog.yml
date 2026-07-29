@@ -1,14 +1,132 @@
 name: Release Changelog
 run-name: Release Changelog - ${{ github.event.release.tag_name }}
 
+# Self-contained on purpose: this repo is public, and a public repo cannot call
+# a reusable workflow (or use an action) from the internal ragnar-notify repo,
+# so the render + post steps are inlined here and Slack is called directly.
+# Keep in sync with oddin-gg/ragnar-notify/.github/workflows/release-changelog.yml.
 on:
   release:
     types: [released]
 
+permissions:
+  contents: read
+
 jobs:
   changelog:
-    uses: oddin-gg/ragnar-notify/.github/workflows/release-changelog.yml@v0.0.6
-    with:
-      slack-username: netcoresdk
-      slack-icon-url: https://cdn.test.oddin.dev/ragnar-notify/netcoresdk.png
-    secrets: inherit
+    name: Post release changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preflight — Slack token present and valid
+        env:
+          TOKEN: ${{ secrets.SLACK_BOT_TOKEN_CHANGELOG }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TOKEN:-}" ]; then
+            echo "::error title=Changelog not posted::SLACK_BOT_TOKEN_CHANGELOG is not set. Add it as a repo secret (the changelog bot token) so release changelogs can post to Slack."
+            exit 1
+          fi
+          if ! curl -sS -X POST https://slack.com/api/auth.test -H "Authorization: Bearer ${TOKEN}" | grep -q '"ok":true'; then
+            echo "::error title=Changelog not posted::SLACK_BOT_TOKEN_CHANGELOG is set but Slack rejected it (expired/revoked/wrong scope). Re-set the changelog bot token."
+            exit 1
+          fi
+
+      - name: Checkout Code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.release.tag_name }}
+          persist-credentials: false
+
+      - name: Render changelog
+        id: render
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          REPO: ${{ github.repository }}
+          MAX_ENTRIES: "80"
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # Previous release = latest published GitHub Release (git describe fallback).
+          prev="$(gh api "repos/${REPO}/releases?per_page=30" \
+            --jq "[ .[] | select(.draft == false and .prerelease == false) | .tag_name ] | map(select(. != \"${TAG}\")) | .[0] // empty" 2>/dev/null || true)"
+          if [ -z "${prev}" ]; then
+            prev="$(git describe --tags --abbrev=0 --match 'v[0-9]*' --exclude '*-rc*' "${TAG}^" 2>/dev/null || true)"
+          fi
+          range="${prev:+${prev}..}${TAG}"
+          echo "Changelog range: ${range} (previous release: ${prev:-none})"
+
+          subjects="$(git log --no-merges --pretty=format:'%s' "${range}")"
+          if [ -z "${subjects}" ]; then
+            echo "No commits in range ${range}; nothing to post."
+            echo "has_changes=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          total="$(printf '%s\n' "${subjects}" | grep -c '')"
+          if [ "${total}" -gt "${MAX_ENTRIES}" ]; then
+            subjects="$(printf '%s\n' "${subjects}" | sed -n "1,${MAX_ENTRIES}p")"$'\n'"…and $((total - MAX_ENTRIES)) more commits"
+          fi
+
+          # Escape & < > in the untrusted subjects (mirrors escapeSlackText in notify.go)
+          # BEFORE splicing link markup, then post the text raw — links stay live and a
+          # subject like "<!channel>" can't inject a mass-ping.
+          body="$(printf '%s\n' "${subjects}" \
+            | sed -E 's@&@\&amp;@g; s@<@\&lt;@g; s@>@\&gt;@g' \
+            | sed -E 's@\[([A-Z][A-Z0-9]+-[0-9]+)\]@[<https://oddingg.atlassian.net/browse/\1|\1>]@g' \
+            | sed -E "s@\(#([0-9]+)\)@(<https://github.com/${REPO}/pull/\1|#\1>)@g" \
+            | sed -E 's@^@• @')"
+          message="$(printf 'Released *%s*\n%s' "${TAG}" "${body}")"
+
+          {
+            echo "has_changes=true"
+            echo "message<<__CHANGELOG_EOF__"
+            printf '%s\n' "${message}"
+            echo "__CHANGELOG_EOF__"
+          } >> "${GITHUB_OUTPUT}"
+
+          {
+            echo "### Release changelog"
+            echo "- **Tag:** ${TAG}"
+            echo "- **Since:** ${prev:-<first release>}"
+            echo "- **Commits:** ${total}"
+          } >> "${GITHUB_STEP_SUMMARY}"
+          echo "Rendered:"; printf '%s\n' "${message}"
+
+      - name: Post changelog to Slack
+        if: steps.render.outputs.has_changes == 'true'
+        env:
+          TOKEN: ${{ secrets.SLACK_BOT_TOKEN_CHANGELOG }}
+          CHANNEL: "#product-changelog"
+          SLACK_USERNAME: netcoresdk
+          ICON_URL: https://cdn.test.oddin.dev/ragnar-notify/netcoresdk.png
+          MESSAGE: ${{ steps.render.outputs.message }}
+        run: |
+          set -euo pipefail
+
+          # Same payload ragnar-notify sends in raw mode with no app-name prefix:
+          # {channel, text, username, icon_url}. jq builds it so the subjects
+          # cannot break out of the JSON string.
+          payload="$(jq -n \
+            --arg channel "${CHANNEL}" \
+            --arg text "${MESSAGE}" \
+            --arg username "${SLACK_USERNAME}" \
+            --arg icon_url "${ICON_URL}" \
+            '{channel: $channel, text: $text, username: $username, icon_url: $icon_url}')"
+
+          # Slack signals API errors as HTTP 200 + {"ok":false}, so check both the
+          # status code and .ok — mirrors the two checks in notify.go's post().
+          out="${RUNNER_TEMP}/slack-response.json"
+          code="$(curl -sS -X POST https://slack.com/api/chat.postMessage \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H 'Content-Type: application/json; charset=utf-8' \
+            --data-binary "${payload}" \
+            -o "${out}" -w '%{http_code}')"
+
+          if [ "${code}" != "200" ] || ! jq -e '.ok' "${out}" >/dev/null 2>&1; then
+            reason="$(jq -r '.error // empty' "${out}" 2>/dev/null || true)"
+            echo "::error title=Changelog not posted::Slack chat.postMessage failed (HTTP ${code}): ${reason:-$(head -c 200 "${out}")}"
+            exit 1
+          fi
+          echo "Posted to ${CHANNEL} (ts=$(jq -r '.ts' "${out}"))"
