@@ -21,6 +21,7 @@ internal class Match : IMatch
     private readonly ExceptionHandlingStrategy _handlingStrategy;
     private readonly IMatchCache _matchCache;
     private readonly ISportDataBuilder _sportDataBuilder;
+    private bool _loggedSportMismatch;
 
     public Match(
         URN id,
@@ -79,7 +80,8 @@ internal class Match : IMatch
         var match = FetchMatch(_cultures);
         if (match is null) return null;
 
-        if (match.Competitors.Count() < 2)
+        var competitors = match.Competitors?.ToList();
+        if (competitors is null || competitors.Count < 2)
         {
             var err = $"Match {match.Id} has less than 2 competitors.";
             _log.LogError(err);
@@ -103,7 +105,7 @@ internal class Match : IMatch
             return null;
         }
 
-        if (match.Competitors.Count() > 2)
+        if (competitors.Count > 2)
         {
             var err = $"Match {match.Id} has more than 2 competitors.";
             _log.LogError(err);
@@ -115,7 +117,7 @@ internal class Match : IMatch
             return null;
         }
 
-        var c = home ? match.Competitors.FirstOrDefault() : match.Competitors.LastOrDefault();
+        var c = home ? competitors.FirstOrDefault() : competitors.LastOrDefault();
         var competitor = FetchCompetitor(c.Id);
 
         if (competitor != null)
@@ -139,7 +141,7 @@ internal class Match : IMatch
             if (match is null) return null;
 
             var competitors = new List<ITeamCompetitor>();
-            foreach (var c in match.Competitors)
+            foreach (var c in match.Competitors ?? Enumerable.Empty<LocalizedMatch.Competitor>())
             {
                 var competitor = FetchCompetitor(c.Id);
                 if (competitor != null)
@@ -176,6 +178,7 @@ internal class Match : IMatch
     private LocalizedMatch FetchMatch(IEnumerable<CultureInfo> cultures)
     {
         var item = _matchCache.GetMatch(Id, cultures);
+        LogSportMismatchOnce(item);
 
         if (item is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
             throw new ItemNotFoundException(Id.ToString(), "Unable to fetch match");
@@ -193,6 +196,15 @@ internal class Match : IMatch
 
     private URN FetchSportId()
     {
+        // Surface a routing-key vs cached-API sport conflict to SportId-only readers, which never
+        // load the match (FetchSportId short-circuits on _localSportId). The Func overload runs the
+        // cheap guards first and only peeks when a comparison is actually possible. PeekMatch is a
+        // lock-free _cache.Get — no semaphore, no API call — so this stays off the summary hot path.
+        // We accept that per-read peek rather than a one-shot flag: the two sports can only be
+        // compared once something has cached the match, which often happens after the first SportId
+        // read, and a one-shot would disarm the diagnostic before that ever occurs.
+        LogSportMismatchOnce(() => _matchCache.PeekMatch(Id));
+
         var sportId = _localSportId ?? FetchMatch(_cultures)?.SportId;
 
         if (sportId is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
@@ -206,17 +218,60 @@ internal class Match : IMatch
 
     private ITournament FetchTournament()
     {
-        var sportId = SportId;
+        var match = _matchCache.GetMatch(Id, _cultures);
+        if (match is null)
+        {
+            var culture = _cultures.FirstOrDefault();
+            if (culture is not null)
+                _matchCache.LoadFixture(Id, culture);
+
+            match = _matchCache.PeekMatch(Id);
+            if (match is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
+                throw new ItemNotFoundException(Id.ToString(), "Unable to fetch match");
+        }
+
+        LogSportMismatchOnce(match);
+
+        var sportId = _localSportId ?? match?.SportId;
+
+        if (sportId is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
+            throw new ItemNotFoundException(null, "Cannot load sport");
         if (sportId is null)
             return null;
 
-        var tournamentId = FetchMatch(_cultures)?.TournamentId;
+        var tournamentId = match?.TournamentId;
 
         if (tournamentId is null && _handlingStrategy == ExceptionHandlingStrategy.THROW)
             throw new ItemNotFoundException("null", "Cannot load tournament");
         if (tournamentId is null)
             return null;
         return _sportDataBuilder.BuildTournament(tournamentId, sportId, _cultures);
+    }
+
+    private void LogSportMismatchOnce(Func<LocalizedMatch> matchProvider)
+    {
+        // Run the cheap guards before touching the cache, so the common feed-path read (already
+        // logged, or nothing to compare) costs nothing.
+        if (_loggedSportMismatch || _localSportId is null)
+            return;
+
+        LogSportMismatchOnce(matchProvider());
+    }
+
+    private void LogSportMismatchOnce(LocalizedMatch match)
+    {
+        if (_loggedSportMismatch
+            || _localSportId is null
+            || match?.SportId is null
+            || _localSportId == match.SportId)
+        {
+            return;
+        }
+
+        _loggedSportMismatch = true;
+        _log.LogWarning(
+            $"Sport mismatch for match {Id}: routing key contains {_localSportId}, " +
+            $"while the cached match record contains {match.SportId}.");
     }
 
     private ISport FetchSport(IEnumerable<CultureInfo> cultures)

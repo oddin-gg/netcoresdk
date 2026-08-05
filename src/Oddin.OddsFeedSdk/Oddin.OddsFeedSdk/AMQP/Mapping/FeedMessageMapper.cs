@@ -389,7 +389,7 @@ internal class FeedMessageMapper : IFeedMessageMapper
                 if (sport is null) throw new ArgumentNullException(nameof(sport));
                 return _sportDataBuilder.BuildTournament(id, sport, cultures);
             case URN.TypeMatch:
-                return _sportDataBuilder.BuildMatch(id, cultures);
+                return _sportDataBuilder.BuildMatch(id, cultures, sport);
             default:
                 throw new ArgumentException($"Sport event of unknown type '{id?.Type}'");
         }

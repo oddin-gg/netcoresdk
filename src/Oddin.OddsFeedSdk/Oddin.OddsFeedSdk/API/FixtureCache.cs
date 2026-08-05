@@ -57,7 +57,7 @@ internal class FixtureCache : IFixtureCache
 
         var item = new LocalizedFixture(
             fixtureData.fixture.start_timeSpecified ? fixtureData.fixture.start_time : default(DateTime?),
-            fixtureData.fixture.extra_info?.ToDictionary(i => i.key, i => i.value),
+            ExtraInfoHelper.ToExtraInfoDictionary(fixtureData.fixture.extra_info, id, _log),
             fixtureData.fixture.tv_channels?.Select(t =>
                 new TvChannel(
                     t.name,

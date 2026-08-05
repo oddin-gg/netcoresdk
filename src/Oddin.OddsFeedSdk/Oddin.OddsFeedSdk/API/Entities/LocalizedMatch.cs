@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Oddin.OddsFeedSdk.AMQP.Enums;
 using Oddin.OddsFeedSdk.API.Entities.Abstractions;
 using Oddin.OddsFeedSdk.Common;
@@ -29,6 +30,16 @@ internal class LocalizedMatch : ILocalizedItem
     internal SportFormat SportFormat { get; set; }
     internal IDictionary<CultureInfo, string> Name { get; set; } = new Dictionary<CultureInfo, string>();
     internal LiveOddsAvailability LiveOddsAvailability { get; set; }
-    public IEnumerable<CultureInfo> LoadedLocals => Name.Keys;
+    private ISet<CultureInfo> LoadedLocalSet { get; } = new HashSet<CultureInfo>();
+    public IEnumerable<CultureInfo> LoadedLocals => LoadedLocalSet;
     public IDictionary<string, string> ExtraInfo { get; set;  }
+
+    // Fixture payloads carry too little data to count as a loaded culture — leaving the
+    // culture out of LoadedLocalSet keeps it eligible for summary retry, while a culture
+    // already loaded from a summary/schedule is never demoted by a later fixture update.
+    internal void MarkCultureLoaded(CultureInfo culture, bool fromFixture)
+    {
+        if (!fromFixture)
+            LoadedLocalSet.Add(culture);
+    }
 }

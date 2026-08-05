@@ -10,5 +10,7 @@ internal interface IMatchCache : IDisposable
 {
     void ClearCacheItem(URN id);
     LocalizedMatch GetMatch(URN id, IEnumerable<CultureInfo> cultures);
+    void LoadFixture(URN id, CultureInfo culture);
     void OnFeedMessageReceived(fixture_change e);
+    LocalizedMatch PeekMatch(URN id);
 }
