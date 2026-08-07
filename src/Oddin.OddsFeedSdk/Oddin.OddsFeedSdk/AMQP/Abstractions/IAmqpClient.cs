@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Oddin.OddsFeedSdk.Sessions;
 using RabbitMQ.Client.Events;
 
@@ -7,8 +8,8 @@ namespace Oddin.OddsFeedSdk.AMQP.Abstractions;
 
 internal interface IAmqpClient
 {
-    void Connect(MessageInterest messageInterest, IEnumerable<string> routingKeys);
-    void Disconnect();
+    Task Connect(MessageInterest messageInterest, IEnumerable<string> routingKeys);
+    Task Disconnect();
 
-    event EventHandler<BasicDeliverEventArgs> OnReceived;
+    event AsyncEventHandler<BasicDeliverEventArgs> OnReceived;
 }

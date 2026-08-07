@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.Abstractions;
@@ -104,7 +105,7 @@ public class Feed : DispatcherBase, IOddsFeed
         }
     }
 
-    public void Open()
+    public async Task Open()
     {
         if (TrySetAsOpened() == false)
             throw new InvalidOperationException($"{nameof(Open)} cannot be called when the feed is already opened!");
@@ -143,7 +144,7 @@ public class Feed : DispatcherBase, IOddsFeed
         if (!hasAliveMessageInterest && !replayOnly)
         {
             _possibleAliveSession = NewSession(MessageInterest.SystemAliveOnlyMessages);
-            _possibleAliveSession.Open(MessageInterest.SystemAliveOnlyMessages.RoutingKeys);
+            await _possibleAliveSession.Open(MessageInterest.SystemAliveOnlyMessages.RoutingKeys);
         }
 
         AttachToEvents();
@@ -155,13 +156,13 @@ public class Feed : DispatcherBase, IOddsFeed
             {
                 var found = sessionRoutingKeys.TryGetValue(session.SessionId, out var routingKeys);
                 if (!found) throw new InvalidOperationException("Missing routing keys for session");
-                session.Open(routingKeys);
+                await session.Open(routingKeys);
             }
         }
         catch (Exception)
         {
             foreach (var openSession in _sessions.Where(s => s.IsOpened()))
-                openSession.Close();
+                await openSession.Close();
 
             DetachFromEvents();
             SetAsClosed();
@@ -171,23 +172,17 @@ public class Feed : DispatcherBase, IOddsFeed
         _recoveryManager.Open(replayOnly);
     }
 
-    public void Close()
+    public async Task Close()
     {
         _log.LogInformation($"Closing {typeof(Feed)}...");
 
         foreach (var session in _sessions)
-            session.Close();
+            await session.Close();
 
         ( (RecoveryManager)_recoveryManager ).Close();
 
         DetachFromEvents();
         SetAsClosed();
-    }
-
-    void IDisposable.Dispose()
-    {
-        InternalDispose(true);
-        GC.SuppressFinalize(this);
     }
 
     public IOddsFeedSessionBuilder CreateBuilder()
@@ -365,12 +360,12 @@ public class Feed : DispatcherBase, IOddsFeed
         return result;
     }
 
-    private void InternalDispose(bool disposing)
+    private async Task InternalDispose(bool disposing)
     {
         if (_isDisposed)
             return;
 
-        Close();
+        await Close();
 
         if (disposing)
         {
@@ -389,12 +384,16 @@ public class Feed : DispatcherBase, IOddsFeed
         _isDisposed = true;
     }
 
-    private void OnAmqpCallbackException(object sender, CallbackExceptionEventArgs eventArgs) => Dispatch(
-        ConnectionException, new ConnectionExceptionEventArgs(eventArgs.Exception, eventArgs.Detail),
-        nameof(ConnectionException));
+    private Task OnAmqpCallbackException(object sender, CallbackExceptionEventArgs eventArgs)
+    {
+        Dispatch(
+            ConnectionException, new ConnectionExceptionEventArgs(eventArgs.Exception, eventArgs.Detail),
+            nameof(ConnectionException));
+        return Task.CompletedTask;
+    }
 
     // This method is called when Rabbit library informs that the connection has been shut down
-    private void OnConnectionShutdown(object sender, ShutdownEventArgs shutdownEventArgs)
+    private Task OnConnectionShutdown(object sender, ShutdownEventArgs shutdownEventArgs)
     {
         _log.LogWarning(
             $"The AMQP connection was shut down. {shutdownEventArgs.ReplyCode} {shutdownEventArgs.ReplyText} Initiator: {shutdownEventArgs.Initiator} Cause: {shutdownEventArgs.Cause}");
@@ -406,6 +405,7 @@ public class Feed : DispatcherBase, IOddsFeed
         else
             Dispatch(Closed, new FeedCloseEventArgs($"{shutdownEventArgs.ReplyCode} {shutdownEventArgs.ReplyText}"),
                 nameof(Closed));
+        return Task.CompletedTask;
     }
 
     internal IOddsFeedSession BuildSession(MessageInterest messageInterest)
@@ -435,4 +435,9 @@ public class Feed : DispatcherBase, IOddsFeed
             OnConnectionShutdown,
             Services.GetService<IExchangeNameProvider>()
         );
+
+    public async ValueTask DisposeAsync() {
+        await InternalDispose(true);
+        GC.SuppressFinalize(this);
+    }
 }

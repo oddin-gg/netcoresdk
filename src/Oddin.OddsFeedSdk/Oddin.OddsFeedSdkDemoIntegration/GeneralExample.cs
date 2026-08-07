@@ -47,7 +47,7 @@ internal static class GeneralExample
         AttachEvents(feed);
         AttachEvents(session);
 
-        feed.Open();
+        await feed.Open();
 
         var ctrlCPressed = new TaskCompletionSource<bool>();
         Console.CancelKeyPress += (_, e) =>
@@ -67,7 +67,7 @@ internal static class GeneralExample
         };
         await Task.WhenAll(tasks);
 
-        feed.Close();
+        await feed.Close();
 
         DetachEvents(feed);
         DetachEvents(session);
