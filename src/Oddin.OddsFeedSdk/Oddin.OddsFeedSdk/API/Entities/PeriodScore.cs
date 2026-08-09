@@ -18,6 +18,8 @@ internal class PeriodScore : IPeriodScore
         int? awayGoals,
         int? homePoints,
         int? awayPoints,
+        int? homeGames,
+        int? awayGames,
         int? homeRuns,
         int? awayRuns,
         int? homeWicketsFallen,
@@ -42,6 +44,8 @@ internal class PeriodScore : IPeriodScore
         AwayGoals = awayGoals;
         HomePoints = homePoints;
         AwayPoints = awayPoints;
+        HomeGames = homeGames;
+        AwayGames = awayGames;
         HomeRuns = homeRuns;
         AwayRuns = awayRuns;
         HomeWicketsFallen = homeWicketsFallen;
@@ -66,6 +70,8 @@ internal class PeriodScore : IPeriodScore
     public int? AwayGoals { get; }
     public int? HomePoints { get; }
     public int? AwayPoints { get; }
+    public int? HomeGames { get; }
+    public int? AwayGames { get; }
     public int? HomeRuns { get; }
     public int? AwayRuns { get; }
     public int? HomeWicketsFallen { get; }
