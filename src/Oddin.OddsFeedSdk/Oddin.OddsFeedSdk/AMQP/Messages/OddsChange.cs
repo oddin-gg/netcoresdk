@@ -1368,6 +1368,22 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public int away_points { get; set; }
 
+        // Games won inside one period. Set-based classic sports (tennis) report
+        // them per set, alongside home_score/away_score, which is the running
+        // sets-won tally. The Specified pattern keeps absence distinguishable
+        // from a real 0:0 - XmlSerializer cannot handle nullable attributes.
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int home_games { get; set; }
+
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool home_gamesSpecified { get; set; }
+
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public int away_games { get; set; }
+
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool away_gamesSpecified { get; set; }
+
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public int home_kills { get; set; }
 

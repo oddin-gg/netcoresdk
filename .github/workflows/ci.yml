@@ -34,8 +34,7 @@ jobs:
         run: dotnet build src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.csproj --configuration Release --no-restore
 
       - name: Run Library Tests
-        # This step will pass if no tests are found, but will run them once added.
-        run: dotnet test src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.csproj --no-build
+        run: dotnet test src/Oddin.OddsFeedSdk/Oddin.OddsFeedSdk.Tests/Oddin.OddsFeedSdk.Tests.csproj
         
       - name: Extract version from tag
         id: version
