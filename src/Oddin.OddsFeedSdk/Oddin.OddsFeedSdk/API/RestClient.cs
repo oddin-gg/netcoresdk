@@ -190,6 +190,7 @@ internal class RestClient : IRestClient, IDisposable
             return RequestResult<TData>.Failure(
                 failureMessage:
                 $"Received failure http status code: {httpResponse?.StatusCode} {httpResponse?.ReasonPhrase}",
+                rawData: requestResultString,
                 responseCode: httpResponse.StatusCode);
         }
 
