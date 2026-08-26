@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.Abstractions;
 using Oddin.OddsFeedSdk.AMQP;
@@ -48,8 +49,8 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         RecoveryManager recoveryMessageProcessor,
         CacheManager cacheManager,
         IApiClient apiClient,
-        EventHandler<CallbackExceptionEventArgs> onCallbackException,
-        EventHandler<ShutdownEventArgs> onConnectionShutdown,
+        AsyncEventHandler<CallbackExceptionEventArgs> onCallbackException,
+        AsyncEventHandler<ShutdownEventArgs> onConnectionShutdown,
         IExchangeNameProvider exchangeNameProvider
     )
     {
@@ -283,7 +284,7 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         return true;
     }
 
-    private void OnReceived(object sender, BasicDeliverEventArgs eventArgs)
+    private Task OnReceived(object sender, BasicDeliverEventArgs eventArgs)
     {
         var receivedAt = Timestamp.Now();
         var body = eventArgs.Body.ToArray();
@@ -297,14 +298,14 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         if (success == false)
         {
             PublishUnparsableMessage(body, eventArgs.RoutingKey);
-            return;
+            return Task.CompletedTask;
         }
 
         SetMessageMetaData(message, eventArgs, receivedAt);
 
         if (!FilterFeedMessage(message, MessageInterest) || !FilterFixtureChanges(message))
         {
-            return;
+            return Task.CompletedTask;
         }
 
         var producerId = message.ProducerId;
@@ -392,6 +393,8 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
             producerId,
             timestamp
         );
+
+        return Task.CompletedTask;
     }
 
     private void AttachEvents() => _amqpClient.OnReceived += OnReceived;
@@ -426,7 +429,7 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         }
     }
 
-    public void Open(IEnumerable<string> routingKeys)
+    public async Task Open(IEnumerable<string> routingKeys)
     {
         if (TrySetAsOpened() == false)
             throw new InvalidOperationException(
@@ -435,7 +438,7 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         AttachEvents();
         try
         {
-            _amqpClient.Connect(MessageInterest, routingKeys);
+            await _amqpClient.Connect(MessageInterest, routingKeys);
         }
         catch (CommunicationException)
         {
@@ -444,9 +447,9 @@ internal class OddsFeedSession : DispatcherBase, IOddsFeedSession
         }
     }
 
-    public void Close()
+    public async Task Close()
     {
-        _amqpClient.Disconnect();
+        await _amqpClient.Disconnect();
         DetachEvents();
         SetAsClosed();
     }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Security;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Oddin.OddsFeedSdk.AMQP.Abstractions;
 using Oddin.OddsFeedSdk.API.Abstractions;
@@ -22,19 +23,19 @@ internal class AmqpClient : DispatcherBase, IAmqpClient
     private readonly IExchangeNameProvider _exchangeNameProvider;
 
     private readonly string _host;
-    private readonly EventHandler<CallbackExceptionEventArgs> _onCallbackException;
-    private readonly EventHandler<ShutdownEventArgs> _onConnectionShutdown;
+    private readonly AsyncEventHandler<CallbackExceptionEventArgs> _onCallbackException;
+    private readonly AsyncEventHandler<ShutdownEventArgs> _onConnectionShutdown;
     private readonly int _port;
     private readonly string _username;
-    private IModel _channel;
+    private IChannel _channel;
     private IConnection _connection;
-    private EventingBasicConsumer _consumer;
+    private AsyncEventingBasicConsumer _consumer;
 
 
     public AmqpClient(IFeedConfiguration config,
         IApiClient apiClient,
-        EventHandler<CallbackExceptionEventArgs> onCallbackException,
-        EventHandler<ShutdownEventArgs> onConnectionShutdown,
+        AsyncEventHandler<CallbackExceptionEventArgs> onCallbackException,
+        AsyncEventHandler<ShutdownEventArgs> onConnectionShutdown,
         IExchangeNameProvider exchangeNameProvider)
     {
         _host = config.Host;
@@ -46,9 +47,9 @@ internal class AmqpClient : DispatcherBase, IAmqpClient
         _exchangeNameProvider = exchangeNameProvider;
     }
 
-    public event EventHandler<BasicDeliverEventArgs> OnReceived;
+    public event AsyncEventHandler<BasicDeliverEventArgs> OnReceived;
 
-    public void Connect(MessageInterest messageInterest, IEnumerable<string> routingKeys)
+    public async Task Connect(MessageInterest messageInterest, IEnumerable<string> routingKeys)
     {
         _log.LogInformation($"Connecting {nameof(AmqpClient)} with message interest {messageInterest.Name}...");
 
@@ -56,25 +57,25 @@ internal class AmqpClient : DispatcherBase, IAmqpClient
         {
             var factory = CreateConnectionFactory();
 
-            CreateConnectionFromConnectionFactory(factory);
-            _connection.CallbackException += _onCallbackException;
-            _connection.ConnectionShutdown += _onConnectionShutdown;
+            await CreateConnectionFromConnectionFactory(factory);
+            _connection.CallbackExceptionAsync += _onCallbackException;
+            _connection.ConnectionShutdownAsync += _onConnectionShutdown;
 
-            _channel = _connection.CreateModel();
+            _channel = await _connection.CreateChannelAsync();
 
-            var queueInfo = _channel.QueueDeclare();
+            var queueInfo = await _channel.QueueDeclareAsync();
 
-            _channel.ExchangeDeclare(
+            await _channel.ExchangeDeclareAsync(
                 _exchangeNameProvider.ExchangeName,
                 ExchangeType.Topic,
                 true);
 
             foreach (var routingKey in routingKeys)
-                _channel.QueueBind(queueInfo.QueueName, _exchangeNameProvider.ExchangeName, routingKey);
+                await _channel.QueueBindAsync(queueInfo.QueueName, _exchangeNameProvider.ExchangeName, routingKey);
 
-            _consumer = new EventingBasicConsumer(_channel);
-            _consumer.Received += OnReceived;
-            _channel.BasicConsume(queueInfo.QueueName, true, _consumer);
+            _consumer = new AsyncEventingBasicConsumer(_channel);
+            _consumer.ReceivedAsync += OnReceived;
+            await _channel.BasicConsumeAsync(queueInfo.QueueName, true, _consumer);
         }
         catch (CommunicationException)
         {
@@ -89,17 +90,17 @@ internal class AmqpClient : DispatcherBase, IAmqpClient
     }
 
 
-    public void Disconnect()
+    public async Task Disconnect()
     {
         _log.LogInformation($"Disconnecting {nameof(AmqpClient)}...");
 
-        _consumer.Received -= OnReceived;
-        _channel.Close();
-        _connection.CallbackException -= _onCallbackException;
-        _connection.ConnectionShutdown -= _onConnectionShutdown;
+        _consumer.ReceivedAsync -= OnReceived;
+        await _channel.CloseAsync();
+        _connection.CallbackExceptionAsync -= _onCallbackException;
+        _connection.ConnectionShutdownAsync -= _onConnectionShutdown;
         try
         {
-            _connection.Close();
+            await _connection.CloseAsync();
         }
         catch (IOException)
         {
@@ -137,11 +138,11 @@ internal class AmqpClient : DispatcherBase, IAmqpClient
         return factory;
     }
 
-    private void CreateConnectionFromConnectionFactory(ConnectionFactory factory)
+    private async Task CreateConnectionFromConnectionFactory(ConnectionFactory factory)
     {
         try
         {
-            _connection = factory.CreateConnection();
+            _connection = await factory.CreateConnectionAsync();
         }
         catch (BrokerUnreachableException)
         {
