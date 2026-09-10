@@ -20,8 +20,7 @@ internal class SportDataCache : ISportDataCache
     private readonly IApiClient _apiClient;
     private readonly MemoryCache _cache = new(nameof(SportDataCache));
     private readonly CacheItemPolicy _cachePolicy = new() { Priority = CacheItemPriority.NotRemovable };
-    // A set, not a list: the check and the add sit in different critical sections, so two
-    // concurrent cold loads of the same culture can both reach the add.
+    // Set: the check and the add are in different critical sections.
     private readonly HashSet<CultureInfo> _loadedLocales = new();
 
     private readonly Semaphore _semaphore = new(1, 1);
@@ -34,9 +33,7 @@ internal class SportDataCache : ISportDataCache
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
             {
-                // Everything is guarded: an exception escaping here disposes this
-                // subscription for good, and Subject also rethrows it into the API caller
-                // and skips every cache that subscribed after this one.
+                // An escape here kills the subscription for good.
                 try
                 {
                     HandleResponse(response);
@@ -110,9 +107,7 @@ internal class SportDataCache : ISportDataCache
         TournamentsModel tournaments;
         try
         {
-            // Deliberately outside the semaphore. The response is published on this
-            // thread, so a sibling cache's side-load observer runs here and takes its
-            // own lock; holding ours across the call lets two caches wait on each other.
+            // Unlocked: publishing runs the sibling observers, which take their own locks.
             tournaments = _apiClient.GetTournaments(id, culture);
         }
         catch (Exception e)
@@ -123,9 +118,6 @@ internal class SportDataCache : ISportDataCache
 
         var tournamentIds = tournaments.tournaments.Select(t => string.IsNullOrEmpty(t?.id) ? null : new URN(t.id));
 
-        // One critical section for the whole loop: the body makes no API call, so keeping
-        // it in one keeps the entry from being observed half-updated and avoids a kernel
-        // transition per tournament.
         _semaphore.WaitOne();
         try
         {
@@ -219,9 +211,7 @@ internal class SportDataCache : ISportDataCache
             SportsModel sports;
             try
             {
-                // Deliberately outside the semaphore. The sibling caches' side-load
-                // observers run before this call completes, and they take their own locks;
-                // holding ours across the call lets two caches wait on each other.
+                // Unlocked: publishing runs the sibling observers, which take their own locks.
                 sports = await _apiClient.GetSports(culture);
             }
             catch (Exception e)
@@ -246,7 +236,6 @@ internal class SportDataCache : ISportDataCache
                     }
                 }
 
-                // Plain List — only ever read and written under the semaphore.
                 _loadedLocales.Add(culture);
             }
             finally

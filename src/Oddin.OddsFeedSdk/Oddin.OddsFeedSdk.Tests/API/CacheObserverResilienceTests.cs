@@ -13,9 +13,7 @@ using Xunit;
 
 namespace Oddin.OddsFeedSdk.Tests.API;
 
-// An exception escaping a side-load observer is not a one-off: Rx disposes the
-// subscription permanently, so the cache silently stops taking API data for the
-// rest of the process, and Subject rethrows it into whoever made the API call.
+// Rx disposes the subscription permanently when an observer throws.
 [Collection(CacheSideLoadCollection.Name)]
 public class CacheObserverResilienceTests
 {
@@ -31,7 +29,7 @@ public class CacheObserverResilienceTests
 
         using var playerCache = new PlayerCache(api);
 
-        // players is null, so the observer's switch arm calls .ToArray() on null.
+        // players is null: the observer's switch arm calls .ToArray() on it.
         var escapedIntoCaller = false;
         try
         {
@@ -56,13 +54,11 @@ public class CacheObserverResilienceTests
             escapedIntoCaller,
             "a bad side-load response escaped into the API caller, which sees it as a failed request");
 
-        // GetPlayerProfile throws in this proxy, so a non-null result can only have come
-        // from the observer — proving the subscription survived the first response.
+        // GetPlayerProfile throws here, so a hit can only have come from the observer.
         Assert.NotNull(playerCache.GetPlayer(PlayerId, new[] { Culture }));
     }
 
-    // Publishes on demand; every direct API call fails, so anything found in a cache
-    // must have been side-loaded.
+    // Every direct API call fails, so a cache hit can only be a side-load.
     public class PublishOnlyApiClientProxy : DispatchProxy
     {
         private readonly Subject<IRequestResult<object>> _responses = new();
