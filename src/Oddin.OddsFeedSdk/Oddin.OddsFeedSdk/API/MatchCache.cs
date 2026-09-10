@@ -229,9 +229,9 @@ internal class MatchCache : IMatchCache
             } else
             {
                 // A sport_format value a newer backend introduced that this SDK version does not
-                // recognise. Do not throw: the nearest handler is the per-item catch in
-                // HandleMatchData, so this match would be dropped for an unknown format alone.
-                // Report Unknown, but leave hasSportFormat false so the insert
+                // recognise. Do not throw: this runs inside the Rx subscription arms, which have no
+                // catch, so the exception would escape OnNext and starve every cache that subscribed
+                // after MatchCache. Report Unknown, but leave hasSportFormat false so the insert
                 // branch surfaces it honestly while the update branch preserves a known cached value
                 // rather than demoting it.
                 _log.LogWarning($"Unknown sport format '{sportFormatValue}' for match '{id}', treating as Unknown.");
@@ -312,9 +312,10 @@ internal class MatchCache : IMatchCache
             // Per-item, not around the whole loop: a schedule/tournament-schedule payload carries
             // many sportEvents, and both the URN construction below and RefreshOrInsertItem can throw
             // on a malformed server value (new URN(...) rejects anything that isn't three
-            // colon-separated parts with a positive numeric id). The subscription guard would catch
-            // an escape but drop the whole response with it. Isolating per item keeps one bad match
-            // from dropping its siblings, matching LoadAndCacheItem's log-and-continue contract.
+            // colon-separated parts with a positive numeric id). These run inside the Rx subscription
+            // arms, which have no catch, so an escape would starve every later subscriber. Isolating
+            // per item keeps one bad match from dropping its siblings, matching LoadAndCacheItem's
+            // log-and-continue contract.
             try
             {
                 var id = string.IsNullOrEmpty(tournament?.id) ? null : new URN(tournament.id);
