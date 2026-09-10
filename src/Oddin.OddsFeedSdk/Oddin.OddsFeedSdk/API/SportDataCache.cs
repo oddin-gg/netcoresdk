@@ -123,22 +123,24 @@ internal class SportDataCache : ISportDataCache
         {
             foreach (var tournament in tournaments.tournaments)
             {
-                // Parse and insert in one guarded step: new URN throws on a malformed
-                // server id, and outside the try it would abort the whole loop.
+                // Per item: new URN throws on a malformed server id, and outside the
+                // try it would abort the whole loop.
                 try
                 {
                     if (string.IsNullOrEmpty(tournament?.id))
                         continue;
 
-                    var tournamentId = new URN(tournament.id);
-                    RefreshOrInsertItem(id, culture, tournamentId: tournamentId);
-                    tournamentIds.Add(tournamentId);
+                    tournamentIds.Add(new URN(tournament.id));
                 }
                 catch (Exception e)
                 {
-                    _log.LogError($"Failed to insert or refresh sport tournament '{tournament?.id}': {e}");
+                    _log.LogError($"Failed to read sport tournament '{tournament?.id}': {e}");
                 }
             }
+
+            // Once, after the loop: a reader takes the reference without the
+            // semaphore, so it must never see a half-filled set.
+            RefreshOrInsertItem(id, culture, tournamentIds: tournamentIds);
         }
         finally
         {
@@ -177,12 +179,22 @@ internal class SportDataCache : ISportDataCache
     }
 
     // Copy-on-write: the published entry is handed out by reference and read
-    // outside the semaphore, so a set that is already visible is never mutated.
-    private static ICollection<URN> WithTournament(ICollection<URN> current, URN tournamentId)
+    // outside the semaphore, so a visible set is never mutated. Returns current
+    // untouched when there is nothing to add, so "unknown" never becomes "empty".
+    private static ICollection<URN> WithTournaments(ICollection<URN> current, ICollection<URN> tournamentIds)
     {
-        var updated = current is null ? new HashSet<URN>() : new HashSet<URN>(current);
-        if (tournamentId != null)
-            updated.Add(tournamentId);
+        if (tournamentIds is null || tournamentIds.Count == 0)
+            return current;
+
+        // Ordered, not a set: ISport.Tournaments enumerates this, and a client would
+        // otherwise get server order on the first call and hash order afterwards.
+        var updated = current is null ? new List<URN>() : new List<URN>(current);
+        var known = new HashSet<URN>(updated);
+        foreach (var tournamentId in tournamentIds)
+        {
+            if (known.Add(tournamentId))
+                updated.Add(tournamentId);
+        }
 
         return updated;
     }
@@ -204,24 +216,45 @@ internal class SportDataCache : ISportDataCache
 
     private void HandleTournamentData(CultureInfo culture, Dictionary<string, sport> tournamentData)
     {
+        // Grouped so each sport is published once, however many of its tournaments
+        // this response carries.
+        var bySport = new Dictionary<string, (sport Sport, List<URN> Tournaments)>();
+
         foreach (var tournament in tournamentData)
         {
             // Per item, so one malformed id does not drop the rest of the response.
             try
             {
-                var tournamentId = string.IsNullOrEmpty(tournament.Key) ? null : new URN(tournament.Key);
-                var sportId = string.IsNullOrEmpty(tournament.Key) ? null : new URN(tournament.Value.id);
+                if (string.IsNullOrEmpty(tournament.Key) || string.IsNullOrEmpty(tournament.Value?.id))
+                    continue;
 
-                if (sportId is null) continue;
+                var tournamentId = new URN(tournament.Key);
+                var sportKey = new URN(tournament.Value.id).ToString();
 
-                RefreshOrInsertItem(sportId, culture, tournament.Value);
-                var sport = _cache.Get(sportId.ToString()) as LocalizedSport;
-                if (sport is not null)
-                    sport.TournamentIds = WithTournament(sport.TournamentIds, tournamentId);
+                if (bySport.TryGetValue(sportKey, out var entry) == false)
+                    entry = bySport[sportKey] = (tournament.Value, new List<URN>());
+
+                entry.Tournaments.Add(tournamentId);
             }
             catch (Exception e)
             {
-                _log.LogError($"Failed to refresh or insert sport for tournament '{tournament.Key}': {e}");
+                _log.LogError($"Failed to read sport for tournament '{tournament.Key}': {e}");
+            }
+        }
+
+        foreach (var entry in bySport)
+        {
+            try
+            {
+                RefreshOrInsertItem(
+                    new URN(entry.Key),
+                    culture,
+                    entry.Value.Sport,
+                    entry.Value.Tournaments);
+            }
+            catch (Exception e)
+            {
+                _log.LogError($"Failed to refresh or insert sport '{entry.Key}': {e}");
             }
         }
     }
@@ -267,7 +300,11 @@ internal class SportDataCache : ISportDataCache
         }
     }
 
-    private void RefreshOrInsertItem(URN id, CultureInfo culture, sport sport = null, URN tournamentId = null)
+    private void RefreshOrInsertItem(
+        URN id,
+        CultureInfo culture,
+        sport sport = null,
+        ICollection<URN> tournamentIds = null)
     {
         var localizedSportItem = _cache.Get(id.ToString());
 
@@ -281,8 +318,7 @@ internal class SportDataCache : ISportDataCache
         if (sport is sportExtended sportExtended)
             localizedSport.IconPath = sportExtended.icon_path;
 
-        if (tournamentId != null)
-            localizedSport.TournamentIds = WithTournament(localizedSport.TournamentIds, tournamentId);
+        localizedSport.TournamentIds = WithTournaments(localizedSport.TournamentIds, tournamentIds);
 
         _cache.Set(id.ToString(), localizedSport, _cachePolicy);
     }

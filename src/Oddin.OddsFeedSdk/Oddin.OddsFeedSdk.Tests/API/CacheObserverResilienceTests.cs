@@ -193,6 +193,24 @@ public class CacheObserverResilienceTests
         Assert.NotNull(cache.GetTournament(TournamentId, new[] { Culture }));
     }
 
+    [Fact]
+    public void MatchCacheCachesTheGoodItemsInABatchWithABadId()
+    {
+        var (api, proxy) = NewApi();
+        using var cache = new MatchCache(api);
+
+        Publish(proxy, new ScheduleEndpointModel
+        {
+            sport_event = new[]
+            {
+                new sportEvent { id = "bogus", name = "Malformed" },
+                new sportEvent { id = "od:match:1", name = "Secret vs Liquid" }
+            }
+        });
+
+        Assert.NotNull(cache.PeekMatch(MatchId));
+    }
+
     private const string EscapeMessage =
         "a bad side-load response escaped into the API caller, which sees it as a failed request";
 
