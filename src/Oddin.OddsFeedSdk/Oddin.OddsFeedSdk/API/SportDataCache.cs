@@ -116,20 +116,27 @@ internal class SportDataCache : ISportDataCache
             return null;
         }
 
-        var tournamentIds = tournaments.tournaments.Select(t => string.IsNullOrEmpty(t?.id) ? null : new URN(t.id));
+        var tournamentIds = new List<URN>();
 
         _semaphore.WaitOne();
         try
         {
-            foreach (var tournamentId in tournamentIds)
+            foreach (var tournament in tournaments.tournaments)
             {
+                // Parse and insert in one guarded step: new URN throws on a malformed
+                // server id, and outside the try it would abort the whole loop.
                 try
                 {
+                    if (string.IsNullOrEmpty(tournament?.id))
+                        continue;
+
+                    var tournamentId = new URN(tournament.id);
                     RefreshOrInsertItem(id, culture, tournamentId: tournamentId);
+                    tournamentIds.Add(tournamentId);
                 }
                 catch (Exception e)
                 {
-                    _log.LogError($"Failed to insert or refresh sport tournaments: {e}");
+                    _log.LogError($"Failed to insert or refresh sport tournament '{tournament?.id}': {e}");
                 }
             }
         }
@@ -169,6 +176,17 @@ internal class SportDataCache : ISportDataCache
         }
     }
 
+    // Copy-on-write: the published entry is handed out by reference and read
+    // outside the semaphore, so a set that is already visible is never mutated.
+    private static ICollection<URN> WithTournament(ICollection<URN> current, URN tournamentId)
+    {
+        var updated = current is null ? new HashSet<URN>() : new HashSet<URN>(current);
+        if (tournamentId != null)
+            updated.Add(tournamentId);
+
+        return updated;
+    }
+
     private LocalizedSport Read(URN id)
     {
         _semaphore.WaitOne();
@@ -199,11 +217,7 @@ internal class SportDataCache : ISportDataCache
                 RefreshOrInsertItem(sportId, culture, tournament.Value);
                 var sport = _cache.Get(sportId.ToString()) as LocalizedSport;
                 if (sport is not null)
-                {
-                    var sportTournaments = sport.TournamentIds ??= new HashSet<URN>();
-                    sportTournaments.Add(tournamentId);
-                    sport.TournamentIds = sportTournaments;
-                }
+                    sport.TournamentIds = WithTournament(sport.TournamentIds, tournamentId);
             }
             catch (Exception e)
             {
@@ -268,7 +282,7 @@ internal class SportDataCache : ISportDataCache
             localizedSport.IconPath = sportExtended.icon_path;
 
         if (tournamentId != null)
-            localizedSport.TournamentIds ??= new HashSet<URN>();
+            localizedSport.TournamentIds = WithTournament(localizedSport.TournamentIds, tournamentId);
 
         _cache.Set(id.ToString(), localizedSport, _cachePolicy);
     }
