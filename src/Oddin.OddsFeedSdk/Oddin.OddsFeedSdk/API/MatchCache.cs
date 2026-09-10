@@ -229,11 +229,10 @@ internal class MatchCache : IMatchCache
             } else
             {
                 // A sport_format value a newer backend introduced that this SDK version does not
-                // recognise. Do not throw: this runs inside the Rx subscription arms, which have no
-                // catch, so the exception would escape OnNext and starve every cache that subscribed
-                // after MatchCache. Report Unknown, but leave hasSportFormat false so the insert
-                // branch surfaces it honestly while the update branch preserves a known cached value
-                // rather than demoting it.
+                // recognise. Do not throw: the nearest catch is the per-item one in HandleMatchData,
+                // so an unknown format would cost this whole match. Report Unknown, but leave
+                // hasSportFormat false so the insert branch surfaces it honestly while the update
+                // branch preserves a known cached value rather than demoting it.
                 _log.LogWarning($"Unknown sport format '{sportFormatValue}' for match '{id}', treating as Unknown.");
                 sportFormat = SportFormat.Unknown;
             }
@@ -313,7 +312,7 @@ internal class MatchCache : IMatchCache
             // many sportEvents, and both the URN construction below and RefreshOrInsertItem can throw
             // on a malformed server value (new URN(...) rejects anything that isn't three
             // colon-separated parts with a positive numeric id). These run inside the Rx subscription
-            // arms, which have no catch, so an escape would starve every later subscriber. Isolating
+            // arms, whose catch would drop the rest of the response with it. Isolating
             // per item keeps one bad match from dropping its siblings, matching LoadAndCacheItem's
             // log-and-continue contract.
             try
