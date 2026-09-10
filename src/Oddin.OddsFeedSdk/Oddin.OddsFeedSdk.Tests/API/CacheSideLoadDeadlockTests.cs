@@ -21,13 +21,8 @@ public sealed class CacheSideLoadCollection
     public const string Name = "Cache side-load";
 }
 
-// An API response is published on the thread that made the call, so a sibling
-// cache's side-load observer runs on that thread and asks for a second
-// semaphore. If the caller is still holding its own, two caches can end up
-// waiting on each other: SportDataCache.GetSportTournaments takes the sport
-// semaphore and publishes a TournamentsModel that TournamentsCache observes,
-// while TournamentsCache.GetTournament takes the tournament semaphore and
-// publishes a TournamentInfoModel that SportDataCache observes.
+// A response is published on the calling thread, so a sibling cache's observer
+// takes a second semaphore there. Sport and tournament do it in opposite orders.
 [Collection(CacheSideLoadCollection.Name)]
 public class CacheSideLoadDeadlockTests
 {
@@ -58,8 +53,7 @@ public class CacheSideLoadDeadlockTests
         var sportFinished = sportLoad.Join(JoinTimeout);
         var tournamentFinished = tournamentLoad.Join(JoinTimeout);
 
-        // Assert the overlap first: without it a green run proves nothing, because
-        // the two loads may simply have run one after the other.
+        // Overlap first: without it a green run proves nothing.
         Assert.True(
             proxy.OverlapAchieved,
             "the two loads never sat inside their API calls at the same time, so this run proved nothing");
@@ -110,8 +104,7 @@ public class CacheSideLoadDeadlockTests
             + "runs on this thread and can be left waiting for it");
     }
 
-    // Semaphore(1,1) has no owning thread, so a zero-timeout Wait reports whether
-    // the permit is taken regardless of which thread asks.
+    // Semaphore(1,1) has no owning thread, so this reports the permit state from anywhere.
     private static bool SemaphoreIsFree(object cache)
     {
         var field = cache.GetType().GetField("_semaphore", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -125,9 +118,7 @@ public class CacheSideLoadDeadlockTests
         return true;
     }
 
-    // Dedicated background threads rather than the pool: on a failing run both
-    // bodies block forever, and permanently consuming pool threads would starve
-    // every later test in the run. Background threads still let the host exit.
+    // Not the pool: on a failing run both bodies block forever.
     private sealed class Worker
     {
         private readonly Thread _thread;
@@ -161,8 +152,7 @@ public class CacheSideLoadDeadlockTests
 
         internal bool Join(TimeSpan timeout) => _thread.Join(timeout);
 
-        // Only after the deadlock assertions: a body that threw still finished,
-        // and reporting the throw first would hide which failure actually happened.
+        // After the deadlock assertions, or it hides which failure happened.
         internal void Rethrow()
         {
             if (_error is not null)
@@ -170,8 +160,7 @@ public class CacheSideLoadDeadlockTests
         }
     }
 
-    // Mirrors RestClient: publishes the response synchronously, on the calling
-    // thread, before returning it.
+    // Mirrors RestClient: publishes synchronously on the calling thread.
     public class SideLoadApiClientProxy : DispatchProxy
     {
         private readonly Subject<IRequestResult<object>> _responses = new();
@@ -209,8 +198,7 @@ public class CacheSideLoadDeadlockTests
         {
             WhileServing?.Invoke();
 
-            // Timed, so "the two loads never overlapped" fails as itself instead of
-            // hanging the run and being reported as a deadlock.
+            // Timed, so "never overlapped" fails as itself rather than hanging.
             if (_overlap is not null && _overlap.SignalAndWait(_overlapTimeout))
                 Interlocked.Increment(ref _overlapReached);
 
@@ -223,7 +211,7 @@ public class CacheSideLoadDeadlockTests
             return data;
         }
 
-        // Only the fields the two observers and their loaders actually read.
+        // Only the fields the observers and loaders read.
         private static TournamentsModel Tournaments() =>
             new()
             {

@@ -30,9 +30,7 @@ internal class CompetitorCache : ICompetitorCache
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
             {
-                // Everything is guarded: an exception escaping here disposes this
-                // subscription for good, and Subject also rethrows it into the API caller
-                // and skips every cache that subscribed after this one.
+                // An escape here kills the subscription for good.
                 try
                 {
                     HandleResponse(response);
@@ -97,8 +95,7 @@ internal class CompetitorCache : ICompetitorCache
 
     public void Dispose() => _subscription.Dispose();
 
-    // Must NOT be called with the semaphore held: it takes the lock itself around the
-    // write, and Semaphore(1,1) is not reentrant, so a caller holding it self-deadlocks.
+    // Must not be called holding the semaphore: it locks itself, and Semaphore is not reentrant.
     public void LoadAndCacheItem(URN id, IEnumerable<CultureInfo> cultures)
     {
         foreach (var culture in cultures)
@@ -106,9 +103,7 @@ internal class CompetitorCache : ICompetitorCache
             competitorProfileEndpoint data;
             try
             {
-                // Deliberately outside the semaphore. The response is published on this
-                // thread, so a sibling cache's side-load observer runs here and takes its
-                // own lock; holding ours across the call lets two caches wait on each other.
+                // Unlocked: publishing runs the sibling observers, which take their own locks.
                 data = _apiClient.GetCompetitorProfileWithPlayers(id, culture);
             }
             catch (Exception e)

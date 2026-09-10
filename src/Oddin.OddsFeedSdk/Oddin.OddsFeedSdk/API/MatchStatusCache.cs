@@ -31,9 +31,7 @@ internal class MatchStatusCache : IMatchStatusCache
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
             {
-                // Everything is guarded: an exception escaping here disposes this
-                // subscription for good, and Subject also rethrows it into the API caller
-                // and skips every cache that subscribed after this one.
+                // An escape here kills the subscription for good.
                 try
                 {
                     HandleResponse(response);

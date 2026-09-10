@@ -30,9 +30,7 @@ internal class TournamentsCache : ITournamentsCache
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
             {
-                // Everything is guarded: an exception escaping here disposes this
-                // subscription for good, and Subject also rethrows it into the API caller
-                // and skips every cache that subscribed after this one.
+                // An escape here kills the subscription for good.
                 try
                 {
                     HandleResponse(response);
@@ -157,9 +155,7 @@ internal class TournamentsCache : ITournamentsCache
             TournamentInfoModel tournamentData;
             try
             {
-                // Deliberately outside the semaphore. The response is published on this
-                // thread, so a sibling cache's side-load observer runs here and takes its
-                // own lock; holding ours across the call lets two caches wait on each other.
+                // Unlocked: publishing runs the sibling observers, which take their own locks.
                 tournamentData = _apiClient.GetTournament(id, culture);
             }
             catch (Exception e)
