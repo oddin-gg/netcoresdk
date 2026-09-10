@@ -30,35 +30,49 @@ internal class TournamentsCache : ITournamentsCache
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
             {
-                if (response.Culture is null || response.Data is null)
-                    return;
-
-                var tournaments = response.Data switch
+                // Everything is guarded: an exception escaping here disposes this
+                // subscription for good, and Subject also rethrows it into the API caller
+                // and skips every cache that subscribed after this one.
+                try
                 {
-                    FixturesEndpointModel f => new[] { f.fixture.tournament },
-                    TournamentsModel t => t.tournaments?.ToArray() ?? Array.Empty<tournament>(),
-                    MatchSummaryModel m => new[] { m.sport_event.tournament },
-                    ScheduleEndpointModel s => s.sport_event.Select(t => t.tournament).ToArray(),
-                    TournamentScheduleModel t => t.tournament.ToArray(),
-                    SportTournamentsModel s => s.tournaments?.ToArray() ?? Array.Empty<tournament>(),
-                    _ => Array.Empty<tournament>()
-                };
-
-
-                if (tournaments.Any())
+                    HandleResponse(response);
+                }
+                catch (Exception e)
                 {
-                    _semaphore.WaitOne();
-                    try
-                    {
-                        _log.LogDebug($"Updating Tournament cache from API: {response.Data.GetType()}");
-                        HandleTournamentsData(response.Culture, tournaments);
-                    }
-                    finally
-                    {
-                        _semaphore.Release();
-                    }
+                    _log.LogError(e, "Failed to side-load tournaments");
                 }
             });
+    }
+
+    private void HandleResponse(IRequestResult<object> response)
+    {
+        if (response.Culture is null || response.Data is null)
+            return;
+
+        var tournaments = response.Data switch
+        {
+            FixturesEndpointModel f => new[] { f.fixture.tournament },
+            TournamentsModel t => t.tournaments?.ToArray() ?? Array.Empty<tournament>(),
+            MatchSummaryModel m => new[] { m.sport_event.tournament },
+            ScheduleEndpointModel s => s.sport_event.Select(t => t.tournament).ToArray(),
+            TournamentScheduleModel t => t.tournament.ToArray(),
+            SportTournamentsModel s => s.tournaments?.ToArray() ?? Array.Empty<tournament>(),
+            _ => Array.Empty<tournament>()
+        };
+
+        if (tournaments.Any() == false)
+            return;
+
+        _semaphore.WaitOne();
+        try
+        {
+            _log.LogDebug($"Updating Tournament cache from API: {response.Data.GetType()}");
+            HandleTournamentsData(response.Culture, tournaments);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public void OnFeedMessageReceived(fixture_change e)
@@ -74,37 +88,17 @@ internal class TournamentsCache : ITournamentsCache
 
     public LocalizedTournament GetTournament(URN id, IEnumerable<CultureInfo> cultures)
     {
-        _semaphore.WaitOne();
-        try
-        {
-            var localizedTournament = _cache.Get(id.ToString()) as LocalizedTournament;
-            var localizedAlready = localizedTournament?.LoadedLocals ?? new List<CultureInfo>();
+        var culturesToLoad = MissingCultures(id, cultures);
+        if (culturesToLoad.Count > 0)
+            LoadAndCacheItem(id, culturesToLoad);
 
-            var culturesToLoad = cultures.Except(localizedAlready);
-            if (culturesToLoad.Any())
-                LoadAndCacheItem(id, culturesToLoad);
-
-            return _cache.Get(id.ToString()) as LocalizedTournament;
-        }
-        finally
-        {
-            _semaphore.Release();
-        }
+        return Read(id);
     }
 
     public IEnumerable<URN> GetTournamentCompetitors(URN id, CultureInfo culture)
     {
-        _semaphore.WaitOne();
-        try
-        {
-            LoadAndCacheItem(id, new[] { culture });
-            var tournament = _cache.Get(id.ToString()) as LocalizedTournament;
-            return tournament?.CompetitorIds;
-        }
-        finally
-        {
-            _semaphore.Release();
-        }
+        LoadAndCacheItem(id, new[] { culture });
+        return Read(id)?.CompetitorIds;
     }
 
     public void ClearCacheItem(URN id) => _cache.Remove(id.ToString());
@@ -128,6 +122,34 @@ internal class TournamentsCache : ITournamentsCache
         }
     }
 
+    private List<CultureInfo> MissingCultures(URN id, IEnumerable<CultureInfo> cultures)
+    {
+        _semaphore.WaitOne();
+        try
+        {
+            var localizedTournament = _cache.Get(id.ToString()) as LocalizedTournament;
+            var localizedAlready = localizedTournament?.LoadedLocals ?? new List<CultureInfo>();
+            return cultures.Except(localizedAlready).ToList();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    private LocalizedTournament Read(URN id)
+    {
+        _semaphore.WaitOne();
+        try
+        {
+            return _cache.Get(id.ToString()) as LocalizedTournament;
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
     private void LoadAndCacheItem(URN id, IEnumerable<CultureInfo> cultures)
     {
         foreach (var culture in cultures)
@@ -135,6 +157,9 @@ internal class TournamentsCache : ITournamentsCache
             TournamentInfoModel tournamentData;
             try
             {
+                // Deliberately outside the semaphore. The response is published on this
+                // thread, so a sibling cache's side-load observer runs here and takes its
+                // own lock; holding ours across the call lets two caches wait on each other.
                 tournamentData = _apiClient.GetTournament(id, culture);
             }
             catch (Exception e)
@@ -143,6 +168,7 @@ internal class TournamentsCache : ITournamentsCache
                 continue;
             }
 
+            _semaphore.WaitOne();
             try
             {
                 RefreshOrInsertItem(id, culture, tournamentData.tournament);
@@ -150,6 +176,10 @@ internal class TournamentsCache : ITournamentsCache
             catch (Exception e)
             {
                 _log.LogError($"Failed to refresh or load tournament {culture.TwoLetterISOLanguageName}: {e}");
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
     }

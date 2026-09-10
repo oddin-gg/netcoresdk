@@ -30,55 +30,57 @@ internal class CompetitorCache : ICompetitorCache
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
             {
-                if (response.Culture is null || response.Data is null)
-                    return;
-
-                var competitors = response.Data switch
+                // Everything is guarded: an exception escaping here disposes this
+                // subscription for good, and Subject also rethrows it into the API caller
+                // and skips every cache that subscribed after this one.
+                try
                 {
-                    FixturesEndpointModel f => f.fixture.competitors.ToArray(),
-                    MatchSummaryModel m => m.sport_event.competitors.ToArray(),
-                    ScheduleEndpointModel s => s.sport_event.SelectMany(e => e.competitors).ToArray(),
-                    TournamentScheduleModel t => t.tournament.SelectMany(e => e.competitors).ToArray(),
-                    TournamentInfoModel t => t.competitors.ToArray(),
-                    _ => new team[0]
-                };
-
-                if (competitors.Any())
+                    HandleResponse(response);
+                }
+                catch (Exception e)
                 {
-                    _semaphore.WaitOne();
-                    try
-                    {
-                        _log.LogDebug($"Updating Competitor cache from API: {response.Data.GetType()}");
-                        HandleTeamData(response.Culture, competitors);
-                    }
-                    finally
-                    {
-                        _semaphore.Release();
-                    }
+                    _log.LogError(e, "Failed to side-load competitors");
                 }
             });
     }
 
-    public LocalizedCompetitor GetCompetitor(URN id, IEnumerable<CultureInfo> cultures)
+    private void HandleResponse(IRequestResult<object> response)
     {
+        if (response.Culture is null || response.Data is null)
+            return;
+
+        var competitors = response.Data switch
+        {
+            FixturesEndpointModel f => f.fixture.competitors.ToArray(),
+            MatchSummaryModel m => m.sport_event.competitors.ToArray(),
+            ScheduleEndpointModel s => s.sport_event.SelectMany(e => e.competitors).ToArray(),
+            TournamentScheduleModel t => t.tournament.SelectMany(e => e.competitors).ToArray(),
+            TournamentInfoModel t => t.competitors.ToArray(),
+            _ => new team[0]
+        };
+
+        if (competitors.Any() == false)
+            return;
+
         _semaphore.WaitOne();
         try
         {
-            var alreadyExisting = _cache.Get(id.ToString()) as LocalizedCompetitor;
-            var localesExisting = alreadyExisting?.LoadedLocals ?? new List<CultureInfo>();
-            var toFetch = cultures.Except(localesExisting);
-
-            if (toFetch.Any())
-            {
-                LoadAndCacheItem(id, toFetch);
-            }
-
-            return _cache.Get(id.ToString()) as LocalizedCompetitor;
+            _log.LogDebug($"Updating Competitor cache from API: {response.Data.GetType()}");
+            HandleTeamData(response.Culture, competitors);
         }
         finally
         {
             _semaphore.Release();
         }
+    }
+
+    public LocalizedCompetitor GetCompetitor(URN id, IEnumerable<CultureInfo> cultures)
+    {
+        var toFetch = MissingCultures(id, cultures);
+        if (toFetch.Count > 0)
+            LoadAndCacheItem(id, toFetch);
+
+        return Read(id);
     }
 
     public string GetCompetitorIconPath(URN id, CultureInfo culture)
@@ -87,23 +89,16 @@ internal class CompetitorCache : ICompetitorCache
         if (competitor?.IconPathLoaded == true)
             return competitor.IconPath;
 
-        _semaphore.WaitOne();
-        try
-        {
-            LoadAndCacheItem(id, new[] { culture });
-            competitor = _cache.Get(id.ToString()) as LocalizedCompetitor;
-            return competitor?.IconPath;
-        }
-        finally
-        {
-            _semaphore.Release();
-        }
+        LoadAndCacheItem(id, new[] { culture });
+        return Read(id)?.IconPath;
     }
 
     public void ClearCacheItem(URN id) => _cache.Remove(id.ToString());
 
     public void Dispose() => _subscription.Dispose();
 
+    // Must NOT be called with the semaphore held: it takes the lock itself around the
+    // write, and Semaphore(1,1) is not reentrant, so a caller holding it self-deadlocks.
     public void LoadAndCacheItem(URN id, IEnumerable<CultureInfo> cultures)
     {
         foreach (var culture in cultures)
@@ -111,6 +106,9 @@ internal class CompetitorCache : ICompetitorCache
             competitorProfileEndpoint data;
             try
             {
+                // Deliberately outside the semaphore. The response is published on this
+                // thread, so a sibling cache's side-load observer runs here and takes its
+                // own lock; holding ours across the call lets two caches wait on each other.
                 data = _apiClient.GetCompetitorProfileWithPlayers(id, culture);
             }
             catch (Exception e)
@@ -119,6 +117,7 @@ internal class CompetitorCache : ICompetitorCache
                 continue;
             }
 
+            _semaphore.WaitOne();
             try
             {
                 RefreshOrInsertItem(id, culture, data);
@@ -127,6 +126,38 @@ internal class CompetitorCache : ICompetitorCache
             {
                 _log.LogError($"Error while refreshing competitor {e}");
             }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+    }
+
+    private List<CultureInfo> MissingCultures(URN id, IEnumerable<CultureInfo> cultures)
+    {
+        _semaphore.WaitOne();
+        try
+        {
+            var alreadyExisting = _cache.Get(id.ToString()) as LocalizedCompetitor;
+            var localesExisting = alreadyExisting?.LoadedLocals ?? new List<CultureInfo>();
+            return cultures.Except(localesExisting).ToList();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    private LocalizedCompetitor Read(URN id)
+    {
+        _semaphore.WaitOne();
+        try
+        {
+            return _cache.Get(id.ToString()) as LocalizedCompetitor;
+        }
+        finally
+        {
+            _semaphore.Release();
         }
     }
 
