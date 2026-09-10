@@ -191,7 +191,7 @@ public class SideLoadDeliveryTests
                     name = "Secret vs Liquid",
                     tournament = Tournament()
                 },
-                sport_event_status = new Models.sportEventStatus { status = "live", match_status_code = 1 }
+                sport_event_status = new sportEventStatus { status = "live", match_status_code = 1 }
             };
 
         private static FixturesEndpointModel Fixture() =>
