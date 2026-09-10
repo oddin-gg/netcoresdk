@@ -31,22 +31,35 @@ internal class MatchStatusCache : IMatchStatusCache
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
             {
-                if (response.Data is not MatchSummaryModel summary)
-                    return;
-
-                var id = string.IsNullOrEmpty(summary.sport_event?.id) ? null : new URN(summary.sport_event.id);
-
-                _semaphore.WaitOne();
+                // An escape here kills the subscription for good.
                 try
                 {
-                    _log.LogDebug($"Updating Match Status cache from API: {response.Data.GetType()}");
-                    RefreshOrInsertApiItem(id, summary.sport_event_status);
+                    HandleResponse(response);
                 }
-                finally
+                catch (Exception e)
                 {
-                    _semaphore.Release();
+                    _log.LogError(e, "Failed to side-load match status");
                 }
             });
+    }
+
+    private void HandleResponse(IRequestResult<object> response)
+    {
+        if (response.Data is not MatchSummaryModel summary)
+            return;
+
+        var id = string.IsNullOrEmpty(summary.sport_event?.id) ? null : new URN(summary.sport_event.id);
+
+        _semaphore.WaitOne();
+        try
+        {
+            _log.LogDebug($"Updating Match Status cache from API: {response.Data.GetType()}");
+            RefreshOrInsertApiItem(id, summary.sport_event_status);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public void OnFeedMessageReceived(odds_change e)

@@ -29,45 +29,73 @@ internal class PlayerCache : IPlayerCache
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
             {
-                if (response.Culture is null || response.Data is null)
-                    return;
-
-                var players = response.Data switch
+                // An escape here kills the subscription for good.
+                try
                 {
-                    competitorProfileEndpoint f => f.players.ToArray(),
-                    _ => Array.Empty<player_profilePlayer>()
-                };
-
-                if (players.Any())
+                    HandleResponse(response);
+                }
+                catch (Exception e)
                 {
-                    _semaphore.WaitOne();
-                    try
-                    {
-                        _log.LogDebug($"Updating Player cache from API: {response.Data.GetType()}");
-                        HandlePlayersData(response.Culture, players);
-                    }
-                    finally
-                    {
-                        _semaphore.Release();
-                    }
+                    _log.LogError(e, "Failed to side-load players");
                 }
             });
     }
 
+    private void HandleResponse(IRequestResult<object> response)
+    {
+        if (response.Culture is null || response.Data is null)
+            return;
+
+        var players = response.Data switch
+        {
+            competitorProfileEndpoint f => f.players.ToArray(),
+            _ => Array.Empty<player_profilePlayer>()
+        };
+
+        if (players.Any() == false)
+            return;
+
+        _semaphore.WaitOne();
+        try
+        {
+            _log.LogDebug($"Updating Player cache from API: {response.Data.GetType()}");
+            HandlePlayersData(response.Culture, players);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
     public LocalizedPlayer GetPlayer(URN id, IEnumerable<CultureInfo> cultures)
+    {
+        var toFetch = MissingCultures(id, cultures);
+        if (toFetch.Count > 0)
+            LoadAndCacheItem(id, toFetch);
+
+        return Read(id);
+    }
+
+    private List<CultureInfo> MissingCultures(URN id, IEnumerable<CultureInfo> cultures)
     {
         _semaphore.WaitOne();
         try
         {
             var alreadyExisting = _cache.Get(id.ToString()) as LocalizedPlayer;
             var localesExisting = alreadyExisting?.LoadedLocals ?? new List<CultureInfo>();
-            var toFetch = cultures.Except(localesExisting);
+            return cultures.Except(localesExisting).ToList();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
 
-            if (toFetch.Any())
-            {
-                LoadAndCacheItem(id, toFetch);
-            }
-
+    private LocalizedPlayer Read(URN id)
+    {
+        _semaphore.WaitOne();
+        try
+        {
             return _cache.Get(id.ToString()) as LocalizedPlayer;
         }
         finally
@@ -87,6 +115,7 @@ internal class PlayerCache : IPlayerCache
             player_profilePlayer player;
             try
             {
+                // Unlocked: publishing runs the sibling observers, which take their own locks.
                 player = _apiClient.GetPlayerProfile(id, culture);
             }
             catch (Exception e)
@@ -95,6 +124,7 @@ internal class PlayerCache : IPlayerCache
                 continue;
             }
 
+            _semaphore.WaitOne();
             try
             {
                 RefreshOrInsertItem(id, culture, player);
@@ -102,6 +132,10 @@ internal class PlayerCache : IPlayerCache
             catch (Exception e)
             {
                 _log.LogError($"Error while refreshing player {e}");
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
     }
@@ -129,8 +163,16 @@ internal class PlayerCache : IPlayerCache
     {
         foreach (var player in players)
         {
-            var id = string.IsNullOrEmpty(player?.id) ? null : new URN(player.id);
-            RefreshOrInsertItem(id, culture, player);
+            // Per item, so one malformed id does not drop the rest of the response.
+            try
+            {
+                var id = string.IsNullOrEmpty(player?.id) ? null : new URN(player.id);
+                RefreshOrInsertItem(id, culture, player);
+            }
+            catch (Exception e)
+            {
+                _log.LogError($"Failed to refresh or insert player '{player?.id}': {e}");
+            }
         }
     }
 }

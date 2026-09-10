@@ -34,51 +34,63 @@ internal class MatchCache : IMatchCache
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
             {
-                if (response.Culture is null || response.Data is null)
-                    return;
-
-                if (response.Data is FixturesEndpointModel fixture)
+                // An escape here kills the subscription for good.
+                try
                 {
-                    _semaphore.WaitOne();
-                    try
-                    {
-                        _log.LogDebug($"Updating Match cache from API: {response.Data.GetType()}");
-                        HandleMatchData(
-                            response.Culture,
-                            new List<sportEvent> { fixture.fixture },
-                            fromFixture: true,
-                            fixture.fixture?.extra_info);
-                    }
-                    finally
-                    {
-                        _semaphore.Release();
-                    }
-
-                    return;
+                    HandleResponse(response);
                 }
-
-                var matches = response.Data switch
+                catch (Exception e)
                 {
-                    ScheduleEndpointModel s => s.sport_event.ToList(),
-                    TournamentScheduleModel t => t.sport_events.SelectMany(s => s).ToList(),
-                    _ => new List<sportEvent>()
-                };
-
-
-                if (matches.Any())
-                {
-                    _semaphore.WaitOne();
-                    try
-                    {
-                        _log.LogDebug($"Updating Match cache from API: {response.Data.GetType()}");
-                        HandleMatchData(response.Culture, matches, fromFixture: false);
-                    }
-                    finally
-                    {
-                        _semaphore.Release();
-                    }
+                    _log.LogError(e, "Failed to side-load matches");
                 }
             });
+    }
+
+    private void HandleResponse(IRequestResult<object> response)
+    {
+        if (response.Culture is null || response.Data is null)
+            return;
+
+        if (response.Data is FixturesEndpointModel fixture)
+        {
+            _semaphore.WaitOne();
+            try
+            {
+                _log.LogDebug($"Updating Match cache from API: {response.Data.GetType()}");
+                HandleMatchData(
+                    response.Culture,
+                    new List<sportEvent> { fixture.fixture },
+                    fromFixture: true,
+                    fixture.fixture?.extra_info);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+
+            return;
+        }
+
+        var matches = response.Data switch
+        {
+            ScheduleEndpointModel s => s.sport_event.ToList(),
+            TournamentScheduleModel t => t.sport_events.SelectMany(s => s).ToList(),
+            _ => new List<sportEvent>()
+        };
+
+        if (matches.Any() == false)
+            return;
+
+        _semaphore.WaitOne();
+        try
+        {
+            _log.LogDebug($"Updating Match cache from API: {response.Data.GetType()}");
+            HandleMatchData(response.Culture, matches, fromFixture: false);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public void OnFeedMessageReceived(fixture_change e)
@@ -96,16 +108,33 @@ internal class MatchCache : IMatchCache
 
     public LocalizedMatch GetMatch(URN id, IEnumerable<CultureInfo> cultures)
     {
+        var culturesToLoad = MissingCultures(id, cultures);
+        if (culturesToLoad.Count > 0)
+            LoadAndCacheItem(id, culturesToLoad);
+
+        return Read(id);
+    }
+
+    private List<CultureInfo> MissingCultures(URN id, IEnumerable<CultureInfo> cultures)
+    {
         _semaphore.WaitOne();
         try
         {
             var localizedMatch = _cache.Get(id.ToString()) as LocalizedMatch;
             var localizedAlready = localizedMatch?.LoadedLocals ?? new List<CultureInfo>();
+            return cultures.Except(localizedAlready).ToList();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
 
-            var culturesToLoad = cultures.Except(localizedAlready);
-            if (culturesToLoad.Any())
-                LoadAndCacheItem(id, culturesToLoad);
-
+    private LocalizedMatch Read(URN id)
+    {
+        _semaphore.WaitOne();
+        try
+        {
             return _cache.Get(id.ToString()) as LocalizedMatch;
         }
         finally
@@ -139,6 +168,7 @@ internal class MatchCache : IMatchCache
             MatchSummaryModel matchData;
             try
             {
+                // Unlocked: publishing runs the sibling observers, which take their own locks.
                 matchData = _apiClient.GetMatchSummary(id, culture);
             }
             catch (Exception e)
@@ -147,6 +177,7 @@ internal class MatchCache : IMatchCache
                 continue;
             }
 
+            _semaphore.WaitOne();
             try
             {
                 RefreshOrInsertItem(id, culture, matchData.sport_event, fromFixture: false);
@@ -154,6 +185,10 @@ internal class MatchCache : IMatchCache
             catch (Exception e)
             {
                 _log.LogError($"Failed to refresh or load match {culture.TwoLetterISOLanguageName}: {e}");
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
     }
@@ -194,11 +229,10 @@ internal class MatchCache : IMatchCache
             } else
             {
                 // A sport_format value a newer backend introduced that this SDK version does not
-                // recognise. Do not throw: this runs inside the Rx subscription arms, which have no
-                // catch, so the exception would escape OnNext and starve every cache that subscribed
-                // after MatchCache. Report Unknown, but leave hasSportFormat false so the insert
-                // branch surfaces it honestly while the update branch preserves a known cached value
-                // rather than demoting it.
+                // recognise. Do not throw: the nearest catch is the per-item one in HandleMatchData,
+                // so an unknown format would cost this whole match. Report Unknown, but leave
+                // hasSportFormat false so the insert branch surfaces it honestly while the update
+                // branch preserves a known cached value rather than demoting it.
                 _log.LogWarning($"Unknown sport format '{sportFormatValue}' for match '{id}', treating as Unknown.");
                 sportFormat = SportFormat.Unknown;
             }
@@ -278,7 +312,7 @@ internal class MatchCache : IMatchCache
             // many sportEvents, and both the URN construction below and RefreshOrInsertItem can throw
             // on a malformed server value (new URN(...) rejects anything that isn't three
             // colon-separated parts with a positive numeric id). These run inside the Rx subscription
-            // arms, which have no catch, so an escape would starve every later subscriber. Isolating
+            // arms, whose catch would drop the rest of the response with it. Isolating
             // per item keeps one bad match from dropping its siblings, matching LoadAndCacheItem's
             // log-and-continue contract.
             try
