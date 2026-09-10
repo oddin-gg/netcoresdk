@@ -243,8 +243,16 @@ internal class CompetitorCache : ICompetitorCache
     {
         foreach (var team in teams)
         {
-            var id = string.IsNullOrEmpty(team?.id) ? null : new URN(team.id);
-            RefreshOrInsertItem(id, culture, team);
+            // Per item, so one malformed id does not drop the rest of the response.
+            try
+            {
+                var id = string.IsNullOrEmpty(team?.id) ? null : new URN(team.id);
+                RefreshOrInsertItem(id, culture, team);
+            }
+            catch (Exception e)
+            {
+                _log.LogError($"Failed to refresh or insert competitor '{team?.id}': {e}");
+            }
         }
     }
 }

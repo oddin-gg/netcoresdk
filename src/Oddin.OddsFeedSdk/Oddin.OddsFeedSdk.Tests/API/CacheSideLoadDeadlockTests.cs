@@ -32,6 +32,9 @@ public class CacheSideLoadDeadlockTests
 
     private static URN SportId => new("od:sport:1");
     private static URN TournamentId => new("od:tournament:1");
+    private static URN MatchId => new("od:match:1");
+    private static URN CompetitorId => new("od:competitor:1");
+    private static URN PlayerId => new("od:player:1");
 
     [Fact]
     public void ConcurrentColdSportAndTournamentLoadsDoNotDeadlock()
@@ -64,44 +67,60 @@ public class CacheSideLoadDeadlockTests
         tournamentLoad.Rethrow();
     }
 
-    [Fact]
-    public void SportCacheDoesNotHoldItsSemaphoreWhileTheApiCallIsInFlight()
+    [Theory]
+    [InlineData(CacheUnderTest.SportData)]
+    [InlineData(CacheUnderTest.Tournaments)]
+    [InlineData(CacheUnderTest.Competitor)]
+    [InlineData(CacheUnderTest.Player)]
+    [InlineData(CacheUnderTest.Match)]
+    [InlineData(CacheUnderTest.MatchStatus)]
+    public void CacheDoesNotHoldItsSemaphoreWhileTheApiCallIsInFlight(CacheUnderTest which)
     {
         var api = DispatchProxy.Create<IApiClient, SideLoadApiClientProxy>();
         var proxy = (SideLoadApiClientProxy)api;
 
-        using var sportCache = new SportDataCache(api);
+        var (cache, exercise) = Build(which, api);
 
-        bool? freeDuringCall = null;
-        proxy.WhileServing = () => freeDuringCall = SemaphoreIsFree(sportCache);
+        using (cache as IDisposable)
+        {
+            bool? freeDuringCall = null;
+            proxy.WhileServing = () => freeDuringCall ??= SemaphoreIsFree(cache);
 
-        sportCache.GetSportTournaments(SportId, Culture);
+            exercise();
 
-        Assert.True(freeDuringCall.HasValue, "the API call was never served");
-        Assert.True(
-            freeDuringCall.Value,
-            "SportDataCache held its semaphore across the API call — a sibling cache's observer "
-            + "runs on this thread and can be left waiting for it");
+            Assert.True(freeDuringCall.HasValue, $"{which} never made an API call, so this run proved nothing");
+            Assert.True(
+                freeDuringCall.Value,
+                $"{which} held its semaphore across the API call — a sibling cache's observer "
+                + "runs on this thread and can be left waiting for it");
+        }
     }
 
-    [Fact]
-    public void TournamentsCacheDoesNotHoldItsSemaphoreWhileTheApiCallIsInFlight()
+    private static (object Cache, Action Exercise) Build(CacheUnderTest which, IApiClient api)
     {
-        var api = DispatchProxy.Create<IApiClient, SideLoadApiClientProxy>();
-        var proxy = (SideLoadApiClientProxy)api;
-
-        using var tournamentsCache = new TournamentsCache(api);
-
-        bool? freeDuringCall = null;
-        proxy.WhileServing = () => freeDuringCall = SemaphoreIsFree(tournamentsCache);
-
-        tournamentsCache.GetTournament(TournamentId, new[] { Culture });
-
-        Assert.True(freeDuringCall.HasValue, "the API call was never served");
-        Assert.True(
-            freeDuringCall.Value,
-            "TournamentsCache held its semaphore across the API call — a sibling cache's observer "
-            + "runs on this thread and can be left waiting for it");
+        switch (which)
+        {
+            case CacheUnderTest.SportData:
+                var sportData = new SportDataCache(api);
+                return (sportData, () => sportData.GetSportTournaments(SportId, Culture));
+            case CacheUnderTest.Tournaments:
+                var tournaments = new TournamentsCache(api);
+                return (tournaments, () => tournaments.GetTournament(TournamentId, new[] { Culture }));
+            case CacheUnderTest.Competitor:
+                var competitor = new CompetitorCache(api);
+                return (competitor, () => competitor.GetCompetitor(CompetitorId, new[] { Culture }));
+            case CacheUnderTest.Player:
+                var player = new PlayerCache(api);
+                return (player, () => player.GetPlayer(PlayerId, new[] { Culture }));
+            case CacheUnderTest.Match:
+                var match = new MatchCache(api);
+                return (match, () => match.GetMatch(MatchId, new[] { Culture }));
+            case CacheUnderTest.MatchStatus:
+                var matchStatus = new MatchStatusCache(api);
+                return (matchStatus, () => matchStatus.GetMatchStatus(MatchId));
+            default:
+                throw new ArgumentOutOfRangeException(nameof(which));
+        }
     }
 
     // Semaphore(1,1) has no owning thread, so this reports the permit state from anywhere.
@@ -116,6 +135,16 @@ public class CacheSideLoadDeadlockTests
 
         semaphore.Release();
         return true;
+    }
+
+    public enum CacheUnderTest
+    {
+        SportData,
+        Tournaments,
+        Competitor,
+        Player,
+        Match,
+        MatchStatus
     }
 
     // Not the pool: on a failing run both bodies block forever.
@@ -170,7 +199,7 @@ public class CacheSideLoadDeadlockTests
 
         public Action WhileServing { get; set; }
 
-        public bool OverlapAchieved => Volatile.Read(ref _overlapReached) == 2;
+        public bool OverlapAchieved => Volatile.Read(ref _overlapReached) >= 2;
 
         public void ArmOverlapBarrier(TimeSpan timeout)
         {
@@ -188,6 +217,12 @@ public class CacheSideLoadDeadlockTests
                     return Serve(Tournaments(), (CultureInfo)args[1]);
                 case nameof(IApiClient.GetTournament):
                     return Serve(TournamentInfo(), (CultureInfo)args[1]);
+                case nameof(IApiClient.GetCompetitorProfileWithPlayers):
+                    return Serve(CompetitorProfile(), (CultureInfo)args[1]);
+                case nameof(IApiClient.GetPlayerProfile):
+                    return Serve(Player(), (CultureInfo)args[1]);
+                case nameof(IApiClient.GetMatchSummary):
+                    return Serve(MatchSummary(), (CultureInfo)args[1]);
                 default:
                     throw new NotSupportedException($"Unexpected API call: {targetMethod.Name}");
             }
@@ -212,18 +247,15 @@ public class CacheSideLoadDeadlockTests
         }
 
         // Only the fields the observers and loaders read.
+        private static sport Sport() => new() { id = "od:sport:1", name = "Dota 2" };
+
         private static TournamentsModel Tournaments() =>
             new()
             {
-                sport = new sport { id = "od:sport:1", name = "Dota 2" },
+                sport = Sport(),
                 tournaments = new List<tournament>
                 {
-                    new()
-                    {
-                        id = "od:tournament:1",
-                        name = "The International",
-                        sport = new sport { id = "od:sport:1", name = "Dota 2" }
-                    }
+                    new() { id = "od:tournament:1", name = "The International", sport = Sport() }
                 }
             };
 
@@ -234,8 +266,29 @@ public class CacheSideLoadDeadlockTests
                 {
                     id = "od:tournament:1",
                     name = "The International",
-                    sport = new sport { id = "od:sport:1", name = "Dota 2" },
+                    sport = Sport(),
                     competitors = Array.Empty<team>()
+                }
+            };
+
+        private static competitorProfileEndpoint CompetitorProfile() =>
+            new()
+            {
+                competitor = new teamExtended { id = "od:competitor:1", name = "Team Secret" },
+                players = new List<player_profilePlayer>()
+            };
+
+        private static player_profilePlayer Player() =>
+            new() { id = "od:player:1", name = "Dendi", full_name = "Danil Ishutin" };
+
+        private static MatchSummaryModel MatchSummary() =>
+            new()
+            {
+                sport_event = new sportEvent
+                {
+                    id = "od:match:1",
+                    name = "Secret vs Liquid",
+                    tournament = new tournament { id = "od:tournament:1", sport = Sport() }
                 }
             };
     }

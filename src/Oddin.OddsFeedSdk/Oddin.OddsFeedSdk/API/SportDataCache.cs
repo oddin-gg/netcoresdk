@@ -85,7 +85,7 @@ internal class SportDataCache : ISportDataCache
             {
                 var sport = item.Value as LocalizedSport;
                 return sport?.Id;
-            });
+            }).ToList();
         }
         finally
         {
@@ -188,18 +188,26 @@ internal class SportDataCache : ISportDataCache
     {
         foreach (var tournament in tournamentData)
         {
-            var tournamentId = string.IsNullOrEmpty(tournament.Key) ? null : new URN(tournament.Key);
-            var sportId = string.IsNullOrEmpty(tournament.Key) ? null : new URN(tournament.Value.id);
-
-            if (sportId is null) continue;
-
-            RefreshOrInsertItem(sportId, culture, tournament.Value);
-            var sport = _cache.Get(sportId.ToString()) as LocalizedSport;
-            if (sport is not null)
+            // Per item, so one malformed id does not drop the rest of the response.
+            try
             {
-                var sportTournaments = sport.TournamentIds ??= new List<URN>();
-                sportTournaments.Add(tournamentId);
-                sport.TournamentIds = sportTournaments;
+                var tournamentId = string.IsNullOrEmpty(tournament.Key) ? null : new URN(tournament.Key);
+                var sportId = string.IsNullOrEmpty(tournament.Key) ? null : new URN(tournament.Value.id);
+
+                if (sportId is null) continue;
+
+                RefreshOrInsertItem(sportId, culture, tournament.Value);
+                var sport = _cache.Get(sportId.ToString()) as LocalizedSport;
+                if (sport is not null)
+                {
+                    var sportTournaments = sport.TournamentIds ??= new HashSet<URN>();
+                    sportTournaments.Add(tournamentId);
+                    sport.TournamentIds = sportTournaments;
+                }
+            }
+            catch (Exception e)
+            {
+                _log.LogError($"Failed to refresh or insert sport for tournament '{tournament.Key}': {e}");
             }
         }
     }
@@ -260,7 +268,7 @@ internal class SportDataCache : ISportDataCache
             localizedSport.IconPath = sportExtended.icon_path;
 
         if (tournamentId != null)
-            localizedSport.TournamentIds ??= new List<URN>();
+            localizedSport.TournamentIds ??= new HashSet<URN>();
 
         _cache.Set(id.ToString(), localizedSport, _cachePolicy);
     }
