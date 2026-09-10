@@ -29,45 +29,75 @@ internal class PlayerCache : IPlayerCache
         _subscription = apiClient.SubscribeForClass<IRequestResult<object>>()
             .Subscribe(response =>
             {
-                if (response.Culture is null || response.Data is null)
-                    return;
-
-                var players = response.Data switch
+                // Everything is guarded: an exception escaping here disposes this
+                // subscription for good, and Subject also rethrows it into the API caller
+                // and skips every cache that subscribed after this one.
+                try
                 {
-                    competitorProfileEndpoint f => f.players.ToArray(),
-                    _ => Array.Empty<player_profilePlayer>()
-                };
-
-                if (players.Any())
+                    HandleResponse(response);
+                }
+                catch (Exception e)
                 {
-                    _semaphore.WaitOne();
-                    try
-                    {
-                        _log.LogDebug($"Updating Player cache from API: {response.Data.GetType()}");
-                        HandlePlayersData(response.Culture, players);
-                    }
-                    finally
-                    {
-                        _semaphore.Release();
-                    }
+                    _log.LogError(e, "Failed to side-load players");
                 }
             });
     }
 
+    private void HandleResponse(IRequestResult<object> response)
+    {
+        if (response.Culture is null || response.Data is null)
+            return;
+
+        var players = response.Data switch
+        {
+            competitorProfileEndpoint f => f.players.ToArray(),
+            _ => Array.Empty<player_profilePlayer>()
+        };
+
+        if (players.Any() == false)
+            return;
+
+        _semaphore.WaitOne();
+        try
+        {
+            _log.LogDebug($"Updating Player cache from API: {response.Data.GetType()}");
+            HandlePlayersData(response.Culture, players);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
     public LocalizedPlayer GetPlayer(URN id, IEnumerable<CultureInfo> cultures)
+    {
+        var toFetch = MissingCultures(id, cultures);
+        if (toFetch.Count > 0)
+            LoadAndCacheItem(id, toFetch);
+
+        return Read(id);
+    }
+
+    private List<CultureInfo> MissingCultures(URN id, IEnumerable<CultureInfo> cultures)
     {
         _semaphore.WaitOne();
         try
         {
             var alreadyExisting = _cache.Get(id.ToString()) as LocalizedPlayer;
             var localesExisting = alreadyExisting?.LoadedLocals ?? new List<CultureInfo>();
-            var toFetch = cultures.Except(localesExisting);
+            return cultures.Except(localesExisting).ToList();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
 
-            if (toFetch.Any())
-            {
-                LoadAndCacheItem(id, toFetch);
-            }
-
+    private LocalizedPlayer Read(URN id)
+    {
+        _semaphore.WaitOne();
+        try
+        {
             return _cache.Get(id.ToString()) as LocalizedPlayer;
         }
         finally
@@ -87,6 +117,9 @@ internal class PlayerCache : IPlayerCache
             player_profilePlayer player;
             try
             {
+                // Deliberately outside the semaphore. The response is published on this
+                // thread, so a sibling cache's side-load observer runs here and takes its
+                // own lock; holding ours across the call lets two caches wait on each other.
                 player = _apiClient.GetPlayerProfile(id, culture);
             }
             catch (Exception e)
@@ -95,6 +128,7 @@ internal class PlayerCache : IPlayerCache
                 continue;
             }
 
+            _semaphore.WaitOne();
             try
             {
                 RefreshOrInsertItem(id, culture, player);
@@ -102,6 +136,10 @@ internal class PlayerCache : IPlayerCache
             catch (Exception e)
             {
                 _log.LogError($"Error while refreshing player {e}");
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
     }
