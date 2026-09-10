@@ -70,7 +70,8 @@ internal class Sport : ISport
     private IEnumerable<ITournament> FetchTournaments()
     {
         var sport = _cache.GetSport(Id, _cultures).ConfigureAwait(false).GetAwaiter().GetResult();
-        var tournamentIds = sport.TournamentIds ?? _cache.GetSportTournaments(Id, _cultures.First());
+        // Copy: the cached collection is appended to by side-load observers on other threads.
+        var tournamentIds = sport.TournamentIds?.ToList() ?? _cache.GetSportTournaments(Id, _cultures.First());
 
         if (tournamentIds == null && _exceptionHandling == ExceptionHandlingStrategy.THROW)
             throw new ItemNotFoundException(Id.ToString(), $"Tournaments not found for sport id {Id}");

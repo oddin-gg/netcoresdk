@@ -163,8 +163,16 @@ internal class PlayerCache : IPlayerCache
     {
         foreach (var player in players)
         {
-            var id = string.IsNullOrEmpty(player?.id) ? null : new URN(player.id);
-            RefreshOrInsertItem(id, culture, player);
+            // Per item, so one malformed id does not drop the rest of the response.
+            try
+            {
+                var id = string.IsNullOrEmpty(player?.id) ? null : new URN(player.id);
+                RefreshOrInsertItem(id, culture, player);
+            }
+            catch (Exception e)
+            {
+                _log.LogError($"Failed to refresh or insert player '{player?.id}': {e}");
+            }
         }
     }
 }
