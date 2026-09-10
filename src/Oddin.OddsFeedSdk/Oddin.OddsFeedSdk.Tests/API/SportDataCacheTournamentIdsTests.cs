@@ -51,8 +51,6 @@ public class SportDataCacheTournamentIdsTests
 
         var returned = cache.GetSportTournaments(SportId, Culture).ToList();
 
-        // GetSport needs the name loaded, or it would call the API again.
-        proxy.Publish(Sports(), Culture);
         var sport = await cache.GetSport(SportId, new[] { Culture });
 
         Assert.Equal(2, returned.Count);
@@ -79,6 +77,26 @@ public class SportDataCacheTournamentIdsTests
 
         Assert.Equal(1, published.Count);
         Assert.Equal(2, (await cache.GetSport(SportId, new[] { Culture })).TournamentIds.Count);
+    }
+
+    // A client enumerating ISport.Tournaments must get the same order every call,
+    // not server order once and hash order afterwards.
+    [Fact]
+    public async Task TheSportKeepsServerOrderAcrossCalls()
+    {
+        var api = DispatchProxy.Create<IApiClient, SportsApiClientProxy>();
+        var proxy = (SportsApiClientProxy)api;
+        proxy.TournamentIds = new[] { "od:tournament:9", "od:tournament:3", "od:tournament:7" };
+
+        using var cache = new SportDataCache(api);
+
+        var firstCall = cache.GetSportTournaments(SportId, Culture).ToList();
+        var laterCall = (await cache.GetSport(SportId, new[] { Culture })).TournamentIds.ToList();
+
+        Assert.Equal(
+            new[] { new URN("od:tournament:9"), new URN("od:tournament:3"), new URN("od:tournament:7") },
+            firstCall);
+        Assert.Equal(firstCall, laterCall);
     }
 
     [Fact]
@@ -131,6 +149,8 @@ public class SportDataCacheTournamentIdsTests
             {
                 case nameof(IApiClient.SubscribeForClass):
                     return _responses.OfType<IRequestResult<object>>();
+                case nameof(IApiClient.GetSports):
+                    return Task.FromResult(Sports());
                 case nameof(IApiClient.GetTournaments):
                     var tournaments = new TournamentsModel
                     {
