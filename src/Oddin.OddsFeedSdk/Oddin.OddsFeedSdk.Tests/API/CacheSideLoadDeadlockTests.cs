@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Oddin.OddsFeedSdk.API;
 using Oddin.OddsFeedSdk.API.Abstractions;
 using Oddin.OddsFeedSdk.API.Models;
@@ -123,6 +124,28 @@ public class CacheSideLoadDeadlockTests
         }
     }
 
+    // GetSports/GetSport share an async loader that was changed separately; the
+    // theory above only reaches the synchronous GetSportTournaments.
+    [Fact]
+    public async Task SportCacheDoesNotHoldItsSemaphoreDuringTheAsyncSportsCall()
+    {
+        var api = DispatchProxy.Create<IApiClient, SideLoadApiClientProxy>();
+        var proxy = (SideLoadApiClientProxy)api;
+
+        using var cache = new SportDataCache(api);
+
+        bool? freeDuringCall = null;
+        proxy.WhileServing = () => freeDuringCall ??= SemaphoreIsFree(cache);
+
+        var sports = await cache.GetSports(new[] { Culture });
+
+        Assert.True(freeDuringCall.HasValue, "GetSports never made an API call");
+        Assert.True(
+            freeDuringCall.Value,
+            "SportDataCache held its semaphore across the async GetSports call");
+        Assert.Contains(SportId, sports);
+    }
+
     // Semaphore(1,1) has no owning thread, so this reports the permit state from anywhere.
     private static bool SemaphoreIsFree(object cache)
     {
@@ -213,6 +236,8 @@ public class CacheSideLoadDeadlockTests
             {
                 case nameof(IApiClient.SubscribeForClass):
                     return _responses.OfType<IRequestResult<object>>();
+                case nameof(IApiClient.GetSports):
+                    return Task.FromResult(Serve(SportsModel(), (CultureInfo)args[0]));
                 case nameof(IApiClient.GetTournaments):
                     return Serve(Tournaments(), (CultureInfo)args[1]);
                 case nameof(IApiClient.GetTournament):
@@ -248,6 +273,9 @@ public class CacheSideLoadDeadlockTests
 
         // Only the fields the observers and loaders read.
         private static sport Sport() => new() { id = "od:sport:1", name = "Dota 2" };
+
+        private static SportsModel SportsModel() =>
+            new() { sport = new[] { new sportExtended { id = "od:sport:1", name = "Dota 2" } } };
 
         private static TournamentsModel Tournaments() =>
             new()

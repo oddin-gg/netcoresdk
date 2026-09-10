@@ -107,15 +107,15 @@ internal class TournamentsCache : ITournamentsCache
     {
         foreach (var tournament in tournaments)
         {
-            var id = string.IsNullOrEmpty(tournament?.id) ? null : new URN(tournament.id);
-
+            // Per item, so one malformed id does not drop the rest of the response.
             try
             {
+                var id = string.IsNullOrEmpty(tournament?.id) ? null : new URN(tournament.id);
                 RefreshOrInsertItem(id, culture, tournament);
             }
             catch (Exception ex)
             {
-                _log.LogError(ex, "Failed to refresh or load tournament");
+                _log.LogError(ex, $"Failed to refresh or load tournament '{tournament?.id}'");
             }
         }
     }
