@@ -14,6 +14,8 @@ public interface IPlayer
 
     IReadOnlyDictionary<CultureInfo, string> SportIDs { get; }
 
+    UnderageStatus Underage { get; }
+
     string GetName(CultureInfo culture);
 
     string GetFullName(CultureInfo culture);

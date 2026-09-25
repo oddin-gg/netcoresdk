@@ -17,6 +17,8 @@ internal class LocalizedPlayer : ILocalizedItem
 
     internal IDictionary<CultureInfo, string> SportID { get; set; } = new Dictionary<CultureInfo, string>();
 
+    internal UnderageStatus Underage { get; set; } = UnderageStatus.Unknown;
+
     public IEnumerable<CultureInfo> LoadedLocals => GetLoadedLocals();
 
     private IEnumerable<CultureInfo> GetLoadedLocals()
