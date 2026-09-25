@@ -69,6 +69,8 @@ internal class Player : IPlayer
         }
     }
 
+    public UnderageStatus Underage => FetchPlayer(_cultures)?.Underage ?? UnderageStatus.Unknown;
+
     public string GetName(CultureInfo culture) =>
         FetchPlayer(new[] { culture })
             ?.Name

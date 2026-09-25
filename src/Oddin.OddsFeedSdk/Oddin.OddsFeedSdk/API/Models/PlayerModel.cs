@@ -118,6 +118,10 @@ namespace Oddin.OddsFeedSdk.API.Models
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute("sport")]
         public string sportID { get; set; }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute("underage")]
+        public string underage { get; set; }
     }
 
     /// <remarks/>
