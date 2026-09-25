@@ -147,7 +147,8 @@ internal class PlayerCache : IPlayerCache
             item.Name[culture] = data.name;
             item.FullName[culture] = data.full_name;
             item.SportID[culture] = data.sportID;
-            item.Underage = UnderageStatusParser.Parse(data.underage);
+            if (data.underage is not null)
+                item.Underage = UnderageStatusParser.Parse(data.underage);
         }
         else
         {
@@ -155,7 +156,8 @@ internal class PlayerCache : IPlayerCache
             item.Name[culture] = data.name;
             item.FullName[culture] = data.full_name;
             item.SportID[culture] = data.sportID;
-            item.Underage = UnderageStatusParser.Parse(data.underage);
+            if (data.underage is not null)
+                item.Underage = UnderageStatusParser.Parse(data.underage);
         }
 
         _cache.Set(id.ToString(), item, _cacheTtl.AsCachePolicy());
