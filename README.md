@@ -5,6 +5,14 @@ Purpose of this SDK is to make integration process much smoother and easier. Thi
 connection,
 data binding and other issues related to connection to API and Feed.
 
+### Installation
+
+The SDK is published to [nuget.org](https://www.nuget.org/packages/Oddin.OddsFeedSdk) as `Oddin.OddsFeedSdk`:
+
+```shell
+dotnet add package Oddin.OddsFeedSdk
+```
+
 ### How to start
 
 ```c#
