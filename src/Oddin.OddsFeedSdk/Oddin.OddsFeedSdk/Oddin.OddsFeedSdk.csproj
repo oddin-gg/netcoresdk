@@ -6,9 +6,8 @@
     <RootNamespace>Oddin.OddsFeedSdk</RootNamespace>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <LangVersion>10</LangVersion>
-    <AssemblyVersion>1.1.34.0</AssemblyVersion>
-    <FileVersion>1.1.34.0</FileVersion>
-    <Version>1.1.34</Version>
+    <!-- the release passes /p:Version from the tag; the assembly and file versions follow it -->
+    <Version>1.1.37</Version>
     <PackageId>Oddin.OddsFeedSdk</PackageId>
     <Description>Oddin.gg Odds Feed SDK for .NET</Description>
     <Authors>Oddin.gg</Authors>
