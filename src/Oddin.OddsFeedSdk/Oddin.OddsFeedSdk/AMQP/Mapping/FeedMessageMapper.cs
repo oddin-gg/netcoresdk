@@ -123,7 +123,6 @@ internal class FeedMessageMapper : IFeedMessageMapper
             (T)sportEvent,
             message.request_idSpecified ? message.request_id : null,
             message.outcomes.Select(m => GetMarketWithResults(m, sportEvent)),
-            message.certainty,
             rawMessage);
     }
 

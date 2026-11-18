@@ -13,15 +13,11 @@ internal class BetSettlement<T> : MarketMessage<IMarketWithSettlement, T>, IBetS
         T @event,
         long? requestId,
         IEnumerable<IMarketWithSettlement> markets,
-        int certainty,
         byte[] rawMessage)
-        : base(producer, timestamp, @event, requestId, rawMessage, markets) =>
-        Certainty = certainty switch
-        {
-            1 => BetSettlementCertainty.LiveScouted,
-            2 => BetSettlementCertainty.Confirmed,
-            _ => BetSettlementCertainty.Unknown
-        };
+        : base(producer, timestamp, @event, requestId, rawMessage, markets)
+    {
+    }
 
-    public BetSettlementCertainty Certainty { get; }
+    // The feed never sends a certainty, so it is always unknown.
+    public BetSettlementCertainty Certainty => BetSettlementCertainty.Unknown;
 }
