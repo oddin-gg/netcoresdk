@@ -45,4 +45,11 @@ public interface IScoreboard
     bool? HomeBatting { get; }
     bool? AwayBatting { get; }
     int? Inning { get; }
+
+    /// <summary>
+    /// Whether the in-game clock is running. <c>true</c> while the clock runs, <c>false</c> while it
+    /// stands (a pause within a period, between periods, before the start, after the end).
+    /// <c>null</c> means the feed did not say; it must never be read as <c>false</c>.
+    /// </summary>
+    bool? ClockRunning { get; }
 }

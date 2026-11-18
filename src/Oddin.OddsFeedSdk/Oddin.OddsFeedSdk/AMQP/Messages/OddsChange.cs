@@ -246,6 +246,10 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
         [XmlAttribute] public bool home_batting { get; set; }
         [XmlAttribute] public bool away_batting { get; set; }
         [XmlAttribute] public int inning { get; set; }
+
+        /// <summary>true while the in-game clock runs, false while it stands; absent when unknown.</summary>
+        [XmlAttribute] public bool clock_running { get; set; }
+        [XmlIgnore] public bool clock_runningSpecified { get; set; }
     }
 
     [Serializable]
