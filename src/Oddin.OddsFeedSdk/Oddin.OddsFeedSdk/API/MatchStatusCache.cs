@@ -130,6 +130,8 @@ internal class MatchStatusCache : IMatchStatusCache
 
             if (status.scoreboard is not null)
                 item.Scoreboard = MakeFeedScoreboard(status.scoreboard);
+            else if (item.Scoreboard is Scoreboard kept)
+                item.Scoreboard = kept.WithoutClockRunning();
         }
 
         _cache.Set(id.ToString(), item, _cacheTtl.AsCachePolicy());
@@ -163,6 +165,8 @@ internal class MatchStatusCache : IMatchStatusCache
 
             if (summary.scoreboard != null)
                 item.Scoreboard = MakeApiScoreboard(summary.scoreboard);
+            else if (item.Scoreboard is Scoreboard kept)
+                item.Scoreboard = kept.WithoutClockRunning();
         }
 
         _cache.Set(id.ToString(), item, _cacheTtl.AsCachePolicy());
