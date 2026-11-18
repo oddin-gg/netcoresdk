@@ -111,7 +111,7 @@ public class FeedMessageMapperTests
             RoutingKey = $"hi.pre.-.bet_stop.{sportSection}.-.123.-"
         };
 
-    private sealed class CapturingSportDataBuilder : ISportDataBuilder
+    internal sealed class CapturingSportDataBuilder : ISportDataBuilder
     {
         public URN MatchId { get; private set; }
         public URN MatchSportId { get; private set; }
@@ -153,7 +153,7 @@ public class FeedMessageMapperTests
         public IMatchStatus BuildMatchStatus(URN id, IEnumerable<CultureInfo> cultures) => null;
     }
 
-    private sealed class StubProducerManager : IProducerManager
+    internal sealed class StubProducerManager : IProducerManager
     {
         public IReadOnlyCollection<IProducer> Producers => Array.Empty<IProducer>();
         public void DisableProducer(int id) { }
@@ -166,7 +166,7 @@ public class FeedMessageMapperTests
         public void Lock() { }
     }
 
-    private sealed class StubFeedConfiguration : IFeedConfiguration
+    internal sealed class StubFeedConfiguration : IFeedConfiguration
     {
         public string AccessToken => string.Empty;
         public CultureInfo DefaultLocale => CultureInfo.GetCultureInfo("en-US");

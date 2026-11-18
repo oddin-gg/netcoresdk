@@ -139,6 +139,7 @@ namespace Oddin.OddsFeedSdk.AMQP.Messages
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
+        [System.Obsolete("The feed never sends this value.")]
         public int certainty
         {
             get
