@@ -131,4 +131,45 @@ internal class Scoreboard : IScoreboard
     public bool? AwayBatting { get; }
     public int? Inning { get; }
     public bool? ClockRunning { get; }
+
+    /// <summary>
+    /// A copy of this scoreboard with every field kept except <see cref="ClockRunning"/>, which is unknown.
+    /// </summary>
+    public Scoreboard WithoutClockRunning() => new(
+            CurrentCtTeam,
+            HomeWonRounds,
+            AwayWonRounds,
+            CurrentRound,
+            HomeKills,
+            AwayKills,
+            HomeDestroyedTurrets,
+            AwayDestroyedTurrets,
+            HomeGold,
+            AwayGold,
+            HomeDestroyedTowers,
+            AwayDestroyedTowers,
+            HomeGoals,
+            AwayGoals,
+            Time,
+            GameTime,
+            ElapsedTime,
+            CurrentDefenderTeam,
+            HomePoints,
+            AwayPoints,
+            RemainingGameTime,
+            HomeGames,
+            AwayGames,
+            HomeRuns,
+            AwayRuns,
+            HomeWicketsFallen,
+            AwayWicketsFallen,
+            HomeOversPlayed,
+            AwayOversPlayed,
+            HomeBallsPlayed,
+            AwayBallsPlayed,
+            HomeWonCoinToss,
+            HomeBatting,
+            AwayBatting,
+            Inning,
+            null);
 }
