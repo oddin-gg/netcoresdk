@@ -42,7 +42,8 @@ internal class Scoreboard : IScoreboard
         bool? homeWonCoinToss,
         bool? homeBatting,
         bool? awayBatting,
-        int? inning
+        int? inning,
+        bool? clockRunning
     )
     {
         CurrentCtTeam = currentCtTeam;
@@ -83,6 +84,7 @@ internal class Scoreboard : IScoreboard
         HomeBatting = homeBatting;
         AwayBatting = awayBatting;
         Inning = inning;
+        ClockRunning = clockRunning;
     }
 
     // TableTennis
@@ -128,4 +130,5 @@ internal class Scoreboard : IScoreboard
     public bool? HomeBatting { get; }
     public bool? AwayBatting { get; }
     public int? Inning { get; }
+    public bool? ClockRunning { get; }
 }

@@ -211,7 +211,8 @@ internal class MatchStatusCache : IMatchStatusCache
             scoreboard.home_won_coin_toss,
             scoreboard.home_batting,
             scoreboard.away_batting,
-            scoreboard.inning
+            scoreboard.inning,
+            scoreboard.clock_runningSpecified ? scoreboard.clock_running : null
         );
     }
 
@@ -258,7 +259,8 @@ internal class MatchStatusCache : IMatchStatusCache
             scoreboard.home_won_coin_toss,
             scoreboard.home_batting,
             scoreboard.away_batting,
-            scoreboard.inning
+            scoreboard.inning,
+            scoreboard.clock_runningSpecified ? scoreboard.clock_running : null
         );
     }
 
